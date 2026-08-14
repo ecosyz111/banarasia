@@ -50,6 +50,9 @@ export type CatererVenue = {
   areaEn: string;
   areaHi: string;
   capacity: string;
+  // Photo of the space. Optional — venues saved before this field existed have
+  // none, and the public card falls back to the icon header it always drew.
+  imageUrl: string;
   notesEn: string;
   notesHi: string;
   sortOrder: number;
@@ -300,6 +303,8 @@ const INITIAL_DEFAULTS: CatererStoreData = {
       areaEn: "Gomti Nagar, Lucknow",
       areaHi: "गोमती नगर, लखनऊ",
       capacity: "500-800",
+      imageUrl:
+        "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=80",
       notesEn: "Open lawn with covered dining area and ample parking.",
       notesHi: "खुला लॉन, ढका हुआ डाइनिंग क्षेत्र एवं पर्याप्त पार्किंग।",
       sortOrder: 1,
@@ -312,6 +317,8 @@ const INITIAL_DEFAULTS: CatererStoreData = {
       areaEn: "Hazratganj, Lucknow",
       areaHi: "हजरतगंज, लखनऊ",
       capacity: "200-400",
+      imageUrl:
+        "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=800&q=80",
       notesEn: "Fully air-conditioned indoor hall, ideal for receptions.",
       notesHi: "पूर्ण वातानुकूलित इनडोर हॉल, रिसेप्शन के लिए आदर्श।",
       sortOrder: 2,
@@ -324,6 +331,8 @@ const INITIAL_DEFAULTS: CatererStoreData = {
       areaEn: "Anywhere in Lucknow & nearby",
       areaHi: "लखनऊ एवं आसपास कहीं भी",
       capacity: "50-2000",
+      imageUrl:
+        "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80",
       notesEn: "We bring the full setup, staff and live counters to your location.",
       notesHi: "हम पूरा सेटअप, स्टाफ एवं लाइव काउंटर आपके स्थान पर लाते हैं।",
       sortOrder: 3,
@@ -446,10 +455,19 @@ async function readFromStorage(): Promise<CatererStoreData> {
       }))
     : INITIAL_DEFAULTS.packages;
 
+  // Venues written before the photo field existed carry no imageUrl; normalise
+  // it to "" so every read path can treat it as a plain string.
+  const venues = Array.isArray(snap?.venues)
+    ? (snap!.venues as CatererVenue[]).map((v) => ({
+        ...v,
+        imageUrl: typeof v.imageUrl === "string" ? v.imageUrl : "",
+      }))
+    : INITIAL_DEFAULTS.venues;
+
   return {
     packages,
     gallery: Array.isArray(snap?.gallery) ? (snap!.gallery as CatererGalleryItem[]) : INITIAL_DEFAULTS.gallery,
-    venues: Array.isArray(snap?.venues) ? (snap!.venues as CatererVenue[]) : INITIAL_DEFAULTS.venues,
+    venues,
     // Leads are visitor-generated, so an absent array means "none captured
     // yet" — never the seed data other collections fall back to.
     leads: Array.isArray(snap?.leads) ? (snap!.leads as CatererLead[]) : [],
@@ -708,6 +726,10 @@ export async function getLeadById(id: string): Promise<CatererLead | null> {
 export async function createLead(input: CatererLeadInput): Promise<CatererLead> {
   return mutateStore((data) => {
     const now = new Date().toISOString();
+    // A dev server that hot-reloaded this module keeps a store snapshot
+    // hydrated before `leads` existed; one line here beats a 500 on the first
+    // signup after every edit.
+    data.leads ??= [];
 
     // Subscribing twice must not pile up rows, so a repeat newsletter signup
     // folds into the existing record (and fills in a phone number the first
@@ -864,6 +886,7 @@ export async function getCatererContentPublic() {
       areaEn: v.areaEn,
       areaHi: v.areaHi,
       capacity: v.capacity,
+      imageUrl: v.imageUrl ?? "",
       notesEn: v.notesEn,
       notesHi: v.notesHi,
       sortOrder: v.sortOrder,

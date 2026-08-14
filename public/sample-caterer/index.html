@@ -1285,7 +1285,12 @@
                             <input type="number" name="guests" data-i18n-ph="ph_guests" placeholder="Number of Guests" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm">
                             <textarea name="message" data-i18n-ph="ph_msg" placeholder="Your Message / Special Requirements" rows="3" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm resize-none"></textarea>
                             <button type="submit" data-i18n="btn_send_inquiry" class="w-full py-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-amber-500/40 transition-all transform hover:scale-[1.02] disabled:opacity-60">Send Inquiry</button>
-                            <p data-lead-status class="hidden text-sm" role="status" aria-live="polite"></p>
+                            <!-- The submit hands the filled-in details to WhatsApp, so say so up front. -->
+                            <p class="flex items-center justify-center gap-1.5 text-xs text-brown-500 text-center">
+                                <svg class="w-4 h-4 flex-shrink-0 text-green-600" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492l4.625-1.459A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75c-2.24 0-4.31-.725-5.994-1.953l-.43-.312-2.742.865.834-2.664-.343-.466A9.716 9.716 0 012.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75z"/></svg>
+                                <span data-i18n="form_wa_note">Your details open in WhatsApp so we can reply instantly.</span>
+                            </p>
+                            <p data-lead-status data-ok-class="text-emerald-600" data-err-class="text-rose-600" class="hidden text-sm font-medium" role="status" aria-live="polite"></p>
                         </form>
                     </div>
                 </div>
@@ -1310,7 +1315,11 @@
                                 </div>
                                 <div>
                                     <p data-i18n="ph_title" class="font-semibold text-brown-900 text-sm">Phone / Call</p>
-                                    <a href="tel:9918629017" class="text-brandOrange-600 hover:text-brandOrange-700 font-bold text-sm transition-colors">+91 99186 29017</a>
+                                    <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                        <a href="tel:9918629017" class="text-brandOrange-600 hover:text-brandOrange-700 font-bold text-sm transition-colors">+91 99186 29017</a>
+                                        <span class="text-amber-500/60 text-sm" aria-hidden="true">&bull;</span>
+                                        <a href="tel:9918359017" class="text-brandOrange-600 hover:text-brandOrange-700 font-bold text-sm transition-colors">+91 99183 59017</a>
+                                    </div>
                                 </div>
                             </div>
                             <div class="flex items-start gap-4">
@@ -1406,7 +1415,11 @@
                             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brandOrange-500/30 to-amber-500/30 border border-brandOrange-500/40 flex items-center justify-center flex-shrink-0">
                                 <svg class="w-4 h-4 text-amber-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
                             </div>
-                            <a href="tel:9918629017" class="text-cream-200/80 hover:text-amber-300 transition-colors text-sm font-medium">+91 99186 29017</a>
+                            <div class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                                <a href="tel:9918629017" class="text-cream-200/80 hover:text-amber-300 transition-colors text-sm font-medium">+91 99186 29017</a>
+                                <span class="text-brandOrange-500/60 text-sm" aria-hidden="true">&bull;</span>
+                                <a href="tel:9918359017" class="text-cream-200/80 hover:text-amber-300 transition-colors text-sm font-medium">+91 99183 59017</a>
+                            </div>
                         </li>
                         <li class="flex items-start gap-3">
                             <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-brandOrange-500/30 to-amber-500/30 border border-brandOrange-500/40 flex items-center justify-center flex-shrink-0 mt-0.5">
@@ -1783,10 +1796,11 @@
                 lead_sending: "Sending…",
                 lead_need_contact: "Please enter your email or phone number.",
                 lead_thanks_news: "Thank you! We will keep you updated.",
-                lead_thanks_inquiry: "Thank you! We will call you back shortly.",
+                lead_thanks_inquiry: "Thank you! Opening WhatsApp with your details — just press send.",
+                form_wa_note: "Your details open in WhatsApp so we can reply instantly.",
                 lead_invalid: "Please check the email and phone number entered.",
                 lead_too_many: "Too many attempts. Please try again in a few minutes.",
-                lead_failed: "Could not send right now. Please call +91 99186 29017.",
+                lead_failed: "Could not send right now. Please call +91 99186 29017 or +91 99183 59017.",
                 ftr_quick_links: "Quick Links",
                 ftr_contact_us: "Contact Us",
                 ftr_yt_channel: "YouTube Channel",
@@ -2073,10 +2087,11 @@
                 lead_sending: "भेजा जा रहा है…",
                 lead_need_contact: "कृपया अपना ईमेल या फोन नंबर दर्ज करें।",
                 lead_thanks_news: "धन्यवाद! हम आपको अपडेट भेजते रहेंगे।",
-                lead_thanks_inquiry: "धन्यवाद! हम शीघ्र ही आपसे संपर्क करेंगे।",
+                lead_thanks_inquiry: "धन्यवाद! आपकी जानकारी WhatsApp पर खुल रही है — बस भेजें दबाएं।",
+                form_wa_note: "आपकी जानकारी WhatsApp पर खुलेगी ताकि हम तुरंत जवाब दे सकें।",
                 lead_invalid: "कृपया दर्ज किया गया ईमेल और फोन नंबर जांचें।",
                 lead_too_many: "बहुत अधिक प्रयास। कृपया कुछ मिनट बाद पुनः प्रयास करें।",
-                lead_failed: "अभी भेज नहीं सके। कृपया +91 99186 29017 पर कॉल करें।",
+                lead_failed: "अभी भेज नहीं सके। कृपया +91 99186 29017 या +91 99183 59017 पर कॉल करें।",
                 ftr_quick_links: "त्वरित लिंक",
                 ftr_contact_us: "संपर्क जानकारी",
                 ftr_yt_channel: "यूट्यूब चैनल",
@@ -2541,17 +2556,33 @@
                         const area = isHi ? (v.areaHi || v.areaEn) : (v.areaEn || v.areaHi);
                         const notes = isHi ? (v.notesHi || v.notesEn) : (v.notesEn || v.notesHi);
                         const capacityLabel = isHi ? 'मेहमान' : 'guests';
+                        const imgSrc = (v.imageUrl || '').trim();
+                        const safeName = (name || '').replace(/"/g, '&quot;');
+                        const capacityBadge = v.capacity
+                            ? `<span class="bg-amber-100 text-brandOrange-700 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">${v.capacity} ${capacityLabel}</span>`
+                            : '';
+                        // Photo cards lead with the image and float the capacity badge over
+                        // it; venues with no photo keep the original pin-icon header.
+                        const header = imgSrc
+                            ? `<div class="relative h-52 overflow-hidden">
+                                   <img src="${imgSrc.replace(/"/g, '&quot;')}" alt="${safeName}" loading="lazy" class="w-full h-full object-cover transition-transform duration-700 hover:scale-105">
+                                   <div class="absolute inset-0 bg-gradient-to-t from-brown-950/40 to-transparent"></div>
+                                   ${v.capacity ? `<div class="absolute top-4 right-4">${capacityBadge}</div>` : ''}
+                               </div>`
+                            : `<div class="flex items-start justify-between gap-3 px-8 pt-8">
+                                   <div class="w-14 h-14 rounded-full bg-gradient-to-br from-brandOrange-500 to-amber-500 flex items-center justify-center shadow-md shadow-orange-500/20 flex-shrink-0">
+                                       <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                   </div>
+                                   ${capacityBadge}
+                               </div>`;
                         return `
-                        <div class="bg-white rounded-3xl p-8 shadow-xl border border-amber-200 hover:border-brandOrange-400 transition-all card-hover reveal active flex flex-col">
-                            <div class="flex items-start justify-between gap-3 mb-5">
-                                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-brandOrange-500 to-amber-500 flex items-center justify-center shadow-md shadow-orange-500/20 flex-shrink-0">
-                                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                                </div>
-                                ${v.capacity ? `<span class="bg-amber-100 text-brandOrange-700 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">${v.capacity} ${capacityLabel}</span>` : ''}
+                        <div class="bg-white rounded-3xl overflow-hidden shadow-xl border border-amber-200 hover:border-brandOrange-400 transition-all card-hover reveal active flex flex-col">
+                            ${header}
+                            <div class="px-8 pb-8 pt-5">
+                                <h3 class="font-display text-2xl font-bold text-brown-900 mb-1">${name || ''}</h3>
+                                ${area ? `<p class="text-brandOrange-600 font-semibold text-sm mb-3">${area}</p>` : ''}
+                                ${notes ? `<p class="text-brown-600 text-sm leading-relaxed">${notes}</p>` : ''}
                             </div>
-                            <h3 class="font-display text-2xl font-bold text-brown-900 mb-1">${name || ''}</h3>
-                            ${area ? `<p class="text-brandOrange-600 font-semibold text-sm mb-3">${area}</p>` : ''}
-                            ${notes ? `<p class="text-brown-600 text-sm leading-relaxed">${notes}</p>` : ''}
                         </div>`;
                     }).join('');
                 } else if (venSection && data.venues.length === 0) {
@@ -2674,8 +2705,136 @@
             canonical.setAttribute('href', href);
         }
 
+        // -------------------------------------------------------------------
+        // Lead capture — footer subscribe box + contact inquiry form
+        //
+        // Both post to /api/caterer/leads and show up in the admin Leads tab.
+        // The inquiry form additionally hands the filled-in details off to the
+        // caterer's WhatsApp, so an enquiry reaches a human even if the API
+        // call fails; the newsletter box falls back to the phone number.
+        // -------------------------------------------------------------------
+        function t(key) {
+            const dict = i18nDict[currentLang] || i18nDict.en;
+            return dict[key] !== undefined ? dict[key] : (i18nDict.en[key] || '');
+        }
+
+        function setLeadStatus(form, key, ok) {
+            const el = form.querySelector('[data-lead-status]');
+            if (!el) return;
+            // Tones come from the element itself: the footer form sits on dark
+            // brown, the inquiry form on a white card, so they need different
+            // shades to stay readable.
+            const okClass = el.getAttribute('data-ok-class') || 'text-emerald-400';
+            const errClass = el.getAttribute('data-err-class') || 'text-rose-400';
+            el.textContent = t(key);
+            el.classList.remove('hidden', okClass, errClass);
+            if (ok === true) el.classList.add(okClass);
+            if (ok === false) el.classList.add(errClass);
+        }
+
+        // The caterer's WhatsApp line is read off the existing wa.me links so
+        // there is still only one place on the page to change the number.
+        function whatsappNumber() {
+            const link = document.querySelector('a[href*="wa.me/"]');
+            const digits = link ? (link.getAttribute('href').split('wa.me/')[1] || '').replace(/\D/g, '') : '';
+            return digits || '919918629017';
+        }
+
+        // Labels stay English so an enquiry reads the same in WhatsApp whichever
+        // language the visitor filled the form in.
+        function whatsappUrl(payload) {
+            const labels = [
+                ['name', 'Name'], ['phone', 'Phone'], ['email', 'Email'],
+                ['eventType', 'Event'], ['guests', 'Guests'], ['message', 'Requirements']
+            ];
+            const lines = ['Namaste! I would like to enquire about catering.', ''];
+            labels.forEach(([field, label]) => {
+                if (payload[field]) lines.push(label + ': ' + payload[field]);
+            });
+            return 'https://wa.me/' + whatsappNumber() + '?text=' + encodeURIComponent(lines.join('\n'));
+        }
+
+        function wireLeadForm(formId, source, successKey, options) {
+            const form = document.getElementById(formId);
+            if (!form) return;
+            const toWhatsApp = !!(options && options.whatsapp);
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const data = new FormData(form);
+                const payload = { source };
+                ['name', 'email', 'phone', 'eventType', 'guests', 'message'].forEach(field => {
+                    const value = data.get(field);
+                    if (typeof value === 'string' && value.trim()) payload[field] = value.trim();
+                });
+
+                if (!payload.email && !payload.phone) {
+                    setLeadStatus(form, 'lead_need_contact', false);
+                    return;
+                }
+
+                // The WhatsApp tab has to be opened inside the click gesture —
+                // waiting for the POST to land first gets it blocked as a popup.
+                // If the browser blocks it anyway we hand off in this tab once
+                // the lead is saved (below), so the enquiry is never lost.
+                const waUrl = toWhatsApp ? whatsappUrl(payload) : null;
+                let waTab = null;
+                if (waUrl) {
+                    waTab = window.open(waUrl, '_blank');
+                    if (waTab) waTab.opener = null;
+                }
+
+                const button = form.querySelector('button[type="submit"]');
+                const buttonKey = button && button.getAttribute('data-i18n');
+                if (button) {
+                    button.disabled = true;
+                    button.textContent = t('lead_sending');
+                }
+                setLeadStatus(form, 'lead_sending', null);
+
+                try {
+                    const res = await fetch('/api/caterer/leads', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    }).catch(() => null);
+
+                    // A WhatsApp handoff counts as delivered even when the leads
+                    // API rejects or is down — the caterer has the enquiry either
+                    // way, so pushing the visitor to call would just confuse them.
+                    if ((res && res.ok) || waUrl) {
+                        form.reset();
+                        setLeadStatus(form, successKey, true);
+                    } else if (res && res.status === 400) {
+                        setLeadStatus(form, 'lead_invalid', false);
+                    } else if (res && res.status === 429) {
+                        setLeadStatus(form, 'lead_too_many', false);
+                    } else {
+                        setLeadStatus(form, 'lead_failed', false);
+                    }
+                } finally {
+                    if (button) {
+                        button.disabled = false;
+                        // Restore through the dictionary so the label stays in
+                        // whatever language is active when the request lands.
+                        if (buttonKey) button.textContent = t(buttonKey);
+                    }
+                    // Popup blocked: now that the lead is recorded, leaving the
+                    // page for WhatsApp no longer cancels the request.
+                    if (waUrl && !waTab) window.location.href = waUrl;
+                }
+            });
+        }
+
+        function wireLeadForms() {
+            wireLeadForm('newsletter-form', 'newsletter', 'lead_thanks_news');
+            wireLeadForm('inquiry-form', 'inquiry', 'lead_thanks_inquiry', { whatsapp: true });
+        }
+
         document.addEventListener('DOMContentLoaded', syncCanonicalUrls);
         document.addEventListener('DOMContentLoaded', loadCatererCmsContent);
+        document.addEventListener('DOMContentLoaded', wireLeadForms);
 
         // Initial scroll state & language state
         onScroll();

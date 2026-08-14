@@ -40,7 +40,6 @@ const RATE_WINDOW_MS = 10 * 60 * 1000;
 const RATE_MAX = 5;
 
 declare global {
-  // eslint-disable-next-line no-var
   var __catererLeadRate__: Map<string, number[]> | undefined;
 }
 
@@ -50,7 +49,7 @@ function rateLimited(req: Request): boolean {
     req.headers.get("x-real-ip") ||
     "unknown";
 
-  const store = (globalThis.__catererLeadRate__ ??= new Map());
+  const store = (globalThis.__catererLeadRate__ ??= new Map<string, number[]>());
   const now = Date.now();
   const recent = (store.get(ip) ?? []).filter((t) => now - t < RATE_WINDOW_MS);
 
@@ -88,13 +87,6 @@ export async function GET(req: Request) {
 // inquiry form both post here; `source` says which.
 export async function POST(req: Request) {
   try {
-    if (rateLimited(req)) {
-      return NextResponse.json(
-        { error: "Too many submissions. Please try again later." },
-        { status: 429 }
-      );
-    }
-
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== "object") {
       return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
@@ -125,6 +117,15 @@ export async function POST(req: Request) {
       return NextResponse.json(
         { error: "Please enter an email address or a phone number." },
         { status: 400 }
+      );
+    }
+
+    // Throttle only what would actually be written, so a visitor fixing a
+    // mistyped address five times does not lock themselves out.
+    if (rateLimited(req)) {
+      return NextResponse.json(
+        { error: "Too many submissions. Please try again later." },
+        { status: 429 }
       );
     }
 

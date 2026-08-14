@@ -36,6 +36,7 @@ export async function PUT(
     if (typeof body.areaEn === "string") updateData.areaEn = body.areaEn.trim();
     if (typeof body.areaHi === "string") updateData.areaHi = body.areaHi.trim();
     if (typeof body.capacity === "string") updateData.capacity = body.capacity.trim();
+    if (typeof body.imageUrl === "string") updateData.imageUrl = body.imageUrl.trim();
     if (typeof body.notesEn === "string") updateData.notesEn = body.notesEn.trim();
     if (typeof body.notesHi === "string") updateData.notesHi = body.notesHi.trim();
     if (typeof body.sortOrder === "number") updateData.sortOrder = body.sortOrder;

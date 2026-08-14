@@ -23,6 +23,7 @@ const ALLOWED_TYPES = new Set([
 const KINDS = {
   gallery: { prefix: "gallery", blobDir: "caterer/gallery" },
   logo: { prefix: "logo", blobDir: "caterer/branding" },
+  venue: { prefix: "venue", blobDir: "caterer/venues" },
 } as const;
 
 type UploadKind = keyof typeof KINDS;

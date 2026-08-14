@@ -47,11 +47,29 @@ type CatererVenue = {
   areaEn: string;
   areaHi: string;
   capacity: string;
+  imageUrl: string;
   notesEn: string;
   notesHi: string;
   sortOrder: number;
   isActive: boolean;
   createdAt?: string;
+  updatedAt?: string;
+};
+
+type LeadSource = "newsletter" | "inquiry";
+type LeadStatus = "new" | "contacted";
+
+type CatererLead = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  eventType: string;
+  guests: string;
+  message: string;
+  source: LeadSource;
+  status: LeadStatus;
+  createdAt: string;
   updatedAt?: string;
 };
 
@@ -122,6 +140,7 @@ type VenueFormData = {
   areaEn: string;
   areaHi: string;
   capacity: string;
+  imageUrl: string;
   notesEn: string;
   notesHi: string;
   sortOrder: string;
@@ -177,6 +196,7 @@ const DEFAULT_VENUE_FORM: VenueFormData = {
   areaEn: "",
   areaHi: "",
   capacity: "",
+  imageUrl: "",
   notesEn: "",
   notesHi: "",
   sortOrder: "0",
@@ -228,6 +248,33 @@ const DEFAULT_ABOUT_FORM: AboutFormData = {
 };
 
 // ---------------------------------------------------------------------------
+// Lead Helpers
+// ---------------------------------------------------------------------------
+
+function formatLeadDate(iso: string): string {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return "";
+  return d.toLocaleString("en-IN", {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
+// wa.me needs a country code, but visitors type local numbers ("9918629017",
+// "09918629017"). Lucknow business, Indian numbers — assume +91 when the digits
+// look like a bare local number and leave anything longer alone.
+function whatsappNumber(phone: string): string {
+  const digits = phone.replace(/\D/g, "");
+  if (digits.length === 10) return `91${digits}`;
+  if (digits.length === 11 && digits.startsWith("0")) return `91${digits.slice(1)}`;
+  return digits;
+}
+
+// ---------------------------------------------------------------------------
 // Main Admin Component
 // ---------------------------------------------------------------------------
 
@@ -237,9 +284,9 @@ export default function CatererAdminDashboard() {
   // Auth gate status
   const [authChecked, setAuthChecked] = useState(false);
 
-  // Tabs: 'packages' | 'venues' | 'gallery' | 'about' | 'branding'
+  // Tabs: 'packages' | 'venues' | 'gallery' | 'leads' | 'about' | 'branding'
   const [activeTab, setActiveTab] = useState<
-    "packages" | "venues" | "gallery" | "about" | "branding"
+    "packages" | "venues" | "gallery" | "leads" | "about" | "branding"
   >("packages");
 
   // Notifications
@@ -249,18 +296,27 @@ export default function CatererAdminDashboard() {
   const [packages, setPackages] = useState<CatererPackage[]>([]);
   const [gallery, setGallery] = useState<CatererGalleryItem[]>([]);
   const [venues, setVenues] = useState<CatererVenue[]>([]);
+  const [leads, setLeads] = useState<CatererLead[]>([]);
 
   // Loading states
   const [loadingPackages, setLoadingPackages] = useState(false);
   const [loadingGallery, setLoadingGallery] = useState(false);
   const [loadingAbout, setLoadingAbout] = useState(false);
   const [loadingVenues, setLoadingVenues] = useState(false);
+  const [loadingLeads, setLoadingLeads] = useState(false);
+
+  // Leads — status toggle and delete confirmation
+  const [updatingLeadId, setUpdatingLeadId] = useState<string | null>(null);
+  const [deletingLead, setDeletingLead] = useState<CatererLead | null>(null);
+  const [deletingLeadLoading, setDeletingLeadLoading] = useState(false);
 
   // Modals & form state for Venues
   const [venueModalOpen, setVenueModalOpen] = useState(false);
   const [editingVenueId, setEditingVenueId] = useState<string | null>(null);
   const [venueForm, setVenueForm] = useState<VenueFormData>(DEFAULT_VENUE_FORM);
   const [submittingVenue, setSubmittingVenue] = useState(false);
+  const [uploadingVenueImage, setUploadingVenueImage] = useState(false);
+  const venueFileInputRef = useRef<HTMLInputElement>(null);
   const [deletingVenue, setDeletingVenue] = useState<CatererVenue | null>(null);
   const [deletingVenueLoading, setDeletingVenueLoading] = useState(false);
 
@@ -433,6 +489,25 @@ export default function CatererAdminDashboard() {
     }
   }, [apiFetch, showToast]);
 
+  const fetchLeads = useCallback(async () => {
+    setLoadingLeads(true);
+    try {
+      const res = await apiFetch("/api/caterer/leads", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setLeads(data.leads ?? []);
+      } else {
+        showToast("error", "Failed to fetch leads.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "Unable to load leads. Please try again.");
+      }
+    } finally {
+      setLoadingLeads(false);
+    }
+  }, [apiFetch, showToast]);
+
   const fetchSettings = useCallback(async () => {
     try {
       const res = await apiFetch("/api/caterer/settings", { cache: "no-store" });
@@ -456,8 +531,17 @@ export default function CatererAdminDashboard() {
     fetchGallery();
     fetchAbout();
     fetchVenues();
+    fetchLeads();
     fetchSettings();
-  }, [authChecked, fetchPackages, fetchGallery, fetchAbout, fetchVenues, fetchSettings]);
+  }, [
+    authChecked,
+    fetchPackages,
+    fetchGallery,
+    fetchAbout,
+    fetchVenues,
+    fetchLeads,
+    fetchSettings,
+  ]);
 
   // Logout handler
   const handleLogout = () => {
@@ -801,12 +885,57 @@ export default function CatererAdminDashboard() {
       areaEn: venue.areaEn ?? "",
       areaHi: venue.areaHi ?? "",
       capacity: venue.capacity ?? "",
+      imageUrl: venue.imageUrl ?? "",
       notesEn: venue.notesEn ?? "",
       notesHi: venue.notesHi ?? "",
       sortOrder: String(venue.sortOrder ?? 0),
       isActive: venue.isActive ?? true,
     });
     setVenueModalOpen(true);
+  };
+
+  const handleVenueImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
+      showToast("error", "Invalid format. Only JPG, JPEG, PNG, and WebP images are allowed.");
+      if (venueFileInputRef.current) venueFileInputRef.current.value = "";
+      return;
+    }
+
+    setUploadingVenueImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("kind", "venue");
+
+      const res = await apiFetch("/api/caterer/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.url) {
+          setVenueForm((prev) => ({ ...prev, imageUrl: data.url }));
+          showToast("success", "Venue photo uploaded. Save the venue to apply it.");
+        } else {
+          showToast("error", "Failed to retrieve uploaded image URL.");
+        }
+      } else {
+        const json = await res.json().catch(() => null);
+        showToast("error", json?.error ?? "Image upload failed.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "An error occurred while uploading the venue photo.");
+      }
+    } finally {
+      setUploadingVenueImage(false);
+      if (venueFileInputRef.current) venueFileInputRef.current.value = "";
+    }
   };
 
   const handleVenueSubmit = async (e: React.FormEvent) => {
@@ -830,6 +959,7 @@ export default function CatererAdminDashboard() {
       areaEn: venueForm.areaEn.trim(),
       areaHi: venueForm.areaHi.trim(),
       capacity: venueForm.capacity.trim(),
+      imageUrl: venueForm.imageUrl.trim(),
       notesEn: venueForm.notesEn.trim(),
       notesHi: venueForm.notesHi.trim(),
       sortOrder: parseInt(venueForm.sortOrder, 10) || 0,
@@ -888,6 +1018,61 @@ export default function CatererAdminDashboard() {
       }
     } finally {
       setDeletingVenueLoading(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Lead Handlers
+  // ---------------------------------------------------------------------------
+
+  const handleToggleLeadStatus = async (lead: CatererLead) => {
+    if (updatingLeadId) return;
+    const next: LeadStatus = lead.status === "contacted" ? "new" : "contacted";
+    setUpdatingLeadId(lead.id);
+    try {
+      const res = await apiFetch(`/api/caterer/leads/${lead.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: next }),
+      });
+      if (res.ok) {
+        // Patch in place instead of refetching: the owner is usually working
+        // down a long list and a reload would throw away their scroll position.
+        setLeads((prev) =>
+          prev.map((l) => (l.id === lead.id ? { ...l, status: next } : l))
+        );
+      } else {
+        showToast("error", "Failed to update lead status.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "An error occurred while updating the lead.");
+      }
+    } finally {
+      setUpdatingLeadId(null);
+    }
+  };
+
+  const handleDeleteLeadConfirm = async () => {
+    if (!deletingLead || deletingLeadLoading) return;
+    setDeletingLeadLoading(true);
+    try {
+      const res = await apiFetch(`/api/caterer/leads/${deletingLead.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        showToast("success", "Lead deleted.");
+        setDeletingLead(null);
+        fetchLeads();
+      } else {
+        showToast("error", "Failed to delete lead.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "An error occurred while deleting the lead.");
+      }
+    } finally {
+      setDeletingLeadLoading(false);
     }
   };
 
@@ -1074,6 +1259,8 @@ export default function CatererAdminDashboard() {
     }
   };
 
+  const newLeadCount = leads.filter((l) => l.status === "new").length;
+
   // If auth check is pending, show loading state
   if (!authChecked) {
     return (
@@ -1249,6 +1436,31 @@ export default function CatererAdminDashboard() {
               <span>Gallery</span>
               <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
                 {gallery.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("leads")}
+              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+                activeTab === "leads"
+                  ? "border-orange-600 text-orange-600"
+                  : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
+              }`}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <span>Leads</span>
+              {/* Unworked leads are the number that matters at a glance; the
+                  full count is in the tab header. */}
+              <span
+                className={`rounded-full px-2 py-0.5 text-xs font-medium ${
+                  newLeadCount > 0
+                    ? "bg-orange-100 text-orange-700"
+                    : "bg-stone-100 text-stone-600"
+                }`}
+              >
+                {newLeadCount > 0 ? `${newLeadCount} new` : leads.length}
               </span>
             </button>
 
@@ -1540,6 +1752,27 @@ export default function CatererAdminDashboard() {
                     }`}
                   >
                     <div className="space-y-4">
+                      {venue.imageUrl ? (
+                        <div className="relative h-36 w-full overflow-hidden rounded-xl border border-stone-200 bg-stone-100">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={venue.imageUrl}
+                            alt={venue.nameEn}
+                            className="h-full w-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.opacity = "0";
+                            }}
+                          />
+                        </div>
+                      ) : (
+                        <div className="flex h-36 w-full flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-stone-300 bg-[#FAF8F5] text-stone-400">
+                          <svg className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          <span className="text-[10px] font-semibold uppercase tracking-wider">No photo yet</span>
+                        </div>
+                      )}
+
                       <div className="flex items-center justify-between gap-2">
                         <span
                           className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
@@ -1744,7 +1977,193 @@ export default function CatererAdminDashboard() {
         )}
 
         {/* ================================================================ */}
-        {/* TAB 3: ABOUT */}
+        {/* TAB 3: LEADS */}
+        {/* ================================================================ */}
+        {activeTab === "leads" && (
+          <section className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-[#3D2518]">Leads</h2>
+                <p className="text-sm text-stone-500">
+                  Everyone who left their details on the site — the footer subscribe box and the
+                  Send Inquiry form. {leads.length} total, {newLeadCount} not yet contacted.
+                </p>
+              </div>
+              <button
+                onClick={fetchLeads}
+                disabled={loadingLeads}
+                className="flex items-center justify-center gap-2 rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-sm font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50 disabled:opacity-60"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                <span>{loadingLeads ? "Refreshing…" : "Refresh"}</span>
+              </button>
+            </div>
+
+            {loadingLeads ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="animate-pulse rounded-2xl border border-stone-200 bg-white p-6 space-y-3"
+                  >
+                    <div className="h-4 w-1/4 bg-stone-200 rounded"></div>
+                    <div className="h-4 w-1/2 bg-stone-100 rounded"></div>
+                    <div className="h-10 bg-stone-100 rounded"></div>
+                  </div>
+                ))}
+              </div>
+            ) : leads.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center">
+                <svg
+                  className="mx-auto h-12 w-12 text-stone-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
+                  />
+                </svg>
+                <h3 className="mt-4 text-base font-bold text-stone-800">No Leads Yet</h3>
+                <p className="mt-1 text-sm text-stone-500">
+                  Enquiries and newsletter signups from the public site will appear here.
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {leads.map((lead) => (
+                  <div
+                    key={lead.id}
+                    className={`rounded-2xl border bg-white p-5 shadow-sm transition hover:shadow-md ${
+                      lead.status === "new" ? "border-orange-200" : "border-stone-200"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold ${
+                          lead.source === "inquiry"
+                            ? "bg-violet-50 text-violet-700 border border-violet-200"
+                            : "bg-sky-50 text-sky-700 border border-sky-200"
+                        }`}
+                      >
+                        {lead.source === "inquiry" ? "Inquiry Form" : "Newsletter"}
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                          lead.status === "new"
+                            ? "bg-orange-50 text-orange-700 border border-orange-200"
+                            : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                        }`}
+                      >
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            lead.status === "new" ? "bg-orange-500" : "bg-emerald-500"
+                          }`}
+                        />
+                        {lead.status === "new" ? "New" : "Contacted"}
+                      </span>
+                      <span className="ml-auto text-xs text-stone-400">
+                        {formatLeadDate(lead.createdAt)}
+                      </span>
+                    </div>
+
+                    <div className="mt-3 grid gap-3 sm:grid-cols-2">
+                      <div className="space-y-1">
+                        <p className="text-base font-bold text-[#3D2518]">
+                          {lead.name || "Name not given"}
+                        </p>
+                        {lead.phone ? (
+                          <div className="flex flex-wrap items-center gap-2 text-sm">
+                            <a
+                              href={`tel:${lead.phone}`}
+                              className="font-semibold text-stone-700 hover:text-orange-600"
+                            >
+                              {lead.phone}
+                            </a>
+                            <a
+                              href={`https://wa.me/${whatsappNumber(lead.phone)}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="rounded-lg border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-xs font-semibold text-emerald-700 hover:bg-emerald-100"
+                            >
+                              WhatsApp
+                            </a>
+                          </div>
+                        ) : (
+                          <p className="text-sm text-stone-400">No phone number</p>
+                        )}
+                        {lead.email ? (
+                          <a
+                            href={`mailto:${lead.email}`}
+                            className="block break-all text-sm text-stone-600 hover:text-orange-600"
+                          >
+                            {lead.email}
+                          </a>
+                        ) : (
+                          <p className="text-sm text-stone-400">No email</p>
+                        )}
+                      </div>
+
+                      <div className="space-y-2">
+                        {(lead.eventType || lead.guests) && (
+                          <div className="flex flex-wrap gap-2">
+                            {lead.eventType && (
+                              <span className="inline-flex items-center rounded-full bg-amber-50 border border-amber-200 px-2.5 py-0.5 text-xs font-medium text-amber-800">
+                                {lead.eventType}
+                              </span>
+                            )}
+                            {lead.guests && (
+                              <span className="inline-flex items-center rounded-full bg-stone-100 border border-stone-200 px-2.5 py-0.5 text-xs font-medium text-stone-700">
+                                {lead.guests} guests
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {lead.message && (
+                          <p className="rounded-xl bg-[#FAF8F5] p-3 border border-stone-100 text-sm text-stone-600 whitespace-pre-wrap">
+                            {lead.message}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-end gap-2 border-t border-stone-100 pt-3">
+                      <button
+                        onClick={() => handleToggleLeadStatus(lead)}
+                        disabled={updatingLeadId === lead.id}
+                        className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition disabled:opacity-60 ${
+                          lead.status === "new"
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
+                            : "border-stone-200 bg-white text-stone-700 hover:bg-stone-50"
+                        }`}
+                      >
+                        {updatingLeadId === lead.id
+                          ? "Saving…"
+                          : lead.status === "new"
+                            ? "Mark Contacted"
+                            : "Mark as New"}
+                      </button>
+                      <button
+                        onClick={() => setDeletingLead(lead)}
+                        className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ================================================================ */}
+        {/* TAB 4: ABOUT */}
         {/* ================================================================ */}
         {activeTab === "about" && (
           <section className="space-y-6 max-w-4xl">
@@ -2771,6 +3190,94 @@ export default function CatererAdminDashboard() {
               </button>
             </div>
 
+            {/* Venue Photo — upload from device, or paste a URL/path */}
+            <div className="space-y-3 rounded-2xl border border-stone-200 bg-[#FAF8F5] p-4">
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
+                Venue Photo
+              </label>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                <div className="relative h-28 w-full flex-shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-stone-100 sm:w-44">
+                  {venueForm.imageUrl.trim() ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={venueForm.imageUrl.trim()}
+                        alt="Venue preview"
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.opacity = "0";
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setVenueForm({ ...venueForm, imageUrl: "" })}
+                        className="absolute right-1.5 top-1.5 rounded-lg bg-white/90 px-2 py-1 text-[10px] font-bold text-rose-600 shadow-sm transition hover:bg-white"
+                      >
+                        Remove
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-1 text-stone-400">
+                      <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span className="text-[10px] font-semibold uppercase tracking-wider">No photo</span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="file"
+                    ref={venueFileInputRef}
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    onChange={handleVenueImageUpload}
+                    className="hidden"
+                    id="caterer-venue-file-input"
+                    disabled={uploadingVenueImage || submittingVenue}
+                  />
+                  <label
+                    htmlFor="caterer-venue-file-input"
+                    className={`flex items-center justify-center gap-2.5 rounded-xl border-2 border-dashed border-stone-300 bg-white px-4 py-3 text-xs font-bold text-stone-700 transition hover:border-orange-500 hover:bg-orange-50/50 ${
+                      uploadingVenueImage || submittingVenue
+                        ? "cursor-not-allowed opacity-60"
+                        : "cursor-pointer"
+                    }`}
+                  >
+                    {uploadingVenueImage ? (
+                      <>
+                        <svg className="h-4 w-4 animate-spin text-orange-600" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        <span className="font-bold text-orange-600">Uploading Photo…</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span>Choose File from Device (JPG, PNG, WebP)</span>
+                      </>
+                    )}
+                  </label>
+
+                  <input
+                    type="text"
+                    placeholder="Or paste a URL / path — https://… or /uploads/caterer/…"
+                    value={venueForm.imageUrl}
+                    onChange={(e) => setVenueForm({ ...venueForm, imageUrl: e.target.value })}
+                    disabled={uploadingVenueImage || submittingVenue}
+                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-60"
+                  />
+                  <p className="text-[11px] text-stone-500">
+                    Optional. Leave empty and the public card keeps the pin icon instead of a photo.
+                  </p>
+                </div>
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
@@ -2897,10 +3404,16 @@ export default function CatererAdminDashboard() {
               </button>
               <button
                 type="submit"
-                disabled={submittingVenue}
+                disabled={submittingVenue || uploadingVenueImage}
                 className="rounded-xl bg-orange-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-600/20 transition hover:bg-orange-700 disabled:opacity-60"
               >
-                {submittingVenue ? "Saving…" : editingVenueId ? "Save Venue" : "Create Venue"}
+                {submittingVenue
+                  ? "Saving…"
+                  : uploadingVenueImage
+                    ? "Uploading…"
+                    : editingVenueId
+                      ? "Save Venue"
+                      : "Create Venue"}
               </button>
             </div>
           </form>
@@ -2942,6 +3455,49 @@ export default function CatererAdminDashboard() {
                 className="rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700 disabled:opacity-60"
               >
                 {deletingVenueLoading ? "Deleting…" : "Yes, Delete Venue"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* CONFIRMATION DIALOG: DELETE LEAD */}
+      {/* ==================================================================== */}
+      {deletingLead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md space-y-4 rounded-2xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-stone-900">Delete Lead?</h3>
+            </div>
+            <p className="text-sm text-stone-600">
+              Delete the lead from{" "}
+              <strong className="text-stone-900">
+                {deletingLead.name || deletingLead.phone || deletingLead.email}
+              </strong>
+              ? Their contact details cannot be recovered.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingLead(null)}
+                disabled={deletingLeadLoading}
+                className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteLeadConfirm}
+                disabled={deletingLeadLoading}
+                className="rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700 disabled:opacity-60"
+              >
+                {deletingLeadLoading ? "Deleting…" : "Yes, Delete Lead"}
               </button>
             </div>
           </div>
