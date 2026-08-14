@@ -24,6 +24,10 @@ const KINDS = {
   gallery: { prefix: "gallery", blobDir: "caterer/gallery" },
   logo: { prefix: "logo", blobDir: "caterer/branding" },
   venue: { prefix: "venue", blobDir: "caterer/venues" },
+  cuisine: { prefix: "cuisine", blobDir: "caterer/cuisines" },
+  // The fixed page photography — hero, About, section backdrops, share image
+  // and favicon. One folder keeps them together in the Blob store.
+  site: { prefix: "site", blobDir: "caterer/site" },
 } as const;
 
 type UploadKind = keyof typeof KINDS;

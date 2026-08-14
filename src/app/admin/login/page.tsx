@@ -88,18 +88,13 @@ function LoginForm() {
       >
         {submitting ? "Signing in…" : "Sign in to Admin"}
       </button>
-
-      <p className="rounded-md bg-zinc-800/60 px-3 py-2 text-center text-xs text-zinc-400">
-        The deployment&apos;s <span className="font-mono text-zinc-200">ADMIN_TOKEN</span>.
-        In local development without one set, any value signs in.
-      </p>
     </form>
   );
 }
 
 function LoginFormFallback() {
   return (
-    <div className="h-[19rem] rounded-2xl border border-zinc-700 bg-zinc-900/80 p-8 shadow-2xl backdrop-blur" />
+    <div className="h-[15rem] rounded-2xl border border-zinc-700 bg-zinc-900/80 p-8 shadow-2xl backdrop-blur" />
   );
 }
 

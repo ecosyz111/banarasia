@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/auth";
-import { getSettings, updateSettings } from "@/lib/caterer/store";
+import {
+  SETTINGS_IMAGE_KEYS,
+  getSettings,
+  updateSettings,
+} from "@/lib/caterer/store";
 
 export const runtime = "nodejs";
 
@@ -8,10 +12,10 @@ export const runtime = "nodejs";
 // so anything that is not a plain hex literal is rejected rather than escaped.
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
-// Same reasoning for the logo: it becomes an <img src>. Allow only same-origin
-// paths and the Blob/HTTPS URLs the upload endpoint hands back — never
-// `javascript:` or a `data:` payload.
-function isSafeLogoUrl(url: string): boolean {
+// Same reasoning for every image: each becomes an <img src> (or a <link href>
+// for the favicon). Allow only same-origin paths and the Blob/HTTPS URLs the
+// upload endpoint hands back — never `javascript:` or a `data:` payload.
+function isSafeImageUrl(url: string): boolean {
   return url.startsWith("/") || url.startsWith("https://");
 }
 
@@ -51,15 +55,18 @@ export async function PUT(req: Request) {
     const body = await req.json();
     const updateData: Record<string, unknown> = {};
 
-    if (typeof body.logoUrl === "string" && body.logoUrl.trim()) {
-      const logoUrl = body.logoUrl.trim();
-      if (!isSafeLogoUrl(logoUrl)) {
-        return NextResponse.json(
-          { error: "logoUrl must be a site-relative path or an https:// URL." },
-          { status: 400 }
-        );
+    for (const key of SETTINGS_IMAGE_KEYS) {
+      const value = body[key];
+      if (typeof value === "string" && value.trim()) {
+        const url = value.trim();
+        if (!isSafeImageUrl(url)) {
+          return NextResponse.json(
+            { error: `${key} must be a site-relative path or an https:// URL.` },
+            { status: 400 }
+          );
+        }
+        updateData[key] = url;
       }
-      updateData.logoUrl = logoUrl;
     }
 
     for (const key of ["primaryColor", "accentColor"] as const) {

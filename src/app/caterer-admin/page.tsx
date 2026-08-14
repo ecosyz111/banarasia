@@ -78,6 +78,118 @@ type CatererSettings = {
   primaryColor: string;
   accentColor: string;
   whatsappNumber: string;
+  heroImageUrl: string;
+  aboutImageUrl: string;
+  servicesBgUrl: string;
+  ctaBgUrl: string;
+  shareImageUrl: string;
+  faviconUrl: string;
+};
+
+// Every fixed picture on the public page, described once so the Branding tab
+// can render an uploader per image without eight copies of the same markup.
+type SiteImageField = {
+  key: keyof CatererSettings;
+  label: string;
+  hint: string;
+  // Roughly the aspect the image is displayed at, so the preview tile in the
+  // admin shows the same crop the visitor will get.
+  preview: "wide" | "tall" | "square";
+};
+
+const SITE_IMAGE_FIELDS: SiteImageField[] = [
+  {
+    key: "heroImageUrl",
+    label: "Hero Background",
+    hint: "Full-screen photo behind the headline. Landscape, at least 1920px wide.",
+    preview: "wide",
+  },
+  {
+    key: "aboutImageUrl",
+    label: "About Photo",
+    hint: "The tall photo beside “Our Story”, with the Established badge over it.",
+    preview: "tall",
+  },
+  {
+    key: "servicesBgUrl",
+    label: "Services Backdrop",
+    hint: "Sits behind the dark Services grid at 10% opacity.",
+    preview: "wide",
+  },
+  {
+    key: "ctaBgUrl",
+    label: "Booking Banner",
+    hint: "Backdrop of the “Make Your Celebration Memorable” band.",
+    preview: "wide",
+  },
+  {
+    key: "shareImageUrl",
+    label: "Share Preview",
+    hint: "Shown when the site link is pasted into WhatsApp or Facebook. 1200×630 works best.",
+    preview: "wide",
+  },
+  {
+    key: "faviconUrl",
+    label: "Browser Icon",
+    hint: "The little icon on the browser tab. A square PNG, 512×512.",
+    preview: "square",
+  },
+];
+
+type CatererCuisine = {
+  id: string;
+  nameEn: string;
+  nameHi: string;
+  descEn: string;
+  descHi: string;
+  imageUrl: string;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+type CatererTestimonial = {
+  id: string;
+  quoteEn: string;
+  quoteHi: string;
+  authorName: string;
+  eventEn: string;
+  eventHi: string;
+  rating: number;
+  sortOrder: number;
+  isActive: boolean;
+};
+
+type CatererHeroBadge = {
+  value: string;
+  labelEn: string;
+  labelHi: string;
+};
+
+type CatererSite = {
+  heroEyebrowEn: string;
+  heroEyebrowHi: string;
+  heroTitleLine1: string;
+  heroTitleLine2: string;
+  heroMottoEn: string;
+  heroMottoHi: string;
+  heroDescEn: string;
+  heroDescHi: string;
+  heroBadges: CatererHeroBadge[];
+  phonePrimary: string;
+  phoneSecondary: string;
+  addressEn: string;
+  addressHi: string;
+  hoursEn: string;
+  hoursHi: string;
+  mapEmbedUrl: string;
+  mapLinkUrl: string;
+  youtubeUrl: string;
+  footerDescEn: string;
+  footerDescHi: string;
+  copyrightEn: string;
+  copyrightHi: string;
+  footerTaglineEn: string;
+  footerTaglineHi: string;
 };
 
 type CatererStat = {
@@ -156,6 +268,27 @@ type GalleryFormData = {
   isActive: boolean;
 };
 
+type CuisineFormData = {
+  nameEn: string;
+  nameHi: string;
+  descEn: string;
+  descHi: string;
+  imageUrl: string;
+  sortOrder: string;
+  isActive: boolean;
+};
+
+type TestimonialFormData = {
+  quoteEn: string;
+  quoteHi: string;
+  authorName: string;
+  eventEn: string;
+  eventHi: string;
+  rating: string;
+  sortOrder: string;
+  isActive: boolean;
+};
+
 type AboutFormData = {
   storyTitleEn: string;
   storyTitleHi: string;
@@ -209,6 +342,62 @@ const DEFAULT_SETTINGS_FORM: CatererSettings = {
   primaryColor: "#ea580c",
   accentColor: "#eab308",
   whatsappNumber: "919918629017",
+  heroImageUrl: "",
+  aboutImageUrl: "",
+  servicesBgUrl: "",
+  ctaBgUrl: "",
+  shareImageUrl: "",
+  faviconUrl: "",
+};
+
+const DEFAULT_CUISINE_FORM: CuisineFormData = {
+  nameEn: "",
+  nameHi: "",
+  descEn: "",
+  descHi: "",
+  imageUrl: "",
+  sortOrder: "0",
+  isActive: true,
+};
+
+const DEFAULT_TESTIMONIAL_FORM: TestimonialFormData = {
+  quoteEn: "",
+  quoteHi: "",
+  authorName: "",
+  eventEn: "",
+  eventHi: "",
+  rating: "5",
+  sortOrder: "0",
+  isActive: true,
+};
+
+// Mirrors the server defaults. Only used until the first fetch lands, so the
+// site form never renders with undefined values in its inputs.
+const DEFAULT_SITE_FORM: CatererSite = {
+  heroEyebrowEn: "Since 2015",
+  heroEyebrowHi: "2015 से निरंतर सेवा",
+  heroTitleLine1: "Banarasia",
+  heroTitleLine2: "Buffet Art",
+  heroMottoEn: '"Jab har mehman khas ho.."',
+  heroMottoHi: '"जब हर मेहमान खास हो.."',
+  heroDescEn: "",
+  heroDescHi: "",
+  heroBadges: [],
+  phonePrimary: "",
+  phoneSecondary: "",
+  addressEn: "",
+  addressHi: "",
+  hoursEn: "",
+  hoursHi: "",
+  mapEmbedUrl: "",
+  mapLinkUrl: "",
+  youtubeUrl: "",
+  footerDescEn: "",
+  footerDescHi: "",
+  copyrightEn: "",
+  copyrightHi: "",
+  footerTaglineEn: "",
+  footerTaglineHi: "",
 };
 
 const DEFAULT_GALLERY_FORM: GalleryFormData = {
@@ -286,9 +475,16 @@ export default function CatererAdminDashboard() {
   // Auth gate status
   const [authChecked, setAuthChecked] = useState(false);
 
-  // Tabs: 'packages' | 'venues' | 'gallery' | 'leads' | 'about' | 'branding'
   const [activeTab, setActiveTab] = useState<
-    "packages" | "venues" | "gallery" | "leads" | "about" | "branding"
+    | "packages"
+    | "venues"
+    | "gallery"
+    | "cuisines"
+    | "reviews"
+    | "leads"
+    | "about"
+    | "site"
+    | "branding"
   >("packages");
 
   // Notifications
@@ -299,6 +495,8 @@ export default function CatererAdminDashboard() {
   const [gallery, setGallery] = useState<CatererGalleryItem[]>([]);
   const [venues, setVenues] = useState<CatererVenue[]>([]);
   const [leads, setLeads] = useState<CatererLead[]>([]);
+  const [cuisines, setCuisines] = useState<CatererCuisine[]>([]);
+  const [testimonials, setTestimonials] = useState<CatererTestimonial[]>([]);
 
   // Loading states
   const [loadingPackages, setLoadingPackages] = useState(false);
@@ -306,6 +504,8 @@ export default function CatererAdminDashboard() {
   const [loadingAbout, setLoadingAbout] = useState(false);
   const [loadingVenues, setLoadingVenues] = useState(false);
   const [loadingLeads, setLoadingLeads] = useState(false);
+  const [loadingCuisines, setLoadingCuisines] = useState(false);
+  const [loadingTestimonials, setLoadingTestimonials] = useState(false);
 
   // Leads — status toggle and delete confirmation
   const [updatingLeadId, setUpdatingLeadId] = useState<string | null>(null);
@@ -327,6 +527,10 @@ export default function CatererAdminDashboard() {
   const [submittingSettings, setSubmittingSettings] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const logoInputRef = useRef<HTMLInputElement>(null);
+  // Which page image is mid-upload, so only that tile shows a spinner.
+  const [uploadingSiteImage, setUploadingSiteImage] = useState<keyof CatererSettings | null>(
+    null
+  );
 
   // Modals & form state for Packages
   const [packageModalOpen, setPackageModalOpen] = useState(false);
@@ -345,6 +549,29 @@ export default function CatererAdminDashboard() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [deletingGalleryItem, setDeletingGalleryItem] = useState<CatererGalleryItem | null>(null);
   const [deletingGalleryLoading, setDeletingGalleryLoading] = useState(false);
+
+  // Modals & form state for Cuisines
+  const [cuisineModalOpen, setCuisineModalOpen] = useState(false);
+  const [editingCuisineId, setEditingCuisineId] = useState<string | null>(null);
+  const [cuisineForm, setCuisineForm] = useState<CuisineFormData>(DEFAULT_CUISINE_FORM);
+  const [submittingCuisine, setSubmittingCuisine] = useState(false);
+  const [uploadingCuisineImage, setUploadingCuisineImage] = useState(false);
+  const cuisineFileInputRef = useRef<HTMLInputElement>(null);
+  const [deletingCuisine, setDeletingCuisine] = useState<CatererCuisine | null>(null);
+  const [deletingCuisineLoading, setDeletingCuisineLoading] = useState(false);
+
+  // Modals & form state for Reviews
+  const [testimonialModalOpen, setTestimonialModalOpen] = useState(false);
+  const [editingTestimonialId, setEditingTestimonialId] = useState<string | null>(null);
+  const [testimonialForm, setTestimonialForm] =
+    useState<TestimonialFormData>(DEFAULT_TESTIMONIAL_FORM);
+  const [submittingTestimonial, setSubmittingTestimonial] = useState(false);
+  const [deletingTestimonial, setDeletingTestimonial] = useState<CatererTestimonial | null>(null);
+  const [deletingTestimonialLoading, setDeletingTestimonialLoading] = useState(false);
+
+  // Form state for Site Content
+  const [siteForm, setSiteForm] = useState<CatererSite>(DEFAULT_SITE_FORM);
+  const [submittingSite, setSubmittingSite] = useState(false);
 
   // Form state for About
   const [aboutForm, setAboutForm] = useState<AboutFormData>(DEFAULT_ABOUT_FORM);
@@ -510,6 +737,60 @@ export default function CatererAdminDashboard() {
     }
   }, [apiFetch, showToast]);
 
+  const fetchCuisines = useCallback(async () => {
+    setLoadingCuisines(true);
+    try {
+      const res = await apiFetch("/api/caterer/cuisines", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setCuisines(data.cuisines ?? []);
+      } else {
+        showToast("error", "Failed to fetch cuisines.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "Unable to load cuisines. Please try again.");
+      }
+    } finally {
+      setLoadingCuisines(false);
+    }
+  }, [apiFetch, showToast]);
+
+  const fetchTestimonials = useCallback(async () => {
+    setLoadingTestimonials(true);
+    try {
+      const res = await apiFetch("/api/caterer/testimonials", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setTestimonials(data.testimonials ?? []);
+      } else {
+        showToast("error", "Failed to fetch reviews.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "Unable to load reviews. Please try again.");
+      }
+    } finally {
+      setLoadingTestimonials(false);
+    }
+  }, [apiFetch, showToast]);
+
+  const fetchSite = useCallback(async () => {
+    try {
+      const res = await apiFetch("/api/caterer/site", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.site) {
+          setSiteForm({ ...DEFAULT_SITE_FORM, ...data.site });
+        }
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "Unable to load site content.");
+      }
+    }
+  }, [apiFetch, showToast]);
+
   const fetchSettings = useCallback(async () => {
     try {
       const res = await apiFetch("/api/caterer/settings", { cache: "no-store" });
@@ -535,6 +816,9 @@ export default function CatererAdminDashboard() {
     fetchVenues();
     fetchLeads();
     fetchSettings();
+    fetchCuisines();
+    fetchTestimonials();
+    fetchSite();
   }, [
     authChecked,
     fetchPackages,
@@ -543,6 +827,9 @@ export default function CatererAdminDashboard() {
     fetchVenues,
     fetchLeads,
     fetchSettings,
+    fetchCuisines,
+    fetchTestimonials,
+    fetchSite,
   ]);
 
   // Logout handler
@@ -1154,6 +1441,346 @@ export default function CatererAdminDashboard() {
     }
   };
 
+  // Every fixed page image shares one uploader — the field key decides which
+  // slot the returned URL is staged into.
+  const handleSiteImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    key: keyof CatererSettings
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const input = e.target;
+    setUploadingSiteImage(key);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("kind", "site");
+
+      const res = await apiFetch("/api/caterer/upload", { method: "POST", body: fd });
+      const json = await res.json().catch(() => null);
+
+      if (res.ok && json?.url) {
+        setSettingsForm((prev) => ({ ...prev, [key]: json.url }));
+        showToast("success", "Image uploaded. Press Save Branding to apply it.");
+      } else {
+        showToast("error", json?.error ?? "Failed to upload image.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "An error occurred while uploading the image.");
+      }
+    } finally {
+      setUploadingSiteImage(null);
+      input.value = "";
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Cuisine Handlers
+  // ---------------------------------------------------------------------------
+
+  const openAddCuisineModal = () => {
+    setEditingCuisineId(null);
+    setCuisineForm({
+      ...DEFAULT_CUISINE_FORM,
+      sortOrder: String(cuisines.length + 1),
+    });
+    setCuisineModalOpen(true);
+  };
+
+  const openEditCuisineModal = (cuisine: CatererCuisine) => {
+    setEditingCuisineId(cuisine.id);
+    setCuisineForm({
+      nameEn: cuisine.nameEn,
+      nameHi: cuisine.nameHi,
+      descEn: cuisine.descEn ?? "",
+      descHi: cuisine.descHi ?? "",
+      imageUrl: cuisine.imageUrl ?? "",
+      sortOrder: String(cuisine.sortOrder ?? 0),
+      isActive: cuisine.isActive ?? true,
+    });
+    setCuisineModalOpen(true);
+  };
+
+  const handleCuisineImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!allowedTypes.includes(file.type.toLowerCase())) {
+      showToast("error", "Invalid format. Only JPG, JPEG, PNG, and WebP images are allowed.");
+      if (cuisineFileInputRef.current) cuisineFileInputRef.current.value = "";
+      return;
+    }
+
+    setUploadingCuisineImage(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("kind", "cuisine");
+
+      const res = await apiFetch("/api/caterer/upload", { method: "POST", body: formData });
+      const json = await res.json().catch(() => null);
+
+      if (res.ok && json?.url) {
+        setCuisineForm((prev) => ({ ...prev, imageUrl: json.url }));
+        showToast("success", "Photo uploaded. Save the cuisine to apply it.");
+      } else {
+        showToast("error", json?.error ?? "Image upload failed.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "An error occurred while uploading the photo.");
+      }
+    } finally {
+      setUploadingCuisineImage(false);
+      if (cuisineFileInputRef.current) cuisineFileInputRef.current.value = "";
+    }
+  };
+
+  const handleCuisineSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submittingCuisine) return;
+
+    if (!cuisineForm.nameEn.trim()) {
+      showToast("error", "English name is required.");
+      return;
+    }
+    if (!cuisineForm.nameHi.trim()) {
+      showToast("error", "Hindi name is required.");
+      return;
+    }
+
+    setSubmittingCuisine(true);
+
+    const payload = {
+      nameEn: cuisineForm.nameEn.trim(),
+      nameHi: cuisineForm.nameHi.trim(),
+      descEn: cuisineForm.descEn.trim(),
+      descHi: cuisineForm.descHi.trim(),
+      imageUrl: cuisineForm.imageUrl.trim(),
+      sortOrder: parseInt(cuisineForm.sortOrder, 10) || 0,
+      isActive: cuisineForm.isActive,
+    };
+
+    try {
+      const url = editingCuisineId
+        ? `/api/caterer/cuisines/${editingCuisineId}`
+        : "/api/caterer/cuisines";
+      const res = await apiFetch(url, {
+        method: editingCuisineId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        showToast("success", editingCuisineId ? "Cuisine updated." : "Cuisine added.");
+        setCuisineModalOpen(false);
+        fetchCuisines();
+      } else {
+        const json = await res.json().catch(() => null);
+        showToast("error", json?.error ?? "Failed to save cuisine.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "An error occurred while saving the cuisine.");
+      }
+    } finally {
+      setSubmittingCuisine(false);
+    }
+  };
+
+  const handleDeleteCuisineConfirm = async () => {
+    if (!deletingCuisine || deletingCuisineLoading) return;
+    setDeletingCuisineLoading(true);
+    try {
+      const res = await apiFetch(`/api/caterer/cuisines/${deletingCuisine.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        showToast("success", "Cuisine deleted.");
+        setDeletingCuisine(null);
+        fetchCuisines();
+      } else {
+        showToast("error", "Failed to delete cuisine.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "An error occurred while deleting the cuisine.");
+      }
+    } finally {
+      setDeletingCuisineLoading(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Review Handlers
+  // ---------------------------------------------------------------------------
+
+  const openAddTestimonialModal = () => {
+    setEditingTestimonialId(null);
+    setTestimonialForm({
+      ...DEFAULT_TESTIMONIAL_FORM,
+      sortOrder: String(testimonials.length + 1),
+    });
+    setTestimonialModalOpen(true);
+  };
+
+  const openEditTestimonialModal = (item: CatererTestimonial) => {
+    setEditingTestimonialId(item.id);
+    setTestimonialForm({
+      quoteEn: item.quoteEn,
+      quoteHi: item.quoteHi ?? "",
+      authorName: item.authorName,
+      eventEn: item.eventEn ?? "",
+      eventHi: item.eventHi ?? "",
+      rating: String(item.rating ?? 5),
+      sortOrder: String(item.sortOrder ?? 0),
+      isActive: item.isActive ?? true,
+    });
+    setTestimonialModalOpen(true);
+  };
+
+  const handleTestimonialSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submittingTestimonial) return;
+
+    if (!testimonialForm.quoteEn.trim()) {
+      showToast("error", "The review text is required.");
+      return;
+    }
+    if (!testimonialForm.authorName.trim()) {
+      showToast("error", "The client name is required.");
+      return;
+    }
+
+    setSubmittingTestimonial(true);
+
+    const payload = {
+      quoteEn: testimonialForm.quoteEn.trim(),
+      quoteHi: testimonialForm.quoteHi.trim(),
+      authorName: testimonialForm.authorName.trim(),
+      eventEn: testimonialForm.eventEn.trim(),
+      eventHi: testimonialForm.eventHi.trim(),
+      rating: parseInt(testimonialForm.rating, 10) || 5,
+      sortOrder: parseInt(testimonialForm.sortOrder, 10) || 0,
+      isActive: testimonialForm.isActive,
+    };
+
+    try {
+      const url = editingTestimonialId
+        ? `/api/caterer/testimonials/${editingTestimonialId}`
+        : "/api/caterer/testimonials";
+      const res = await apiFetch(url, {
+        method: editingTestimonialId ? "PUT" : "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (res.ok) {
+        showToast("success", editingTestimonialId ? "Review updated." : "Review added.");
+        setTestimonialModalOpen(false);
+        fetchTestimonials();
+      } else {
+        const json = await res.json().catch(() => null);
+        showToast("error", json?.error ?? "Failed to save review.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "An error occurred while saving the review.");
+      }
+    } finally {
+      setSubmittingTestimonial(false);
+    }
+  };
+
+  const handleDeleteTestimonialConfirm = async () => {
+    if (!deletingTestimonial || deletingTestimonialLoading) return;
+    setDeletingTestimonialLoading(true);
+    try {
+      const res = await apiFetch(`/api/caterer/testimonials/${deletingTestimonial.id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        showToast("success", "Review deleted.");
+        setDeletingTestimonial(null);
+        fetchTestimonials();
+      } else {
+        showToast("error", "Failed to delete review.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "An error occurred while deleting the review.");
+      }
+    } finally {
+      setDeletingTestimonialLoading(false);
+    }
+  };
+
+  // ---------------------------------------------------------------------------
+  // Site Content Handlers
+  // ---------------------------------------------------------------------------
+
+  const setSiteField = (key: keyof CatererSite, value: string) => {
+    setSiteForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleBadgeChange = (
+    index: number,
+    field: keyof CatererHeroBadge,
+    value: string
+  ) => {
+    setSiteForm((prev) => {
+      const badges = [...prev.heroBadges];
+      badges[index] = { ...badges[index], [field]: value };
+      return { ...prev, heroBadges: badges };
+    });
+  };
+
+  const handleAddBadge = () => {
+    setSiteForm((prev) =>
+      prev.heroBadges.length >= 4
+        ? prev
+        : { ...prev, heroBadges: [...prev.heroBadges, { value: "", labelEn: "", labelHi: "" }] }
+    );
+  };
+
+  const handleRemoveBadge = (index: number) => {
+    setSiteForm((prev) => ({
+      ...prev,
+      heroBadges: prev.heroBadges.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleSiteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submittingSite) return;
+
+    setSubmittingSite(true);
+    try {
+      const res = await apiFetch("/api/caterer/site", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(siteForm),
+      });
+
+      if (res.ok) {
+        showToast("success", "Site content saved. Reload the public site to see it.");
+        fetchSite();
+      } else {
+        const json = await res.json().catch(() => null);
+        showToast("error", json?.error ?? "Failed to save site content.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "An error occurred while saving site content.");
+      }
+    } finally {
+      setSubmittingSite(false);
+    }
+  };
+
   // ---------------------------------------------------------------------------
   // About Handlers
   // ---------------------------------------------------------------------------
@@ -1450,6 +2077,40 @@ export default function CatererAdminDashboard() {
             </button>
 
             <button
+              onClick={() => setActiveTab("cuisines")}
+              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+                activeTab === "cuisines"
+                  ? "border-orange-600 text-orange-600"
+                  : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
+              }`}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+              </svg>
+              <span>Cuisines</span>
+              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
+                {cuisines.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("reviews")}
+              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+                activeTab === "reviews"
+                  ? "border-orange-600 text-orange-600"
+                  : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
+              }`}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.196-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.783-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+              </svg>
+              <span>Reviews</span>
+              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
+                {testimonials.length}
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveTab("leads")}
               className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
                 activeTab === "leads"
@@ -1489,6 +2150,20 @@ export default function CatererAdminDashboard() {
             </button>
 
             <button
+              onClick={() => setActiveTab("site")}
+              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+                activeTab === "site"
+                  ? "border-orange-600 text-orange-600"
+                  : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
+              }`}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h7" />
+              </svg>
+              <span>Site Content</span>
+            </button>
+
+            <button
               onClick={() => setActiveTab("branding")}
               className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
                 activeTab === "branding"
@@ -1499,7 +2174,7 @@ export default function CatererAdminDashboard() {
               <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828L11 19.172M7 17h.01" />
               </svg>
-              <span>Logo &amp; Brand</span>
+              <span>Images &amp; Brand</span>
             </button>
           </nav>
         </div>
@@ -1973,6 +2648,222 @@ export default function CatererAdminDashboard() {
                         </button>
                         <button
                           onClick={() => setDeletingGalleryItem(item)}
+                          className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ================================================================ */}
+        {/* TAB: CUISINES */}
+        {/* ================================================================ */}
+        {activeTab === "cuisines" && (
+          <section className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-[#3D2518]">Cuisine Specialization</h2>
+                <p className="text-sm text-stone-500">
+                  The photo tiles under &ldquo;Cuisine Specialization&rdquo;. Leave a tile&apos;s
+                  photo blank and it renders as the orange &ldquo;Custom Menu&rdquo; card instead.
+                </p>
+              </div>
+              <button
+                onClick={openAddCuisineModal}
+                className="flex items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-orange-600/20 transition hover:bg-orange-700 active:scale-95"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>+ Add Cuisine</span>
+              </button>
+            </div>
+
+            {loadingCuisines ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="animate-pulse rounded-2xl border border-stone-200 bg-white overflow-hidden">
+                    <div className="h-40 bg-stone-200"></div>
+                    <div className="p-4 space-y-2">
+                      <div className="h-4 w-3/4 bg-stone-100 rounded"></div>
+                      <div className="h-3 w-1/2 bg-stone-100 rounded"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : cuisines.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center">
+                <h3 className="text-base font-bold text-stone-800">No Cuisines Yet</h3>
+                <p className="mt-1 text-sm text-stone-500">
+                  The cuisine section stays empty until you add a tile.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {cuisines.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`flex flex-col justify-between overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:shadow-md ${
+                      item.isActive ? "border-stone-200" : "border-stone-200 opacity-75 bg-stone-50"
+                    }`}
+                  >
+                    <div>
+                      <div className="relative h-40 w-full overflow-hidden bg-stone-100">
+                        {item.imageUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={item.imageUrl}
+                            alt={item.nameEn}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center bg-gradient-to-br from-orange-500 to-amber-500 p-4 text-center">
+                            <span className="text-sm font-bold text-white">{item.nameEn}</span>
+                          </div>
+                        )}
+                        <div className="absolute top-3 right-3">
+                          <span
+                            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm ${
+                              item.isActive
+                                ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                                : "bg-stone-100 text-stone-600 border border-stone-200"
+                            }`}
+                          >
+                            <span
+                              className={`h-1.5 w-1.5 rounded-full ${
+                                item.isActive ? "bg-emerald-500" : "bg-stone-400"
+                              }`}
+                            />
+                            {item.isActive ? "Active" : "Hidden"}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="p-4 space-y-1">
+                        <h4 className="font-bold text-[#3D2518] text-sm">{item.nameEn}</h4>
+                        <p className="text-xs font-medium text-stone-500">{item.nameHi}</p>
+                        <p className="pt-1 text-xs text-stone-500 line-clamp-2">{item.descEn}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-stone-100 p-4 bg-stone-50/50">
+                      <span className="text-xs text-stone-400 font-mono">#{item.sortOrder}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openEditCuisineModal(item)}
+                          className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50 hover:border-stone-300"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setDeletingCuisine(item)}
+                          className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* ================================================================ */}
+        {/* TAB: REVIEWS */}
+        {/* ================================================================ */}
+        {activeTab === "reviews" && (
+          <section className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-xl font-bold text-[#3D2518]">Client Reviews</h2>
+                <p className="text-sm text-stone-500">
+                  The quotes scrolling through the Reviews band. Hide them all and the whole
+                  section drops off the page.
+                </p>
+              </div>
+              <button
+                onClick={openAddTestimonialModal}
+                className="flex items-center justify-center gap-2 rounded-xl bg-orange-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md shadow-orange-600/20 transition hover:bg-orange-700 active:scale-95"
+              >
+                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                </svg>
+                <span>+ Add Review</span>
+              </button>
+            </div>
+
+            {loadingTestimonials ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {[1, 2].map((i) => (
+                  <div key={i} className="animate-pulse rounded-2xl border border-stone-200 bg-white p-6 space-y-3">
+                    <div className="h-3 w-24 bg-stone-200 rounded"></div>
+                    <div className="h-4 w-full bg-stone-100 rounded"></div>
+                    <div className="h-4 w-2/3 bg-stone-100 rounded"></div>
+                  </div>
+                ))}
+              </div>
+            ) : testimonials.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-stone-300 bg-white p-12 text-center">
+                <h3 className="text-base font-bold text-stone-800">No Reviews Yet</h3>
+                <p className="mt-1 text-sm text-stone-500">
+                  Add a client quote and the Reviews section appears on the public site.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {testimonials.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`flex flex-col justify-between rounded-2xl border bg-white p-6 shadow-sm transition hover:shadow-md ${
+                      item.isActive ? "border-stone-200" : "border-stone-200 opacity-75 bg-stone-50"
+                    }`}
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-start justify-between gap-3">
+                        <span className="text-sm tracking-wider text-amber-500">
+                          {"★".repeat(Math.min(5, Math.max(1, item.rating || 5)))}
+                        </span>
+                        <span
+                          className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold ${
+                            item.isActive
+                              ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                              : "bg-stone-100 text-stone-600 border border-stone-200"
+                          }`}
+                        >
+                          {item.isActive ? "Active" : "Hidden"}
+                        </span>
+                      </div>
+                      <p className="text-sm leading-relaxed text-stone-700">{item.quoteEn}</p>
+                      {item.quoteHi && (
+                        <p className="text-xs leading-relaxed text-stone-500">{item.quoteHi}</p>
+                      )}
+                      <div className="pt-1">
+                        <p className="text-sm font-bold text-[#3D2518]">{item.authorName}</p>
+                        {item.eventEn && (
+                          <p className="text-xs font-medium text-orange-600">{item.eventEn}</p>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="mt-5 flex items-center justify-between border-t border-stone-100 pt-4">
+                      <span className="text-xs text-stone-400 font-mono">#{item.sortOrder}</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => openEditTestimonialModal(item)}
+                          className="rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 shadow-sm transition hover:bg-stone-50 hover:border-stone-300"
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => setDeletingTestimonial(item)}
                           className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-1.5 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
                         >
                           Delete
@@ -2518,12 +3409,400 @@ export default function CatererAdminDashboard() {
         {/* ================================================================ */}
         {/* TAB: LOGO & BRAND */}
         {/* ================================================================ */}
+        {/* ================================================================ */}
+        {/* TAB: SITE CONTENT */}
+        {/* ================================================================ */}
+        {activeTab === "site" && (
+          <section className="space-y-6">
+            <div>
+              <h2 className="text-xl font-bold text-[#3D2518]">Site Content</h2>
+              <p className="text-sm text-stone-500">
+                The headline visitors land on, the contact details every enquiry depends on, and
+                the footer. Hindi is optional everywhere — a blank Hindi field falls back to the
+                English one.
+              </p>
+            </div>
+
+            <form onSubmit={handleSiteSubmit} className="space-y-8">
+              {/* Hero */}
+              <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm space-y-5">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-stone-500">
+                  Hero Section
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Headline — first line
+                    </label>
+                    <input
+                      type="text"
+                      value={siteForm.heroTitleLine1}
+                      onChange={(e) => setSiteField("heroTitleLine1", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="Banarasia"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Headline — second line
+                    </label>
+                    <input
+                      type="text"
+                      value={siteForm.heroTitleLine2}
+                      onChange={(e) => setSiteField("heroTitleLine2", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="Buffet Art"
+                    />
+                    <p className="mt-1 text-xs text-stone-500">Shown in the brand gradient.</p>
+                  </div>
+                </div>
+
+                {(
+                  [
+                    { en: "heroEyebrowEn", hi: "heroEyebrowHi", label: "Small line above the headline" },
+                    { en: "heroMottoEn", hi: "heroMottoHi", label: "Motto" },
+                  ] as const
+                ).map((row) => (
+                  <div key={row.en} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                        {row.label} (EN)
+                      </label>
+                      <input
+                        type="text"
+                        value={siteForm[row.en]}
+                        onChange={(e) => setSiteField(row.en, e.target.value)}
+                        className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                        {row.label} (HI)
+                      </label>
+                      <input
+                        type="text"
+                        value={siteForm[row.hi]}
+                        onChange={(e) => setSiteField(row.hi, e.target.value)}
+                        className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
+                  </div>
+                ))}
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Intro paragraph (EN)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={siteForm.heroDescEn}
+                      onChange={(e) => setSiteField("heroDescEn", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Intro paragraph (HI)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={siteForm.heroDescHi}
+                      onChange={(e) => setSiteField("heroDescHi", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    />
+                  </div>
+                </div>
+
+                {/* Hero badges */}
+                <div className="rounded-xl border border-stone-100 bg-[#FAF8F5] p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Highlight Tiles
+                    </p>
+                    {siteForm.heroBadges.length < 4 && (
+                      <button
+                        type="button"
+                        onClick={handleAddBadge}
+                        className="rounded-lg border border-stone-200 bg-white px-3 py-1 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+                      >
+                        + Add tile
+                      </button>
+                    )}
+                  </div>
+                  <p className="text-xs text-stone-500">
+                    The four glass cards under the hero buttons. Four is the most the row fits.
+                  </p>
+                  {siteForm.heroBadges.map((badge, i) => (
+                    <div key={i} className="flex flex-col sm:flex-row gap-2">
+                      <input
+                        type="text"
+                        value={badge.value}
+                        onChange={(e) => handleBadgeChange(i, "value", e.target.value)}
+                        className="w-full sm:w-28 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+                        placeholder="10+"
+                      />
+                      <input
+                        type="text"
+                        value={badge.labelEn}
+                        onChange={(e) => handleBadgeChange(i, "labelEn", e.target.value)}
+                        className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+                        placeholder="Years Experience"
+                      />
+                      <input
+                        type="text"
+                        value={badge.labelHi}
+                        onChange={(e) => handleBadgeChange(i, "labelHi", e.target.value)}
+                        className="flex-1 rounded-lg border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none"
+                        placeholder="वर्षों का अनुभव"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveBadge(i)}
+                        className="rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 hover:bg-rose-100"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Contact */}
+              <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm space-y-5">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-stone-500">
+                  Contact Details
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Phone — primary
+                    </label>
+                    <input
+                      type="tel"
+                      value={siteForm.phonePrimary}
+                      onChange={(e) => setSiteField("phonePrimary", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 font-mono text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="9918629017"
+                    />
+                    <p className="mt-1 text-xs text-stone-500">
+                      Also the number the &ldquo;Call Now&rdquo; button dials.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Phone — second line
+                    </label>
+                    <input
+                      type="tel"
+                      value={siteForm.phoneSecondary}
+                      onChange={(e) => setSiteField("phoneSecondary", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 font-mono text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="9918359017"
+                    />
+                    <p className="mt-1 text-xs text-stone-500">
+                      Leave blank to show one number only.
+                    </p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Address (EN)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={siteForm.addressEn}
+                      onChange={(e) => setSiteField("addressEn", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Address (HI)
+                    </label>
+                    <textarea
+                      rows={2}
+                      value={siteForm.addressHi}
+                      onChange={(e) => setSiteField("addressHi", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Business hours (EN)
+                    </label>
+                    <input
+                      type="text"
+                      value={siteForm.hoursEn}
+                      onChange={(e) => setSiteField("hoursEn", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="10 AM – 7 PM (All Days)"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Business hours (HI)
+                    </label>
+                    <input
+                      type="text"
+                      value={siteForm.hoursHi}
+                      onChange={(e) => setSiteField("hoursHi", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      YouTube channel
+                    </label>
+                    <input
+                      type="url"
+                      value={siteForm.youtubeUrl}
+                      onChange={(e) => setSiteField("youtubeUrl", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="https://youtube.com/@yourchannel"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Google Maps link
+                    </label>
+                    <input
+                      type="url"
+                      value={siteForm.mapLinkUrl}
+                      onChange={(e) => setSiteField("mapLinkUrl", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="https://maps.app.goo.gl/…"
+                    />
+                    <p className="mt-1 text-xs text-stone-500">
+                      Opens when a visitor taps the Maps button.
+                    </p>
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Map embed URL
+                    </label>
+                    <input
+                      type="url"
+                      value={siteForm.mapEmbedUrl}
+                      onChange={(e) => setSiteField("mapEmbedUrl", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 font-mono text-xs focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="https://www.google.com/maps/embed?pb=…"
+                    />
+                    <p className="mt-1 text-xs text-stone-500">
+                      The map shown on the contact page. In Google Maps choose Share → Embed a map
+                      and paste the address from the <code>src=&quot;…&quot;</code> part.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm space-y-5">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-stone-500">
+                  Footer
+                </h3>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      About blurb (EN)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={siteForm.footerDescEn}
+                      onChange={(e) => setSiteField("footerDescEn", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      About blurb (HI)
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={siteForm.footerDescHi}
+                      onChange={(e) => setSiteField("footerDescHi", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    />
+                  </div>
+                </div>
+
+                {(
+                  [
+                    { en: "copyrightEn", hi: "copyrightHi", label: "Copyright line" },
+                    { en: "footerTaglineEn", hi: "footerTaglineHi", label: "Tagline under it" },
+                  ] as const
+                ).map((row) => (
+                  <div key={row.en} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                        {row.label} (EN)
+                      </label>
+                      <input
+                        type="text"
+                        value={siteForm[row.en]}
+                        onChange={(e) => setSiteField(row.en, e.target.value)}
+                        className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                        {row.label} (HI)
+                      </label>
+                      <input
+                        type="text"
+                        value={siteForm[row.hi]}
+                        onChange={(e) => setSiteField(row.hi, e.target.value)}
+                        className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex justify-end">
+                <button
+                  type="submit"
+                  disabled={submittingSite}
+                  className="flex items-center gap-2 rounded-xl bg-orange-600 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-orange-600/20 transition hover:bg-orange-700 active:scale-95 disabled:opacity-60"
+                >
+                  {submittingSite ? (
+                    <>
+                      <svg className="h-4 w-4 animate-spin text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      <span>Saving…</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Save Site Content</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </section>
+        )}
+
         {activeTab === "branding" && (
           <section className="space-y-6">
             <div>
-              <h2 className="text-xl font-bold text-[#3D2518]">Logo &amp; Brand Colours</h2>
+              <h2 className="text-xl font-bold text-[#3D2518]">Images, Logo &amp; Brand Colours</h2>
               <p className="text-sm text-stone-500">
-                Replace the logo and set the two colours the public site derives its accents from.
+                Every fixed picture on the site, the logo, and the two colours the public page
+                derives its accents from. Photos inside the Gallery, Venues and Cuisines sections
+                are managed on their own tabs.
               </p>
             </div>
 
@@ -2577,6 +3856,79 @@ export default function CatererAdminDashboard() {
                       />
                     </div>
                   </div>
+                </div>
+              </div>
+
+              {/* Page photography */}
+              <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm space-y-5">
+                <div>
+                  <h3 className="text-sm font-bold uppercase tracking-wider text-stone-500">
+                    Page Images
+                  </h3>
+                  <p className="mt-1 text-xs text-stone-500">
+                    Uploading stages a file — press <strong>Save Branding</strong> to make it live.
+                    You can also paste an image address instead of uploading.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  {SITE_IMAGE_FIELDS.map((field) => {
+                    const value = String(settingsForm[field.key] ?? "");
+                    return (
+                      <div
+                        key={field.key}
+                        className="rounded-xl border border-stone-100 bg-[#FAF8F5] p-4 space-y-3"
+                      >
+                        <div>
+                          <p className="text-sm font-bold text-[#3D2518]">{field.label}</p>
+                          <p className="mt-0.5 text-xs text-stone-500">{field.hint}</p>
+                        </div>
+
+                        <div
+                          className={`overflow-hidden rounded-lg border border-stone-200 bg-white ${
+                            field.preview === "wide"
+                              ? "aspect-[16/9]"
+                              : field.preview === "tall"
+                                ? "aspect-[4/5] max-w-[160px]"
+                                : "aspect-square max-w-[96px]"
+                          }`}
+                        >
+                          {value ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={value}
+                              alt={field.label}
+                              className="h-full w-full object-contain"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full items-center justify-center text-xs text-stone-400">
+                              No image
+                            </div>
+                          )}
+                        </div>
+
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/jpg,image/png,image/webp"
+                          onChange={(e) => handleSiteImageUpload(e, field.key)}
+                          className="block w-full text-xs text-stone-600 file:mr-3 file:rounded-lg file:border-0 file:bg-orange-600 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-orange-700"
+                        />
+                        {uploadingSiteImage === field.key && (
+                          <p className="text-xs font-semibold text-orange-600">Uploading…</p>
+                        )}
+
+                        <input
+                          type="text"
+                          value={value}
+                          onChange={(e) =>
+                            setSettingsForm((prev) => ({ ...prev, [field.key]: e.target.value }))
+                          }
+                          className="w-full rounded-lg border border-stone-200 px-3 py-2 font-mono text-xs focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                          placeholder="https://… or /uploads/…"
+                        />
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
 
@@ -3587,6 +4939,465 @@ export default function CatererAdminDashboard() {
                 className="rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700 disabled:opacity-60"
               >
                 {deletingGalleryLoading ? "Deleting..." : "Yes, Delete Item"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* MODAL: ADD / EDIT CUISINE */}
+      {/* ==================================================================== */}
+      {cuisineModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-stone-900/60 p-4 backdrop-blur-sm">
+          <form
+            onSubmit={handleCuisineSubmit}
+            className="my-8 w-full max-w-2xl space-y-5 rounded-2xl bg-white p-6 shadow-2xl"
+          >
+            <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+              <h3 className="text-lg font-bold text-[#3D2518]">
+                {editingCuisineId ? "Edit Cuisine" : "Add Cuisine"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setCuisineModalOpen(false)}
+                className="rounded-lg p-1.5 text-stone-400 transition hover:bg-stone-100 hover:text-stone-600"
+                aria-label="Close"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div className="space-y-3 rounded-2xl border border-stone-200 bg-[#FAF8F5] p-4">
+              <label className="block text-xs font-bold uppercase tracking-wider text-stone-700">
+                Cuisine Photo
+              </label>
+
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
+                <div className="relative h-28 w-full flex-shrink-0 overflow-hidden rounded-xl border border-stone-200 bg-stone-100 sm:w-44">
+                  {cuisineForm.imageUrl.trim() ? (
+                    <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={cuisineForm.imageUrl.trim()}
+                        alt="Cuisine preview"
+                        className="h-full w-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.opacity = "0";
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setCuisineForm({ ...cuisineForm, imageUrl: "" })}
+                        className="absolute right-1.5 top-1.5 rounded-lg bg-white/90 px-2 py-1 text-[10px] font-bold text-rose-600 shadow-sm transition hover:bg-white"
+                      >
+                        Remove
+                      </button>
+                    </>
+                  ) : (
+                    <div className="flex h-full w-full flex-col items-center justify-center gap-1 bg-gradient-to-br from-orange-500 to-amber-500 text-white">
+                      <span className="px-2 text-center text-[10px] font-bold uppercase tracking-wider">
+                        Gradient card
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="file"
+                    ref={cuisineFileInputRef}
+                    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+                    onChange={handleCuisineImageUpload}
+                    className="hidden"
+                    id="caterer-cuisine-file-input"
+                    disabled={uploadingCuisineImage || submittingCuisine}
+                  />
+                  <label
+                    htmlFor="caterer-cuisine-file-input"
+                    className={`flex items-center justify-center gap-2.5 rounded-xl border-2 border-dashed border-stone-300 bg-white px-4 py-3 text-xs font-bold text-stone-700 transition hover:border-orange-500 hover:bg-orange-50/50 ${
+                      uploadingCuisineImage || submittingCuisine
+                        ? "cursor-not-allowed opacity-60"
+                        : "cursor-pointer"
+                    }`}
+                  >
+                    {uploadingCuisineImage ? (
+                      <>
+                        <svg className="h-4 w-4 animate-spin text-orange-600" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                        <span className="font-bold text-orange-600">Uploading Photo…</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="h-5 w-5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span>Choose File from Device (JPG, PNG, WebP)</span>
+                      </>
+                    )}
+                  </label>
+
+                  <input
+                    type="text"
+                    placeholder="Or paste a URL / path — https://… or /uploads/caterer/…"
+                    value={cuisineForm.imageUrl}
+                    onChange={(e) => setCuisineForm({ ...cuisineForm, imageUrl: e.target.value })}
+                    disabled={uploadingCuisineImage || submittingCuisine}
+                    className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:opacity-60"
+                  />
+                  <p className="text-[11px] text-stone-500">
+                    Optional. With no photo the tile renders as the orange gradient card that
+                    closes the grid.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                  Name (English) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="North Indian"
+                  value={cuisineForm.nameEn}
+                  onChange={(e) => setCuisineForm({ ...cuisineForm, nameEn: e.target.value })}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                  Name (Hindi) *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="नॉर्थ इंडियन"
+                  value={cuisineForm.nameHi}
+                  onChange={(e) => setCuisineForm({ ...cuisineForm, nameHi: e.target.value })}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                  Description (English)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Rich curries &amp; tandoor specials"
+                  value={cuisineForm.descEn}
+                  onChange={(e) => setCuisineForm({ ...cuisineForm, descEn: e.target.value })}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                  Description (Hindi)
+                </label>
+                <input
+                  type="text"
+                  placeholder="स्वादिष्ट ग्रेवी और तंदूर स्पेशल"
+                  value={cuisineForm.descHi}
+                  onChange={(e) => setCuisineForm({ ...cuisineForm, descHi: e.target.value })}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                  Display Order
+                </label>
+                <input
+                  type="number"
+                  value={cuisineForm.sortOrder}
+                  onChange={(e) => setCuisineForm({ ...cuisineForm, sortOrder: e.target.value })}
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
+              </div>
+              <label className="flex items-end gap-2 pb-2 text-sm font-medium text-stone-700">
+                <input
+                  type="checkbox"
+                  checked={cuisineForm.isActive}
+                  onChange={(e) => setCuisineForm({ ...cuisineForm, isActive: e.target.checked })}
+                  className="h-4 w-4 rounded border-stone-300 text-orange-600 focus:ring-orange-500"
+                />
+                <span>Show on the public site</span>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-stone-100 pt-4">
+              <button
+                type="button"
+                onClick={() => setCuisineModalOpen(false)}
+                className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submittingCuisine || uploadingCuisineImage}
+                className="rounded-xl bg-orange-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-600/20 transition hover:bg-orange-700 disabled:opacity-60"
+              >
+                {submittingCuisine ? "Saving…" : editingCuisineId ? "Save Changes" : "Add Cuisine"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* MODAL: ADD / EDIT REVIEW */}
+      {/* ==================================================================== */}
+      {testimonialModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-stone-900/60 p-4 backdrop-blur-sm">
+          <form
+            onSubmit={handleTestimonialSubmit}
+            className="my-8 w-full max-w-2xl space-y-5 rounded-2xl bg-white p-6 shadow-2xl"
+          >
+            <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+              <h3 className="text-lg font-bold text-[#3D2518]">
+                {editingTestimonialId ? "Edit Review" : "Add Review"}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setTestimonialModalOpen(false)}
+                className="rounded-lg p-1.5 text-stone-400 transition hover:bg-stone-100 hover:text-stone-600"
+                aria-label="Close"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                Review (English) *
+              </label>
+              <textarea
+                required
+                rows={3}
+                placeholder="&quot;Amazing taste and professional service…&quot;"
+                value={testimonialForm.quoteEn}
+                onChange={(e) =>
+                  setTestimonialForm({ ...testimonialForm, quoteEn: e.target.value })
+                }
+                className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+              />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                Review (Hindi)
+              </label>
+              <textarea
+                rows={3}
+                value={testimonialForm.quoteHi}
+                onChange={(e) =>
+                  setTestimonialForm({ ...testimonialForm, quoteHi: e.target.value })
+                }
+                className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+              />
+              <p className="mt-1 text-[11px] text-stone-500">
+                Leave blank and Hindi visitors see the English review.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                  Client Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Rajesh Gupta"
+                  value={testimonialForm.authorName}
+                  onChange={(e) =>
+                    setTestimonialForm({ ...testimonialForm, authorName: e.target.value })
+                  }
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
+                <p className="mt-1 text-[11px] text-stone-500">
+                  The first letter becomes the round avatar.
+                </p>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                  Stars
+                </label>
+                <select
+                  value={testimonialForm.rating}
+                  onChange={(e) =>
+                    setTestimonialForm({ ...testimonialForm, rating: e.target.value })
+                  }
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                >
+                  {[5, 4, 3, 2, 1].map((n) => (
+                    <option key={n} value={String(n)}>
+                      {"★".repeat(n)} ({n})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                  Event (English)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Wedding, 2024"
+                  value={testimonialForm.eventEn}
+                  onChange={(e) =>
+                    setTestimonialForm({ ...testimonialForm, eventEn: e.target.value })
+                  }
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                  Event (Hindi)
+                </label>
+                <input
+                  type="text"
+                  placeholder="विवाह, 2024"
+                  value={testimonialForm.eventHi}
+                  onChange={(e) =>
+                    setTestimonialForm({ ...testimonialForm, eventHi: e.target.value })
+                  }
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-700">
+                  Display Order
+                </label>
+                <input
+                  type="number"
+                  value={testimonialForm.sortOrder}
+                  onChange={(e) =>
+                    setTestimonialForm({ ...testimonialForm, sortOrder: e.target.value })
+                  }
+                  className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20"
+                />
+              </div>
+              <label className="flex items-end gap-2 pb-2 text-sm font-medium text-stone-700">
+                <input
+                  type="checkbox"
+                  checked={testimonialForm.isActive}
+                  onChange={(e) =>
+                    setTestimonialForm({ ...testimonialForm, isActive: e.target.checked })
+                  }
+                  className="h-4 w-4 rounded border-stone-300 text-orange-600 focus:ring-orange-500"
+                />
+                <span>Show on the public site</span>
+              </label>
+            </div>
+
+            <div className="flex items-center justify-end gap-3 border-t border-stone-100 pt-4">
+              <button
+                type="button"
+                onClick={() => setTestimonialModalOpen(false)}
+                className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submittingTestimonial}
+                className="rounded-xl bg-orange-600 px-5 py-2.5 text-xs font-bold text-white shadow-md shadow-orange-600/20 transition hover:bg-orange-700 disabled:opacity-60"
+              >
+                {submittingTestimonial
+                  ? "Saving…"
+                  : editingTestimonialId
+                    ? "Save Changes"
+                    : "Add Review"}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* CONFIRMATION DIALOG: DELETE CUISINE */}
+      {/* ==================================================================== */}
+      {deletingCuisine && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-stone-900">Delete Cuisine?</h3>
+            </div>
+            <p className="text-sm text-stone-600">
+              Remove <strong className="text-stone-900">{deletingCuisine.nameEn}</strong> from the
+              cuisine grid? To take it off the site temporarily, edit it and untick &ldquo;Show on
+              the public site&rdquo; instead.
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingCuisine(null)}
+                disabled={deletingCuisineLoading}
+                className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteCuisineConfirm}
+                disabled={deletingCuisineLoading}
+                className="rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700 disabled:opacity-60"
+              >
+                {deletingCuisineLoading ? "Deleting…" : "Yes, Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ==================================================================== */}
+      {/* CONFIRMATION DIALOG: DELETE REVIEW */}
+      {/* ==================================================================== */}
+      {deletingTestimonial && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-4">
+            <div className="flex items-center gap-3 text-rose-600">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100">
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-stone-900">Delete Review?</h3>
+            </div>
+            <p className="text-sm text-stone-600">
+              Delete the review from{" "}
+              <strong className="text-stone-900">{deletingTestimonial.authorName}</strong>?
+            </p>
+            <div className="flex items-center justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setDeletingTestimonial(null)}
+                disabled={deletingTestimonialLoading}
+                className="rounded-xl border border-stone-200 bg-white px-4 py-2.5 text-xs font-semibold text-stone-700 hover:bg-stone-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteTestimonialConfirm}
+                disabled={deletingTestimonialLoading}
+                className="rounded-xl bg-rose-600 px-4 py-2.5 text-xs font-bold text-white shadow-md shadow-rose-600/20 transition hover:bg-rose-700 disabled:opacity-60"
+              >
+                {deletingTestimonialLoading ? "Deleting…" : "Yes, Delete"}
               </button>
             </div>
           </div>

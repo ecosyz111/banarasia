@@ -62,13 +62,112 @@ export type CatererVenue = {
 };
 
 // Branding the owner can change without a deploy: the logo swap, the two
-// colours the public page derives every accent from, and the WhatsApp line
-// every wa.me link on the site points at (stored with country code, no "+").
+// colours the public page derives every accent from, the WhatsApp line every
+// wa.me link on the site points at (stored with country code, no "+"), and the
+// fixed page photography — every image on the public site that is not part of
+// a collection (gallery, venues, cuisines) lives here, so nothing on the page
+// needs a code edit to change.
 export type CatererSettings = {
   logoUrl: string;
   primaryColor: string;
   accentColor: string;
   whatsappNumber: string;
+  heroImageUrl: string;
+  aboutImageUrl: string;
+  servicesBgUrl: string;
+  ctaBgUrl: string;
+  // What WhatsApp/Facebook show when the link is pasted, and the browser-tab
+  // icon. Neither is visible on the page itself, so they are easy to forget —
+  // they sit alongside the rest so one screen covers every image.
+  shareImageUrl: string;
+  faviconUrl: string;
+  updatedAt?: string;
+};
+
+// The image keys above, listed once so validation, normalisation and the admin
+// form all agree on what counts as a settings image.
+export const SETTINGS_IMAGE_KEYS = [
+  "logoUrl",
+  "heroImageUrl",
+  "aboutImageUrl",
+  "servicesBgUrl",
+  "ctaBgUrl",
+  "shareImageUrl",
+  "faviconUrl",
+] as const;
+
+export type SettingsImageKey = (typeof SETTINGS_IMAGE_KEYS)[number];
+
+// A cuisine tile in the "Cuisine Specialization" grid. An empty imageUrl is
+// meaningful rather than missing: it renders the gradient "Custom Menu" card
+// the page has always ended the grid with.
+export type CatererCuisine = {
+  id: string;
+  nameEn: string;
+  nameHi: string;
+  descEn: string;
+  descHi: string;
+  imageUrl: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type CatererTestimonial = {
+  id: string;
+  quoteEn: string;
+  quoteHi: string;
+  authorName: string;
+  eventEn: string;
+  eventHi: string;
+  // Star count, 1–5. Rendered as filled stars, so anything outside that range
+  // is clamped rather than rejected.
+  rating: number;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+export type CatererHeroBadge = {
+  value: string;
+  labelEn: string;
+  labelHi: string;
+};
+
+// Copy that used to be frozen in the HTML: the hero the visitor lands on, the
+// contact details every enquiry route depends on, and the footer. Contact
+// details in particular go stale (a new number, a moved kitchen) and must never
+// need a deploy to fix.
+export type CatererSite = {
+  heroEyebrowEn: string;
+  heroEyebrowHi: string;
+  // The headline renders as two lines, the second in the brand gradient.
+  heroTitleLine1: string;
+  heroTitleLine2: string;
+  heroMottoEn: string;
+  heroMottoHi: string;
+  heroDescEn: string;
+  heroDescHi: string;
+  heroBadges: CatererHeroBadge[];
+  phonePrimary: string;
+  phoneSecondary: string;
+  addressEn: string;
+  addressHi: string;
+  hoursEn: string;
+  hoursHi: string;
+  // Google Maps `/maps/embed` src for the contact iframe, and the share link
+  // the Maps buttons open. They are different URLs for the same place.
+  mapEmbedUrl: string;
+  mapLinkUrl: string;
+  youtubeUrl: string;
+  footerDescEn: string;
+  footerDescHi: string;
+  copyrightEn: string;
+  copyrightHi: string;
+  footerTaglineEn: string;
+  footerTaglineHi: string;
   updatedAt?: string;
 };
 
@@ -139,9 +238,12 @@ export type CatererStoreData = {
   packages: CatererPackage[];
   gallery: CatererGalleryItem[];
   venues: CatererVenue[];
+  cuisines: CatererCuisine[];
+  testimonials: CatererTestimonial[];
   leads: CatererLead[];
   about: CatererAbout;
   settings: CatererSettings;
+  site: CatererSite;
 };
 
 export const DEFAULT_SETTINGS: CatererSettings = {
@@ -149,6 +251,54 @@ export const DEFAULT_SETTINGS: CatererSettings = {
   primaryColor: "#ea580c",
   accentColor: "#eab308",
   whatsappNumber: "919918629017",
+  heroImageUrl:
+    "https://images.unsplash.com/photo-1555244162-803834f70033?w=1920&q=80",
+  aboutImageUrl:
+    "https://images.unsplash.com/photo-1567521464027-f127ff144326?w=800&q=80",
+  servicesBgUrl:
+    "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1920&q=60",
+  ctaBgUrl:
+    "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1920&q=80",
+  shareImageUrl:
+    "https://images.unsplash.com/photo-1555244162-803834f70033?w=1200&q=80",
+  faviconUrl: "/sample-caterer/favicon-512.png",
+};
+
+export const DEFAULT_SITE: CatererSite = {
+  heroEyebrowEn: "Since 2015",
+  heroEyebrowHi: "2015 से निरंतर सेवा",
+  heroTitleLine1: "Banarasia",
+  heroTitleLine2: "Buffet Art",
+  heroMottoEn: '"Jab har mehman khas ho.."',
+  heroMottoHi: '"जब हर मेहमान खास हो.."',
+  heroDescEn:
+    "Premium catering experiences crafted with authentic taste, elegant presentation, and heartfelt hospitality.",
+  heroDescHi:
+    "स्वादिष्ट व्यंजन, भव्य प्रस्तुति और आदर-सत्कार के साथ तैयार किया गया प्रीमियम कैटरिंग अनुभव।",
+  heroBadges: [
+    { value: "10+", labelEn: "Years Experience", labelHi: "वर्षों का अनुभव" },
+    { value: "10K+", labelEn: "Guests Served", labelHi: "मेहमानों की सेवा" },
+    { value: "Pure", labelEn: "Veg & Jain", labelHi: "शुद्ध शाकाहारी व जैन" },
+    { value: "Premium", labelEn: "Wedding Catering", labelHi: "वेडिंग कैटरिंग" },
+  ],
+  phonePrimary: "9918629017",
+  phoneSecondary: "9918359017",
+  addressEn: "Lane No. 7, Vidvan Khand, Gomti Nagar, Lucknow",
+  addressHi: "लेन नं. 7, विद्वान खंड, गोमती नगर, लखनऊ",
+  hoursEn: "10 AM – 7 PM (All Days)",
+  hoursHi: "सुबह 10 बजे से शाम 7 बजे तक (सभी दिन)",
+  mapEmbedUrl:
+    "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3559.5!2d80.99!3d26.85!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjbCsDUxJzAwLjAiTiA4MMKwNTknMjQuMCJF!5e0!3m2!1sen!2sin!4v1",
+  mapLinkUrl: "https://share.google/A5emKWy8iuQEcngAX",
+  youtubeUrl: "https://youtube.com/@banarasiabuffetart?si=toOrkdaRR2pTff9F",
+  footerDescEn:
+    "Premium catering services in Lucknow since 2015. Making every celebration a grand feast with authentic flavors and elegant presentation.",
+  footerDescHi:
+    "2015 से लखनऊ में प्रीमियम कैटरिंग सेवाएं। प्रामाणिक स्वाद और शानदार प्रस्तुति के साथ हर उत्सव को दावत बनाना।",
+  copyrightEn: "© 2025 Banarasia Buffet Art. All rights reserved.",
+  copyrightHi: "© 2025 बनारसिया बफे आर्ट। सर्वाधिकार सुरक्षित।",
+  footerTaglineEn: "Premium Wedding Caterer in Lucknow",
+  footerTaglineHi: "लखनऊ में प्रीमियम वेडिंग कैटरर",
 };
 
 // ---------------------------------------------------------------------------
@@ -342,8 +492,139 @@ const INITIAL_DEFAULTS: CatererStoreData = {
       isActive: true,
     },
   ],
+  cuisines: [
+    {
+      id: "cui-north-indian",
+      nameEn: "North Indian",
+      nameHi: "नॉर्थ इंडियन",
+      descEn: "Rich curries & tandoor specials",
+      descHi: "स्वादिष्ट ग्रेवी और तंदूर स्पेशल",
+      imageUrl: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&q=80",
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      id: "cui-south-indian",
+      nameEn: "South Indian",
+      nameHi: "साउथ इंडियन",
+      descEn: "Authentic dosas & idlis",
+      descHi: "प्रामाणिक डोसा और इडली",
+      imageUrl: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400&q=80",
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      id: "cui-chinese",
+      nameEn: "Chinese",
+      nameHi: "चाइनीज",
+      descEn: "Indo-Chinese favorites",
+      descHi: "इंडो-चाइनीज पसंदीदा व्यंजन",
+      imageUrl: "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400&q=80",
+      sortOrder: 3,
+      isActive: true,
+    },
+    {
+      id: "cui-continental",
+      nameEn: "Continental",
+      nameHi: "कॉन्टिनेंटल",
+      descEn: "Elegant international flavors",
+      descHi: "अंतर्राष्ट्रीय स्वाद",
+      imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80",
+      sortOrder: 4,
+      isActive: true,
+    },
+    {
+      id: "cui-mughlai",
+      nameEn: "Mughlai",
+      nameHi: "मुगलई",
+      descEn: "Royal Mughlai delicacies",
+      descHi: "शाही मुगलई पकवान",
+      imageUrl: "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=400&q=80",
+      sortOrder: 5,
+      isActive: true,
+    },
+    {
+      id: "cui-punjabi",
+      nameEn: "Punjabi",
+      nameHi: "पंजाबी",
+      descEn: "Hearty Punjabi tadka",
+      descHi: "चटपटा पंजाबी तड़का",
+      imageUrl: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400&q=80",
+      sortOrder: 6,
+      isActive: true,
+    },
+    {
+      id: "cui-bengali",
+      nameEn: "Bengali",
+      nameHi: "बंगाली",
+      descEn: "Sweet & savory classics",
+      descHi: "मीठे और नमकीन पारंपरिक व्यंजन",
+      imageUrl: "https://images.unsplash.com/photo-1567337710282-00832b415979?w=400&q=80",
+      sortOrder: 7,
+      isActive: true,
+    },
+    {
+      // No photo on purpose — this is the gradient card that closes the grid.
+      id: "cui-custom",
+      nameEn: "Custom Menu",
+      nameHi: "कस्टम मेनू",
+      descEn: "Aapki pasand, humari peshkash",
+      descHi: "आपकी पसंद, हमारी पेशकश",
+      imageUrl: "",
+      sortOrder: 8,
+      isActive: true,
+    },
+  ],
+  testimonials: [
+    {
+      id: "rev-1",
+      quoteEn: '"Amazing taste and professional service. Our wedding guests were truly impressed!"',
+      quoteHi: '"अद्भुत स्वाद और बेहतरीन सर्विस। शादी के सभी मेहमान प्रभावित हुए!"',
+      authorName: "Rajesh Gupta",
+      eventEn: "Wedding, 2024",
+      eventHi: "विवाह, 2024",
+      rating: 5,
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      id: "rev-2",
+      quoteEn: '"Guests loved the buffet presentation. Best catering in Lucknow!"',
+      quoteHi: '"मेहमानों को बफे सेटअप बहुत पसंद आया। लखनऊ में सबसे बेहतरीन कैटरिंग!"',
+      authorName: "Priya Sharma",
+      eventEn: "Engagement, 2024",
+      eventHi: "सगाई, 2024",
+      rating: 5,
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      id: "rev-3",
+      quoteEn: '"Perfect catering for our wedding. Sab kuch ekdum first class tha!"',
+      quoteHi: '"हमारी शादी के लिए एकदम सही कैटरिंग। सब कुछ फर्स्ट क्लास था!"',
+      authorName: "Amit Verma",
+      eventEn: "Reception, 2023",
+      eventHi: "रिसेप्शन, 2023",
+      rating: 5,
+      sortOrder: 3,
+      isActive: true,
+    },
+    {
+      id: "rev-4",
+      quoteEn:
+        '"Highly recommended for premium events. Quality aur quantity dono zabardast!"',
+      quoteHi: '"प्रीमियम इवेंट्स के लिए अत्यधिक अनुशंसित। क्वालिटी और क्वांटिटी दोनों लाजवाब!"',
+      authorName: "Sunita Agarwal",
+      eventEn: "Corporate Event, 2024",
+      eventHi: "कॉर्पोरेट इवेंट, 2024",
+      rating: 5,
+      sortOrder: 4,
+      isActive: true,
+    },
+  ],
   leads: [],
   settings: { ...DEFAULT_SETTINGS },
+  site: { ...DEFAULT_SITE },
   about: {
     id: "default",
     slug: "default",
@@ -467,10 +748,24 @@ async function readFromStorage(): Promise<CatererStoreData> {
       }))
     : INITIAL_DEFAULTS.venues;
 
+  // Cuisines and testimonials arrived after the first snapshots were written.
+  // An absent array means "this store predates the feature", so it seeds from
+  // the defaults — an emptied-out collection is saved as [] and stays empty,
+  // which only an explicit array in the snapshot can express.
+  const cuisines = Array.isArray(snap?.cuisines)
+    ? (snap!.cuisines as CatererCuisine[])
+    : INITIAL_DEFAULTS.cuisines;
+
+  const testimonials = Array.isArray(snap?.testimonials)
+    ? (snap!.testimonials as CatererTestimonial[])
+    : INITIAL_DEFAULTS.testimonials;
+
   return {
     packages,
     gallery: Array.isArray(snap?.gallery) ? (snap!.gallery as CatererGalleryItem[]) : INITIAL_DEFAULTS.gallery,
     venues,
+    cuisines,
+    testimonials,
     // Leads are visitor-generated, so an absent array means "none captured
     // yet" — never the seed data other collections fall back to.
     leads: Array.isArray(snap?.leads) ? (snap!.leads as CatererLead[]) : [],
@@ -479,6 +774,10 @@ async function readFromStorage(): Promise<CatererStoreData> {
       snap?.settings && typeof snap.settings === "object"
         ? { ...DEFAULT_SETTINGS, ...(snap.settings as CatererSettings) }
         : { ...DEFAULT_SETTINGS },
+    site:
+      snap?.site && typeof snap.site === "object"
+        ? { ...DEFAULT_SITE, ...(snap.site as CatererSite) }
+        : { ...DEFAULT_SITE },
   };
 }
 
@@ -498,6 +797,23 @@ async function writeToStorage(data: CatererStoreData): Promise<void> {
   await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
 }
 
+// The hydrated snapshot lives on globalThis, so it outlives a hot reload: a dev
+// server that was running before a new section shipped keeps serving a `data`
+// with that key missing, and every read path throws on it. readFromStorage
+// already fills the gaps for a fresh hydration; this repeats the fill for a
+// snapshot that predates the module it is now being read by.
+function backfillSections(data: CatererStoreData): CatererStoreData {
+  data.packages ??= [];
+  data.gallery ??= [];
+  data.venues ??= [];
+  data.cuisines ??= [];
+  data.testimonials ??= [];
+  data.leads ??= [];
+  data.settings = { ...DEFAULT_SETTINGS, ...(data.settings ?? {}) };
+  data.site = { ...DEFAULT_SITE, ...(data.site ?? {}) };
+  return data;
+}
+
 function ensureHydrated(): Promise<void> {
   const s = getState();
   if (!s.hydration) {
@@ -505,7 +821,9 @@ function ensureHydrated(): Promise<void> {
       s.data = await readFromStorage();
     })();
   }
-  return s.hydration;
+  return s.hydration.then(() => {
+    if (s.data) backfillSections(s.data);
+  });
 }
 
 function mutateStore<T>(mutator: (data: CatererStoreData) => T | Promise<T>): Promise<T> {
@@ -700,6 +1018,126 @@ export async function deleteVenue(id: string): Promise<boolean> {
 }
 
 // ---------------------------------------------------------------------------
+// Store Operations (Cuisines)
+// ---------------------------------------------------------------------------
+
+export async function getAllCuisines(): Promise<CatererCuisine[]> {
+  await ensureHydrated();
+  const data = getState().data!;
+  return [...data.cuisines].sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+export async function getCuisineById(id: string): Promise<CatererCuisine | null> {
+  await ensureHydrated();
+  const data = getState().data!;
+  return data.cuisines.find((c) => c.id === id) ?? null;
+}
+
+export async function createCuisine(
+  input: Omit<CatererCuisine, "id"> & { id?: string }
+): Promise<CatererCuisine> {
+  return mutateStore((data) => {
+    const now = new Date().toISOString();
+    const newCuisine: CatererCuisine = {
+      ...input,
+      id: input.id || `cui-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      createdAt: now,
+      updatedAt: now,
+    };
+    data.cuisines.push(newCuisine);
+    return newCuisine;
+  });
+}
+
+export async function updateCuisine(
+  id: string,
+  updates: Partial<CatererCuisine>
+): Promise<CatererCuisine | null> {
+  return mutateStore((data) => {
+    const idx = data.cuisines.findIndex((c) => c.id === id);
+    if (idx === -1) return null;
+
+    const existing = data.cuisines[idx];
+    const updated: CatererCuisine = {
+      ...existing,
+      ...updates,
+      id: existing.id, // Immutable
+      updatedAt: new Date().toISOString(),
+    };
+    data.cuisines[idx] = updated;
+    return updated;
+  });
+}
+
+export async function deleteCuisine(id: string): Promise<boolean> {
+  return mutateStore((data) => {
+    const initialLen = data.cuisines.length;
+    data.cuisines = data.cuisines.filter((c) => c.id !== id);
+    return data.cuisines.length < initialLen;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Store Operations (Testimonials)
+// ---------------------------------------------------------------------------
+
+export async function getAllTestimonials(): Promise<CatererTestimonial[]> {
+  await ensureHydrated();
+  const data = getState().data!;
+  return [...data.testimonials].sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+export async function getTestimonialById(id: string): Promise<CatererTestimonial | null> {
+  await ensureHydrated();
+  const data = getState().data!;
+  return data.testimonials.find((t) => t.id === id) ?? null;
+}
+
+export async function createTestimonial(
+  input: Omit<CatererTestimonial, "id"> & { id?: string }
+): Promise<CatererTestimonial> {
+  return mutateStore((data) => {
+    const now = new Date().toISOString();
+    const newItem: CatererTestimonial = {
+      ...input,
+      id: input.id || `rev-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      createdAt: now,
+      updatedAt: now,
+    };
+    data.testimonials.push(newItem);
+    return newItem;
+  });
+}
+
+export async function updateTestimonial(
+  id: string,
+  updates: Partial<CatererTestimonial>
+): Promise<CatererTestimonial | null> {
+  return mutateStore((data) => {
+    const idx = data.testimonials.findIndex((t) => t.id === id);
+    if (idx === -1) return null;
+
+    const existing = data.testimonials[idx];
+    const updated: CatererTestimonial = {
+      ...existing,
+      ...updates,
+      id: existing.id, // Immutable
+      updatedAt: new Date().toISOString(),
+    };
+    data.testimonials[idx] = updated;
+    return updated;
+  });
+}
+
+export async function deleteTestimonial(id: string): Promise<boolean> {
+  return mutateStore((data) => {
+    const initialLen = data.testimonials.length;
+    data.testimonials = data.testimonials.filter((t) => t.id !== id);
+    return data.testimonials.length < initialLen;
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Store Operations (Leads)
 // ---------------------------------------------------------------------------
 
@@ -729,10 +1167,6 @@ export async function getLeadById(id: string): Promise<CatererLead | null> {
 export async function createLead(input: CatererLeadInput): Promise<CatererLead> {
   return mutateStore((data) => {
     const now = new Date().toISOString();
-    // A dev server that hot-reloaded this module keeps a store snapshot
-    // hydrated before `leads` existed; one line here beats a 500 on the first
-    // signup after every edit.
-    data.leads ??= [];
 
     // Subscribing twice must not pile up rows, so a repeat newsletter signup
     // folds into the existing record (and fills in a phone number the first
@@ -820,6 +1254,28 @@ export async function updateSettings(
 }
 
 // ---------------------------------------------------------------------------
+// Store Operations (Site Content)
+// ---------------------------------------------------------------------------
+
+export async function getSiteContent(): Promise<CatererSite> {
+  await ensureHydrated();
+  return getState().data!.site;
+}
+
+export async function updateSiteContent(
+  updates: Partial<CatererSite>
+): Promise<CatererSite> {
+  return mutateStore((data) => {
+    data.site = {
+      ...data.site,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    return data.site;
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Store Operations (About)
 // ---------------------------------------------------------------------------
 
@@ -895,11 +1351,41 @@ export async function getCatererContentPublic() {
       sortOrder: v.sortOrder,
     }));
 
+  const cuisines = data.cuisines
+    .filter((c) => c.isActive)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((c) => ({
+      id: c.id,
+      nameEn: c.nameEn,
+      nameHi: c.nameHi,
+      descEn: c.descEn,
+      descHi: c.descHi,
+      imageUrl: c.imageUrl ?? "",
+      sortOrder: c.sortOrder,
+    }));
+
+  const testimonials = data.testimonials
+    .filter((t) => t.isActive)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((t) => ({
+      id: t.id,
+      quoteEn: t.quoteEn,
+      quoteHi: t.quoteHi,
+      authorName: t.authorName,
+      eventEn: t.eventEn,
+      eventHi: t.eventHi,
+      rating: t.rating,
+      sortOrder: t.sortOrder,
+    }));
+
   return {
     packages,
     gallery,
     venues,
+    cuisines,
+    testimonials,
     about: data.about,
     settings: data.settings,
+    site: data.site,
   };
 }
