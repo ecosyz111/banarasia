@@ -1,39 +1,38 @@
 import Image from "next/image";
 import Link from "next/link";
 
+// The logo file is a full lockup — wordmark, BUFFET ART bar and the tagline —
+// so it stands alone. Setting it beside a text "Banarasia Buffet Art" printed
+// the name twice, which is why no caption is rendered here.
+const LOGO_SRC = "/sample-caterer/tl.png";
+const LOGO_RATIO = 739 / 338;
+
 export default function Brand({
   size = "md",
-  variant = "dark",
   href = "/",
 }: {
   size?: "sm" | "md" | "lg";
-  variant?: "dark" | "light";
   href?: string | null;
 }) {
-  const dim = size === "lg" ? 44 : size === "sm" ? 28 : 36;
-  const textSize = size === "lg" ? "text-2xl" : size === "sm" ? "text-base" : "text-xl";
-  const textColor = variant === "light" ? "text-white" : "text-zinc-900";
-  const accent = variant === "light" ? "text-amber-300" : "text-amber-600";
+  // Height drives the size; width follows the source ratio so the lockup never
+  // squashes. The tagline is small in the artwork, so these run generous.
+  const height = size === "lg" ? 72 : size === "sm" ? 40 : 56;
+  const width = Math.round(height * LOGO_RATIO);
 
   const inner = (
-    <span className="inline-flex items-center gap-2.5">
-      <Image
-        src="/sample-caterer/banarasia_logo_transparent.png"
-        alt="Banarasia Buffet Art"
-        width={dim}
-        height={dim}
-        className="rounded-full"
-        priority
-      />
-      <span className={`${textSize} font-bold tracking-tight ${textColor}`}>
-        Banarasia <span className={accent}>Buffet Art</span>
-      </span>
-    </span>
+    <Image
+      src={LOGO_SRC}
+      alt="Banarasia Buffet Art"
+      width={width}
+      height={height}
+      className="object-contain"
+      priority
+    />
   );
 
   if (!href) return inner;
   return (
-    <Link href={href} aria-label="Banarasia Buffet Art">
+    <Link href={href} aria-label="Banarasia Buffet Art" className="inline-flex">
       {inner}
     </Link>
   );

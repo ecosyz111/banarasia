@@ -17,7 +17,17 @@ const ALLOWED_TYPES = new Set([
   "image/webp",
 ]);
 
-// POST /api/caterer/upload — Admin endpoint for uploading gallery image files
+// Upload destinations. `kind` is optional and defaults to gallery, so existing
+// callers that only send `file` are unaffected. SVG stays off the allow-list
+// even for logos — it can carry script and is served from our own origin.
+const KINDS = {
+  gallery: { prefix: "gallery", blobDir: "caterer/gallery" },
+  logo: { prefix: "logo", blobDir: "caterer/branding" },
+} as const;
+
+type UploadKind = keyof typeof KINDS;
+
+// POST /api/caterer/upload — Admin endpoint for uploading image files
 export async function POST(req: Request) {
   const denied = requireAdmin(req);
   if (denied) return denied;
@@ -25,6 +35,9 @@ export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File | null;
+    const rawKind = formData.get("kind");
+    const kind: UploadKind =
+      typeof rawKind === "string" && rawKind in KINDS ? (rawKind as UploadKind) : "gallery";
 
     if (!file) {
       return NextResponse.json(
@@ -49,11 +62,11 @@ export async function POST(req: Request) {
     const extMatch = file.name.match(/\.(jpe?g|png|webp)$/i);
     const ext = extMatch ? extMatch[0].toLowerCase() : ".jpg";
     const randomHash = crypto.randomBytes(6).toString("hex");
-    const filename = `gallery_${Date.now()}_${randomHash}${ext}`;
+    const filename = `${KINDS[kind].prefix}_${Date.now()}_${randomHash}${ext}`;
 
     if (useBlob) {
       // Production: Upload to Vercel Blob store
-      const blob = await put(`caterer/gallery/${filename}`, buffer, {
+      const blob = await put(`${KINDS[kind].blobDir}/${filename}`, buffer, {
         access: "public",
         addRandomSuffix: false,
         contentType: file.type || "image/jpeg",

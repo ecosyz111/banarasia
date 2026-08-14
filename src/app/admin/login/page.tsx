@@ -108,7 +108,7 @@ export default function AdminLoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 px-6">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
-          <Brand size="md" variant="light" />
+          <Brand size="lg" />
           <p className="mt-3 text-sm text-zinc-400">Admin Console</p>
         </div>
 

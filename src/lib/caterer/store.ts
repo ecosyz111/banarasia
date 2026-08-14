@@ -16,11 +16,21 @@ import { head, put } from "@vercel/blob";
 // Types
 // ---------------------------------------------------------------------------
 
+// "amount" renders the rupee figure; "quote" hides it behind a Get Price Quote
+// call-to-action. Packages predating this field have no priceMode, so every
+// read path treats undefined as "amount" and keeps rendering the old way.
+export type PriceMode = "amount" | "quote";
+
 export type CatererPackage = {
   id: string;
   nameEn: string;
   nameHi: string;
   price: number;
+  priceMode: PriceMode;
+  // Gathering size the plate rate was costed against. Per-plate price falls as
+  // the guest count rises (staff and setup are fixed), so a rate without its
+  // basis is meaningless. 0 hides the figure for packages priced some other way.
+  basisPax: number;
   priceUnitEn: string;
   priceUnitHi: string;
   badgeEn: string | null;
@@ -30,6 +40,30 @@ export type CatererPackage = {
   sortOrder: number;
   isActive: boolean;
   createdAt?: string;
+  updatedAt?: string;
+};
+
+export type CatererVenue = {
+  id: string;
+  nameEn: string;
+  nameHi: string;
+  areaEn: string;
+  areaHi: string;
+  capacity: string;
+  notesEn: string;
+  notesHi: string;
+  sortOrder: number;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+// Branding the owner can change without a deploy: the logo swap and the two
+// colours the public page derives every accent from.
+export type CatererSettings = {
+  logoUrl: string;
+  primaryColor: string;
+  accentColor: string;
   updatedAt?: string;
 };
 
@@ -75,10 +109,40 @@ export type CatererAbout = {
   updatedAt?: string;
 };
 
+// A lead is any visitor who left contact details: the footer subscribe box
+// (email + phone) and the contact-section inquiry form both land in the same
+// admin inbox, told apart by `source`. Fields the originating form does not ask
+// for stay empty strings rather than null, so the admin table never branches.
+export type LeadSource = "newsletter" | "inquiry";
+export type LeadStatus = "new" | "contacted";
+
+export type CatererLead = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  eventType: string;
+  guests: string;
+  message: string;
+  source: LeadSource;
+  status: LeadStatus;
+  createdAt: string;
+  updatedAt?: string;
+};
+
 export type CatererStoreData = {
   packages: CatererPackage[];
   gallery: CatererGalleryItem[];
+  venues: CatererVenue[];
+  leads: CatererLead[];
   about: CatererAbout;
+  settings: CatererSettings;
+};
+
+export const DEFAULT_SETTINGS: CatererSettings = {
+  logoUrl: "/sample-caterer/tl.png",
+  primaryColor: "#ea580c",
+  accentColor: "#eab308",
 };
 
 // ---------------------------------------------------------------------------
@@ -92,6 +156,10 @@ const INITIAL_DEFAULTS: CatererStoreData = {
       nameEn: "Silver Package",
       nameHi: "सिल्वर पैकेज",
       price: 900,
+      // Listed, not hidden — the basisPax badge already tells the visitor the
+      // rate is costed against a gathering size, so the figure can be shown.
+      priceMode: "amount",
+      basisPax: 400,
       priceUnitEn: "/ Plate",
       priceUnitHi: "/ प्लेट",
       badgeEn: "Popular",
@@ -118,6 +186,8 @@ const INITIAL_DEFAULTS: CatererStoreData = {
       nameEn: "Gold Package",
       nameHi: "गोल्ड पैकेज",
       price: 1200,
+      priceMode: "amount",
+      basisPax: 400,
       priceUnitEn: "/ Plate",
       priceUnitHi: "/ प्लेट",
       badgeEn: "Best for Weddings",
@@ -146,6 +216,8 @@ const INITIAL_DEFAULTS: CatererStoreData = {
       nameEn: "Royal Package",
       nameHi: "रॉयल पैकेज",
       price: 1500,
+      priceMode: "amount",
+      basisPax: 400,
       priceUnitEn: "/ Plate",
       priceUnitHi: "/ प्लेट",
       badgeEn: "Premium Choice",
@@ -220,6 +292,46 @@ const INITIAL_DEFAULTS: CatererStoreData = {
       isActive: true,
     },
   ],
+  venues: [
+    {
+      id: "ven-1",
+      nameEn: "Banarasia Lawn",
+      nameHi: "बनारसिया लॉन",
+      areaEn: "Gomti Nagar, Lucknow",
+      areaHi: "गोमती नगर, लखनऊ",
+      capacity: "500-800",
+      notesEn: "Open lawn with covered dining area and ample parking.",
+      notesHi: "खुला लॉन, ढका हुआ डाइनिंग क्षेत्र एवं पर्याप्त पार्किंग।",
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      id: "ven-2",
+      nameEn: "Banquet Hall",
+      nameHi: "बैंक्वेट हॉल",
+      areaEn: "Hazratganj, Lucknow",
+      areaHi: "हजरतगंज, लखनऊ",
+      capacity: "200-400",
+      notesEn: "Fully air-conditioned indoor hall, ideal for receptions.",
+      notesHi: "पूर्ण वातानुकूलित इनडोर हॉल, रिसेप्शन के लिए आदर्श।",
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      id: "ven-3",
+      nameEn: "Your Own Venue",
+      nameHi: "आपका अपना वेन्यू",
+      areaEn: "Anywhere in Lucknow & nearby",
+      areaHi: "लखनऊ एवं आसपास कहीं भी",
+      capacity: "50-2000",
+      notesEn: "We bring the full setup, staff and live counters to your location.",
+      notesHi: "हम पूरा सेटअप, स्टाफ एवं लाइव काउंटर आपके स्थान पर लाते हैं।",
+      sortOrder: 3,
+      isActive: true,
+    },
+  ],
+  leads: [],
+  settings: { ...DEFAULT_SETTINGS },
   about: {
     id: "default",
     slug: "default",
@@ -246,6 +358,10 @@ const INITIAL_DEFAULTS: CatererStoreData = {
       { textEn: "Wedding & More", textHi: "वेडिंग एवं अन्य आयोजन" },
       { textEn: "Home Parties", textHi: "होम पार्टीज़" },
       { textEn: "Special Baina Boxes", textHi: "स्पेशल बयना बॉक्स" },
+      { textEn: "Lunch Box", textHi: "लंच बॉक्स" },
+      { textEn: "Breakfast Stall", textHi: "ब्रेकफास्ट स्टॉल" },
+      { textEn: "Lunch Stall", textHi: "लंच स्टॉल" },
+      { textEn: "Dinner Stall", textHi: "डिनर स्टॉल" },
       { textEn: "Corporate Parties", textHi: "कॉर्पोरेट पार्टीज़" },
       { textEn: "Single Food Stall", textHi: "सिंगल फूड स्टॉल" },
       { textEn: "Bulk Food Boxes", textHi: "थोक भोजन डिब्बे" },
@@ -319,10 +435,29 @@ async function readFromStorage(): Promise<CatererStoreData> {
   }
 
   const snap = parsed as Partial<CatererStoreData> | null;
+
+  // Snapshots written before venues/settings/priceMode existed are still valid
+  // on disk and in Blob. Fill the gaps here so one old file cannot crash a read.
+  const packages = Array.isArray(snap?.packages)
+    ? (snap!.packages as CatererPackage[]).map((p) => ({
+        ...p,
+        priceMode: p.priceMode === "quote" ? "quote" : ("amount" as PriceMode),
+        basisPax: typeof p.basisPax === "number" && p.basisPax >= 0 ? p.basisPax : 400,
+      }))
+    : INITIAL_DEFAULTS.packages;
+
   return {
-    packages: Array.isArray(snap?.packages) ? (snap!.packages as CatererPackage[]) : INITIAL_DEFAULTS.packages,
+    packages,
     gallery: Array.isArray(snap?.gallery) ? (snap!.gallery as CatererGalleryItem[]) : INITIAL_DEFAULTS.gallery,
+    venues: Array.isArray(snap?.venues) ? (snap!.venues as CatererVenue[]) : INITIAL_DEFAULTS.venues,
+    // Leads are visitor-generated, so an absent array means "none captured
+    // yet" — never the seed data other collections fall back to.
+    leads: Array.isArray(snap?.leads) ? (snap!.leads as CatererLead[]) : [],
     about: snap?.about && typeof snap.about === "object" ? (snap.about as CatererAbout) : INITIAL_DEFAULTS.about,
+    settings:
+      snap?.settings && typeof snap.settings === "object"
+        ? { ...DEFAULT_SETTINGS, ...(snap.settings as CatererSettings) }
+        : { ...DEFAULT_SETTINGS },
   };
 }
 
@@ -484,6 +619,182 @@ export async function deleteGalleryItem(id: string): Promise<boolean> {
 }
 
 // ---------------------------------------------------------------------------
+// Store Operations (Venues)
+// ---------------------------------------------------------------------------
+
+export async function getAllVenues(): Promise<CatererVenue[]> {
+  await ensureHydrated();
+  const data = getState().data!;
+  return [...data.venues].sort((a, b) => a.sortOrder - b.sortOrder);
+}
+
+export async function getVenueById(id: string): Promise<CatererVenue | null> {
+  await ensureHydrated();
+  const data = getState().data!;
+  return data.venues.find((v) => v.id === id) ?? null;
+}
+
+export async function createVenue(
+  input: Omit<CatererVenue, "id"> & { id?: string }
+): Promise<CatererVenue> {
+  return mutateStore((data) => {
+    const now = new Date().toISOString();
+    const newVenue: CatererVenue = {
+      ...input,
+      id: input.id || `ven-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      createdAt: now,
+      updatedAt: now,
+    };
+    data.venues.push(newVenue);
+    return newVenue;
+  });
+}
+
+export async function updateVenue(
+  id: string,
+  updates: Partial<CatererVenue>
+): Promise<CatererVenue | null> {
+  return mutateStore((data) => {
+    const idx = data.venues.findIndex((v) => v.id === id);
+    if (idx === -1) return null;
+
+    const existing = data.venues[idx];
+    const updated: CatererVenue = {
+      ...existing,
+      ...updates,
+      id: existing.id, // Immutable
+      updatedAt: new Date().toISOString(),
+    };
+    data.venues[idx] = updated;
+    return updated;
+  });
+}
+
+export async function deleteVenue(id: string): Promise<boolean> {
+  return mutateStore((data) => {
+    const initialLen = data.venues.length;
+    data.venues = data.venues.filter((v) => v.id !== id);
+    return data.venues.length < initialLen;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Store Operations (Leads)
+// ---------------------------------------------------------------------------
+
+// The entire store is one JSON document rewritten on every mutation, and the
+// lead-capture endpoint is public — an uncapped list would let visitors grow
+// the document until every read and write slows down. Oldest rows drop first.
+const MAX_LEADS = 1000;
+
+export type CatererLeadInput = Omit<
+  CatererLead,
+  "id" | "status" | "createdAt" | "updatedAt"
+>;
+
+export async function getAllLeads(): Promise<CatererLead[]> {
+  await ensureHydrated();
+  const data = getState().data!;
+  // Newest first: an owner works the top of an enquiry list, not the bottom.
+  return [...data.leads].sort((a, b) => (b.createdAt ?? "").localeCompare(a.createdAt ?? ""));
+}
+
+export async function getLeadById(id: string): Promise<CatererLead | null> {
+  await ensureHydrated();
+  const data = getState().data!;
+  return data.leads.find((l) => l.id === id) ?? null;
+}
+
+export async function createLead(input: CatererLeadInput): Promise<CatererLead> {
+  return mutateStore((data) => {
+    const now = new Date().toISOString();
+
+    // Subscribing twice must not pile up rows, so a repeat newsletter signup
+    // folds into the existing record (and fills in a phone number the first
+    // attempt lacked). Inquiries always get their own row — each one carries a
+    // different message and deserves to be worked separately.
+    if (input.source === "newsletter") {
+      const email = input.email.toLowerCase();
+      const existing = data.leads.find(
+        (l) =>
+          l.source === "newsletter" &&
+          ((email && l.email.toLowerCase() === email) ||
+            (!email && !!input.phone && l.phone === input.phone))
+      );
+      if (existing) {
+        existing.email = input.email || existing.email;
+        existing.phone = input.phone || existing.phone;
+        existing.name = input.name || existing.name;
+        existing.updatedAt = now;
+        return existing;
+      }
+    }
+
+    const lead: CatererLead = {
+      ...input,
+      id: `lead-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      status: "new",
+      createdAt: now,
+      updatedAt: now,
+    };
+    data.leads.push(lead);
+    if (data.leads.length > MAX_LEADS) {
+      data.leads = data.leads.slice(-MAX_LEADS);
+    }
+    return lead;
+  });
+}
+
+export async function updateLead(
+  id: string,
+  updates: Partial<Pick<CatererLead, "status">>
+): Promise<CatererLead | null> {
+  return mutateStore((data) => {
+    const idx = data.leads.findIndex((l) => l.id === id);
+    if (idx === -1) return null;
+
+    const updated: CatererLead = {
+      ...data.leads[idx],
+      ...updates,
+      id: data.leads[idx].id,
+      updatedAt: new Date().toISOString(),
+    };
+    data.leads[idx] = updated;
+    return updated;
+  });
+}
+
+export async function deleteLead(id: string): Promise<boolean> {
+  return mutateStore((data) => {
+    const initialLen = data.leads.length;
+    data.leads = data.leads.filter((l) => l.id !== id);
+    return data.leads.length < initialLen;
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Store Operations (Settings / Branding)
+// ---------------------------------------------------------------------------
+
+export async function getSettings(): Promise<CatererSettings> {
+  await ensureHydrated();
+  return getState().data!.settings;
+}
+
+export async function updateSettings(
+  updates: Partial<CatererSettings>
+): Promise<CatererSettings> {
+  return mutateStore((data) => {
+    data.settings = {
+      ...data.settings,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    return data.settings;
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Store Operations (About)
 // ---------------------------------------------------------------------------
 
@@ -521,6 +832,8 @@ export async function getCatererContentPublic() {
       nameEn: p.nameEn,
       nameHi: p.nameHi,
       price: p.price,
+      priceMode: p.priceMode ?? "amount",
+      basisPax: p.basisPax ?? 400,
       priceUnitEn: p.priceUnitEn,
       priceUnitHi: p.priceUnitHi,
       badgeEn: p.badgeEn,
@@ -541,9 +854,26 @@ export async function getCatererContentPublic() {
       sortOrder: g.sortOrder,
     }));
 
+  const venues = data.venues
+    .filter((v) => v.isActive)
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((v) => ({
+      id: v.id,
+      nameEn: v.nameEn,
+      nameHi: v.nameHi,
+      areaEn: v.areaEn,
+      areaHi: v.areaHi,
+      capacity: v.capacity,
+      notesEn: v.notesEn,
+      notesHi: v.notesHi,
+      sortOrder: v.sortOrder,
+    }));
+
   return {
     packages,
     gallery,
+    venues,
     about: data.about,
+    settings: data.settings,
   };
 }

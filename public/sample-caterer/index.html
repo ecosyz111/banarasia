@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Banarasia Buffet Art | Premium Wedding Catering in Lucknow</title>
+    <!-- This page is served straight from public/, so it does not inherit the
+         App Router's icon convention and declares its own favicons. -->
+    <link rel="icon" type="image/png" sizes="512x512" href="/sample-caterer/favicon-512.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/sample-caterer/apple-touch-icon.png">
     <meta name="description" content="Banarasia Buffet Art — Lucknow's premier wedding caterer since 2015. Pure Veg & Jain luxury buffet catering for weddings, engagements & corporate events. 10,000+ guests served.">
     <meta name="keywords" content="Wedding Caterer in Lucknow, Premium Catering Services, Pure Veg Catering, Jain Catering, Buffet Catering Lucknow, Luxury Wedding Catering, Banquet Catering Services">
     <!-- Open Graph -->
@@ -37,7 +41,6 @@
         "openingHours": "Mo-Su 10:00-19:00",
         "priceRange": "₹₹₹",
         "servesCuisine": ["North Indian", "South Indian", "Mughlai", "Continental", "Chinese"],
-        "founder": { "@type": "Person", "name": "Ankit Srivastava" },
         "foundingDate": "2015",
         "description": "Premium Pure Veg & Jain wedding catering services in Lucknow since 2015."
     }
@@ -62,12 +65,21 @@
         }
     </script>
     <style>
+        /* Brand colours, sampled from the Banarasia Buffet Art logo: the orange
+           of the wordmark and the gold of the BUFFET ART bar. The admin console
+           (Logo & Brand tab) overwrites these two properties at runtime, so any
+           rule below that references them re-themes without a redeploy. */
+        :root {
+            --brand-primary: #e9531f;
+            --brand-accent: #f9b233;
+        }
+
         * { scroll-behavior: smooth; box-sizing: border-box; }
         body { font-family: 'Poppins', sans-serif; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
         .font-display { font-family: 'Playfair Display', serif; }
         .font-script { font-family: 'Great Vibes', cursive; }
 
-        #scroll-progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, #ea580c, #facc15, #f97316); z-index: 9999; transition: width 0.15s linear; will-change: width; }
+        #scroll-progress { position: fixed; top: 0; left: 0; height: 3px; background: linear-gradient(90deg, var(--brand-primary), var(--brand-accent), var(--brand-primary)); z-index: 9999; transition: width 0.15s linear; will-change: width; }
 
         .glass { background: rgba(255,255,255,0.07); backdrop-filter: blur(16px) saturate(1.2); -webkit-backdrop-filter: blur(16px) saturate(1.2); border: 1px solid rgba(255,255,255,0.12); }
         .glass-dark { background: rgba(42,24,16,0.92); backdrop-filter: blur(16px) saturate(1.3); -webkit-backdrop-filter: blur(16px) saturate(1.3); border: 1px solid rgba(234,88,12,0.2); }
@@ -76,7 +88,7 @@
         .golden-glow { box-shadow: 0 4px 24px rgba(234,88,12,0.08), 0 0 48px rgba(202,138,4,0.05); }
         .golden-glow-strong { box-shadow: 0 8px 40px rgba(234,88,12,0.2), 0 0 80px rgba(202,138,4,0.08); }
 
-        .gradient-text { background: linear-gradient(135deg, #ea580c 0%, #facc15 50%, #ea580c 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .gradient-text { background: linear-gradient(135deg, var(--brand-primary) 0%, var(--brand-accent) 50%, var(--brand-primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
         .gradient-text-brown { background: linear-gradient(135deg, #3d2518, #5c3d2e, #3d2518); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
 
         .reveal { opacity: 0; transform: translateY(35px); transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), transform 0.7s cubic-bezier(0.22, 1, 0.36, 1); will-change: opacity, transform; }
@@ -167,7 +179,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between">
                 <a href="#home" class="flex items-center group" aria-label="Banarasia Buffet Art - Home">
-                    <img src="/sample-caterer/banarasia_logo_transparent.png?v=2" alt="Banarasia Buffet Art" class="h-10 sm:h-12 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
+                    <img data-brand-logo src="/sample-caterer/tl.png?v=3" alt="Banarasia Buffet Art" class="h-14 sm:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
                 </a>
                 <div class="hidden lg:flex items-center space-x-7">
                     <a href="#home" data-i18n="nav_home" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="home">Home</a>
@@ -175,6 +187,7 @@
                     <a href="#services" data-i18n="nav_services" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="services">Services</a>
                     <a href="#packages" data-i18n="nav_packages" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="packages">Packages</a>
                     <a href="#menu" data-i18n="nav_menu" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="menu">Menu</a>
+                    <a href="#venues" data-i18n="nav_venues" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="venues">Venues</a>
                     <a href="#gallery" data-i18n="nav_gallery" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="gallery">Gallery</a>
                     <a href="#reviews" data-i18n="nav_reviews" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="reviews">Reviews</a>
                     <a href="#contact" data-i18n="nav_contact" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="contact">Contact</a>
@@ -205,6 +218,7 @@
                 <a href="#services" data-i18n="nav_services" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Services</a>
                 <a href="#packages" data-i18n="nav_packages" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Packages</a>
                 <a href="#menu" data-i18n="nav_menu" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Menu</a>
+                <a href="#venues" data-i18n="nav_venues" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Venues</a>
                 <a href="#gallery" data-i18n="nav_gallery" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Gallery</a>
                 <a href="#reviews" data-i18n="nav_reviews" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Reviews</a>
                 <a href="#contact" data-i18n="nav_contact" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Contact</a>
@@ -557,7 +571,7 @@
                             <li class="flex items-center text-brown-700 text-sm"><svg class="w-5 h-5 text-brandOrange-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pkg_gold_f6">Jain &amp; Custom Options</span></li>
                         </ul>
                     </div>
-                    <a href="#contact" data-i18n="btn_book_now_card" class="mt-auto block w-full text-center py-3 px-6 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 hover:from-amber-500 hover:to-brandOrange-600 text-white font-semibold rounded-full shadow-lg shadow-orange-500/35 hover:shadow-amber-500/40 transition-all duration-300">Book Now</a>
+                    <a href="#contact" data-i18n="btn_get_price_quote" class="mt-auto block w-full text-center py-3 px-6 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 hover:from-amber-500 hover:to-brandOrange-600 text-white font-semibold rounded-full shadow-lg shadow-orange-500/35 hover:shadow-amber-500/40 transition-all duration-300">Get Price Quote</a>
                 </div>
 
                 <!-- Royal Package -->
@@ -586,11 +600,20 @@
                     <a href="#contact" data-i18n="btn_get_price_quote" class="mt-auto block w-full text-center py-3 px-6 border-2 border-amber-500 text-amber-800 font-semibold rounded-full hover:bg-gradient-to-r hover:from-brandOrange-500 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300">Get Price Quote</a>
                 </div>
             </div>
+
+            <!-- Rates are quoted against a gathering size; state the basis so the
+                 per-plate figure is not read as a flat price. -->
+            <div id="caterer-rate-basis-note" class="max-w-3xl mx-auto mt-10 reveal">
+                <div class="flex items-start gap-3 rounded-2xl border border-amber-300/70 bg-amber-50/80 px-5 py-4">
+                    <svg class="w-5 h-5 text-brandOrange-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <p data-i18n="pkg_rate_basis" class="text-brown-700 text-sm leading-relaxed">Rates depend on the size of the gathering. All rates shown are calculated for a gathering of 400 guests — the per-plate cost changes with your final guest count.</p>
+                </div>
+            </div>
         </div>
     </section>
 
     <!-- About Section -->
-    <section id="about" class="py-24 bg-gradient-to-b from-brown-950 via-brown-900 to-brown-950 relative overflow-hidden text-white">
+    <section id="story" class="py-24 bg-gradient-to-b from-brown-950 via-brown-900 to-brown-950 relative overflow-hidden text-white">
         <!-- Decorative background elements -->
         <div class="absolute inset-0 pointer-events-none">
             <div class="absolute top-10 left-10 w-72 h-72 bg-golden-500/5 rounded-full blur-3xl"></div>
@@ -620,6 +643,10 @@
                     <div data-i18n="exp_item_1" class="px-6 py-3 rounded-full border border-golden-500/40 bg-gradient-to-r from-brown-800/80 to-brown-900/80 backdrop-blur-sm text-golden-300 font-medium text-sm hover:border-golden-400 hover:bg-golden-500/10 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg shadow-golden-900/10">Wedding &amp; More</div>
                     <div data-i18n="exp_item_2" class="px-6 py-3 rounded-full border border-golden-500/40 bg-gradient-to-r from-brown-800/80 to-brown-900/80 backdrop-blur-sm text-golden-300 font-medium text-sm hover:border-golden-400 hover:bg-golden-500/10 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg shadow-golden-900/10">Home Parties</div>
                     <div data-i18n="exp_item_3" class="px-6 py-3 rounded-full border border-golden-500/40 bg-gradient-to-r from-brown-800/80 to-brown-900/80 backdrop-blur-sm text-golden-300 font-medium text-sm hover:border-golden-400 hover:bg-golden-500/10 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg shadow-golden-900/10">Special Baina Boxes</div>
+                    <div data-i18n="exp_item_7" class="px-6 py-3 rounded-full border border-golden-500/40 bg-gradient-to-r from-brown-800/80 to-brown-900/80 backdrop-blur-sm text-golden-300 font-medium text-sm hover:border-golden-400 hover:bg-golden-500/10 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg shadow-golden-900/10">Lunch Box</div>
+                    <div data-i18n="exp_item_8" class="px-6 py-3 rounded-full border border-golden-500/40 bg-gradient-to-r from-brown-800/80 to-brown-900/80 backdrop-blur-sm text-golden-300 font-medium text-sm hover:border-golden-400 hover:bg-golden-500/10 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg shadow-golden-900/10">Breakfast Stall</div>
+                    <div data-i18n="exp_item_9" class="px-6 py-3 rounded-full border border-golden-500/40 bg-gradient-to-r from-brown-800/80 to-brown-900/80 backdrop-blur-sm text-golden-300 font-medium text-sm hover:border-golden-400 hover:bg-golden-500/10 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg shadow-golden-900/10">Lunch Stall</div>
+                    <div data-i18n="exp_item_10" class="px-6 py-3 rounded-full border border-golden-500/40 bg-gradient-to-r from-brown-800/80 to-brown-900/80 backdrop-blur-sm text-golden-300 font-medium text-sm hover:border-golden-400 hover:bg-golden-500/10 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg shadow-golden-900/10">Dinner Stall</div>
                     <div data-i18n="exp_item_4" class="px-6 py-3 rounded-full border border-golden-500/40 bg-gradient-to-r from-brown-800/80 to-brown-900/80 backdrop-blur-sm text-golden-300 font-medium text-sm hover:border-golden-400 hover:bg-golden-500/10 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg shadow-golden-900/10">Corporate Parties</div>
                     <div data-i18n="exp_item_5" class="px-6 py-3 rounded-full border border-golden-500/40 bg-gradient-to-r from-brown-800/80 to-brown-900/80 backdrop-blur-sm text-golden-300 font-medium text-sm hover:border-golden-400 hover:bg-golden-500/10 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg shadow-golden-900/10">Single Food Stall</div>
                     <div data-i18n="exp_item_6" class="px-6 py-3 rounded-full border border-golden-500/40 bg-gradient-to-r from-brown-800/80 to-brown-900/80 backdrop-blur-sm text-golden-300 font-medium text-sm hover:border-golden-400 hover:bg-golden-500/10 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg shadow-golden-900/10">Bulk Food Boxes</div>
@@ -913,6 +940,28 @@
     <div class="section-divider"></div>
 
     <!-- Gallery Section -->
+    <!-- Venues Section — hydrated from /api/caterer/content (CMS: Venues tab) -->
+    <section id="venues" class="py-24 bg-gradient-to-b from-cream-100 to-cream-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 reveal">
+                <p data-i18n="ven_eyebrow" class="font-script text-brandOrange-600 text-3xl mb-2">Humare Venue</p>
+                <h2 data-i18n="ven_title" class="font-display text-4xl sm:text-5xl font-bold text-brown-900 mb-4">Our <span class="gradient-text">Venues</span></h2>
+                <p data-i18n="ven_desc" class="text-brown-600 max-w-2xl mx-auto text-lg">Where we serve — our own spaces, or bring the full setup to yours.</p>
+            </div>
+            <div id="caterer-venues-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Populated by renderCmsContent(); this fallback shows if the API is unreachable. -->
+                <div class="bg-white rounded-3xl p-8 shadow-xl border border-amber-200 reveal card-hover">
+                    <div class="w-14 h-14 mb-5 rounded-full bg-gradient-to-br from-brandOrange-500 to-amber-500 flex items-center justify-center shadow-md shadow-orange-500/20">
+                        <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    </div>
+                    <h3 class="font-display text-2xl font-bold text-brown-900 mb-1">Your Own Venue</h3>
+                    <p class="text-brandOrange-600 font-semibold text-sm mb-3">Anywhere in Lucknow &amp; nearby</p>
+                    <p class="text-brown-600 text-sm leading-relaxed">We bring the full setup, staff and live counters to your location.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section id="gallery" class="py-24 bg-gradient-to-b from-cream-50 to-cream-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16 reveal">
@@ -1272,15 +1321,15 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-3">
-                        <a href="https://wa.me/919918629017" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 py-3 px-4 bg-green-500 text-white rounded-xl font-semibold text-sm hover:bg-green-600 transition">
+                        <a href="https://wa.me/919918629017" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white rounded-xl font-semibold text-sm shadow-md shadow-brandOrange-600/25 hover:from-amber-500 hover:to-brandOrange-600 hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-300">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492l4.625-1.459A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75c-2.24 0-4.31-.725-5.994-1.953l-.43-.312-2.742.865.834-2.664-.343-.466A9.716 9.716 0 012.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75z"/></svg>
                             WhatsApp
                         </a>
-                        <a href="https://youtube.com/@banarasiabuffetart?si=toOrkdaRR2pTff9F" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 py-3 px-4 bg-red-600 text-white rounded-xl font-semibold text-sm hover:bg-red-700 transition">
-                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/><path fill="#fff" d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                        <a href="https://youtube.com/@banarasiabuffetart?si=toOrkdaRR2pTff9F" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 py-3 px-4 bg-brandOrange-50 text-brown-800 border border-brandOrange-300 rounded-xl font-semibold text-sm hover:bg-gradient-to-r hover:from-brandOrange-600 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                             YouTube
                         </a>
-                        <a href="https://share.google/A5emKWy8iuQEcngAX" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 py-3 px-4 bg-blue-600 text-white rounded-xl font-semibold text-sm hover:bg-blue-700 transition">
+                        <a href="https://share.google/A5emKWy8iuQEcngAX" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 py-3 px-4 bg-brandOrange-50 text-brown-800 border border-brandOrange-300 rounded-xl font-semibold text-sm hover:bg-gradient-to-r hover:from-brandOrange-600 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
                             Maps
                         </a>
@@ -1305,17 +1354,21 @@
                 <div class="md:col-span-5">
                     <div class="mb-5">
                         <a href="#home" aria-label="Banarasia Buffet Art - Home">
-                            <img src="/sample-caterer/banarasia_logo_transparent.png?v=2" alt="Banarasia Buffet Art" class="h-12 sm:h-14 w-auto object-contain" />
+                            <img data-brand-logo src="/sample-caterer/tl.png?v=3" alt="Banarasia Buffet Art" class="h-20 sm:h-24 w-auto object-contain" />
                         </a>
                     </div>
                     <p data-i18n="ftr_brand_desc" class="text-cream-200/80 text-sm leading-relaxed max-w-sm mb-6">Premium catering services in Lucknow since 2015. Making every celebration a grand feast with authentic flavors and elegant presentation.</p>
-                    <!-- Newsletter -->
+                    <!-- Newsletter — posts to /api/caterer/leads (admin: Leads tab) -->
                     <div class="mb-6">
                         <p data-i18n="ftr_news_title" class="text-amber-200 text-sm font-medium mb-3">Stay updated with our latest offerings</p>
-                        <div class="flex gap-2 max-w-sm">
-                            <input type="email" data-i18n-ph="ph_newsletter" placeholder="Your email address" class="flex-1 px-4 py-3 rounded-xl bg-brown-800/80 border border-brandOrange-500/30 text-cream-100 text-sm placeholder:text-brown-400 focus:border-brandOrange-500 focus:ring-1 focus:ring-amber-200 outline-none transition" aria-label="Email for newsletter">
-                            <button data-i18n="btn_subscribe" class="px-5 py-3 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold text-sm rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 whitespace-nowrap">Subscribe</button>
-                        </div>
+                        <form id="newsletter-form" class="max-w-sm space-y-2" novalidate>
+                            <input type="email" name="email" data-i18n-ph="ph_newsletter" placeholder="Your email address" class="w-full px-4 py-3 rounded-xl bg-brown-800/80 border border-brandOrange-500/30 text-cream-100 text-sm placeholder:text-brown-400 focus:border-brandOrange-500 focus:ring-1 focus:ring-amber-200 outline-none transition" aria-label="Email for newsletter">
+                            <div class="flex gap-2">
+                                <input type="tel" name="phone" data-i18n-ph="ph_newsletter_phone" placeholder="Phone number" class="flex-1 min-w-0 px-4 py-3 rounded-xl bg-brown-800/80 border border-brandOrange-500/30 text-cream-100 text-sm placeholder:text-brown-400 focus:border-brandOrange-500 focus:ring-1 focus:ring-amber-200 outline-none transition" aria-label="Phone number for newsletter">
+                                <button type="submit" data-i18n="btn_subscribe" class="px-5 py-3 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold text-sm rounded-xl hover:shadow-lg hover:shadow-orange-500/30 transition-all duration-300 whitespace-nowrap disabled:opacity-60">Subscribe</button>
+                            </div>
+                            <p data-lead-status class="hidden text-xs mt-1" role="status" aria-live="polite"></p>
+                        </form>
                     </div>
                     <div class="flex gap-3">
                         <a href="https://youtube.com/@banarasiabuffetart?si=toOrkdaRR2pTff9F" target="_blank" rel="noopener" aria-label="YouTube" class="w-11 h-11 rounded-xl bg-brown-800/80 border border-brandOrange-500/30 flex items-center justify-center text-amber-300 hover:bg-gradient-to-br hover:from-brandOrange-500 hover:to-amber-500 hover:border-amber-400 hover:text-white transition-all duration-300 shadow-md">
@@ -1453,7 +1506,7 @@
                 nav_about: "About Us",
                 nav_services: "Services",
                 nav_packages: "Packages",
-                nav_menu: "Menu",
+                nav_venues: "Venues",
                 nav_gallery: "Gallery",
                 nav_reviews: "Reviews",
                 nav_contact: "Contact",
@@ -1559,7 +1612,6 @@
                 pkg_gold_f4: "2 Live Food Counters",
                 pkg_gold_f5: "12+ Dishes Menu",
                 pkg_gold_f6: "Jain &amp; Custom Options",
-                btn_book_now_card: "Book Now",
                 pkg_royal_badge: "Premium Choice",
                 pkg_royal: "Royal Package",
                 pkg_royal_f1: "Royal Luxury Setup",
@@ -1638,6 +1690,15 @@
                 wcu_c5_d: "10,000+ guests handled",
                 wcu_c6_t: "Custom Menus",
                 wcu_c6_d: "Aapki pasand ka menu",
+                exp_item_7: "Lunch Box",
+                exp_item_8: "Breakfast Stall",
+                exp_item_9: "Lunch Stall",
+                exp_item_10: "Dinner Stall",
+                pkg_rate_basis: "Rates depend on the size of the gathering. All rates shown are calculated for a gathering of 400 guests \u2014 the per-plate cost changes with your final guest count.",
+                nav_menu: "Menu",
+                ven_eyebrow: "Humare Venue",
+                ven_title: "Our <span class=\"gradient-text\">Venues</span>",
+                ven_desc: "Where we serve \u2014 our own spaces, or bring the full setup to yours.",
                 gal_eyebrow: "Humari Jhalak",
                 gal_title: "Our <span class=\"gradient-text\">Gallery</span>",
                 gal_desc: "A glimpse of our premium catering setups and events.",
@@ -1727,7 +1788,7 @@
                 nav_about: "हमारे बारे में",
                 nav_services: "सेवाएं",
                 nav_packages: "पैकेजेस",
-                nav_menu: "मेनू",
+                nav_venues: "वेन्यू",
                 nav_gallery: "गैलरी",
                 nav_reviews: "समीक्षाएं",
                 nav_contact: "संपर्क करें",
@@ -1833,7 +1894,6 @@
                 pkg_gold_f4: "2 लाइव फूड काउंटर",
                 pkg_gold_f5: "12+ व्यंजन मेनू",
                 pkg_gold_f6: "जैन एवं कस्टम विकल्प",
-                btn_book_now_card: "अभी बुक करें",
                 pkg_royal_badge: "शाही पसंद",
                 pkg_royal: "रॉयल पैकेज",
                 pkg_royal_f1: "रॉयल लक्जरी सेटअप",
@@ -1912,6 +1972,15 @@
                 wcu_c5_d: "10,000+ मेहमानों की व्यवस्था",
                 wcu_c6_t: "कस्टम मेनू",
                 wcu_c6_d: "आपकी पसंद का मेनू",
+                exp_item_7: "लंच बॉक्स",
+                exp_item_8: "ब्रेकफास्ट स्टॉल",
+                exp_item_9: "लंच स्टॉल",
+                exp_item_10: "डिनर स्टॉल",
+                pkg_rate_basis: "दरें मेहमानों की संख्या पर निर्भर करती हैं। यहाँ दिखाई गई सभी दरें 400 मेहमानों की गैदरिंग के आधार पर हैं — आपकी अंतिम मेहमान संख्या के अनुसार प्रति प्लेट दर बदलेगी।",
+                nav_menu: "मेनू",
+                ven_eyebrow: "हमारे वेन्यू",
+                ven_title: "हमारे <span class=\"gradient-text\">वेन्यू</span>",
+                ven_desc: "हम जहाँ सेवा देते हैं — अपने स्थान पर, या आपके स्थान पर पूरा सेटअप।",
                 gal_eyebrow: "हमारी झलक",
                 gal_title: "हमारी <span class=\"gradient-text\">गैलरी</span>",
                 gal_desc: "हमारे प्रीमियम कैटरिंग सेटअप और आयोजनों की एक झलक।",
@@ -2371,12 +2440,26 @@
                             iconClasses = "w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 flex items-center justify-center shadow-md shadow-orange-500/30";
                             priceClasses = "text-4xl font-bold gradient-text font-display";
                             btnClasses = "mt-auto block w-full text-center py-3 px-6 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 hover:from-amber-500 hover:to-brandOrange-600 text-white font-semibold rounded-full shadow-lg shadow-orange-500/35 hover:shadow-amber-500/40 transition-all duration-300";
-                            btnText = isHi ? "अभी बुक करें" : "Book Now";
                         } else if (isRoyal) {
                             badgeClasses = "bg-gradient-to-r from-brown-900 to-brown-950 text-amber-300 border-l border-b border-amber-400/30 px-4 py-1 rounded-bl-xl text-xs font-semibold";
                             iconClasses = "w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-brown-800 to-brown-950 flex items-center justify-center border border-amber-400/30 shadow-md";
                             btnClasses = "mt-auto block w-full text-center py-3 px-6 border-2 border-amber-500 text-amber-800 font-semibold rounded-full hover:bg-gradient-to-r hover:from-brandOrange-500 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300";
                         }
+
+                        // priceMode 'quote' hides the figure entirely and shows a
+                        // quote line instead. Anything else (including packages
+                        // saved before the field existed) renders the rupee price.
+                        const priceHtml = pkg.priceMode === 'quote'
+                            ? `<span class="${priceClasses}" style="font-size:1.75rem">${isHi ? 'कोटेशन प्राप्त करें' : 'Get Price Quote'}</span>`
+                            : `<span class="${priceClasses}">&#8377;${pkg.price}</span>
+                                        <span class="text-brown-500 text-sm">${priceUnit}</span>`;
+
+                        // The rate only means something alongside the gathering it
+                        // was costed on — 900/plate at 400 pax is not 900 at 100.
+                        const pax = Number(pkg.basisPax) || 0;
+                        const paxHtml = pax > 0
+                            ? `<div class="mt-2"><span class="inline-block bg-amber-100 text-brandOrange-700 px-3 py-1 rounded-full text-xs font-semibold">${isHi ? `${pax} मेहमान पर आधारित` : `Based on ${pax} pax`}</span></div>`
+                            : '';
 
                         const badgeHtml = badge ? `<div class="${badgeClasses}">${badge}</div>` : '';
                         const featuresHtml = (features || []).map(f =>
@@ -2393,8 +2476,8 @@
                                     </div>
                                     <h3 class="font-display text-2xl font-bold text-brown-900">${name}</h3>
                                     <div class="mt-4">
-                                        <span class="${priceClasses}">&#8377;${pkg.price}</span>
-                                        <span class="text-brown-500 text-sm">${priceUnit}</span>
+                                        ${priceHtml}
+                                        ${paxHtml}
                                     </div>
                                 </div>
                                 <ul class="space-y-3 mb-8 flex-1">
@@ -2425,6 +2508,50 @@
                         </div>`;
                     }).join('');
                 }
+            }
+
+            // 2b. Render Venues
+            if (Array.isArray(data.venues)) {
+                const venContainer = document.getElementById('caterer-venues-container');
+                const venSection = document.getElementById('venues');
+                if (venContainer && data.venues.length > 0) {
+                    const sortedVenues = [...data.venues].sort((a, b) => a.sortOrder - b.sortOrder);
+                    venContainer.innerHTML = sortedVenues.map(v => {
+                        const name = isHi ? (v.nameHi || v.nameEn) : (v.nameEn || v.nameHi);
+                        const area = isHi ? (v.areaHi || v.areaEn) : (v.areaEn || v.areaHi);
+                        const notes = isHi ? (v.notesHi || v.notesEn) : (v.notesEn || v.notesHi);
+                        const capacityLabel = isHi ? 'मेहमान' : 'guests';
+                        return `
+                        <div class="bg-white rounded-3xl p-8 shadow-xl border border-amber-200 hover:border-brandOrange-400 transition-all card-hover reveal active flex flex-col">
+                            <div class="flex items-start justify-between gap-3 mb-5">
+                                <div class="w-14 h-14 rounded-full bg-gradient-to-br from-brandOrange-500 to-amber-500 flex items-center justify-center shadow-md shadow-orange-500/20 flex-shrink-0">
+                                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                                </div>
+                                ${v.capacity ? `<span class="bg-amber-100 text-brandOrange-700 px-3 py-1 rounded-full text-xs font-semibold whitespace-nowrap">${v.capacity} ${capacityLabel}</span>` : ''}
+                            </div>
+                            <h3 class="font-display text-2xl font-bold text-brown-900 mb-1">${name || ''}</h3>
+                            ${area ? `<p class="text-brandOrange-600 font-semibold text-sm mb-3">${area}</p>` : ''}
+                            ${notes ? `<p class="text-brown-600 text-sm leading-relaxed">${notes}</p>` : ''}
+                        </div>`;
+                    }).join('');
+                } else if (venSection && data.venues.length === 0) {
+                    // Every venue deactivated in the CMS — hide the section rather
+                    // than leave an empty heading stranded on the page.
+                    venSection.style.display = 'none';
+                }
+            }
+
+            // 2c. Apply branding (logo + brand colours) from the CMS
+            if (data.settings) {
+                const st = data.settings;
+                if (st.logoUrl) {
+                    document.querySelectorAll('img[data-brand-logo]').forEach(img => {
+                        img.src = st.logoUrl;
+                    });
+                }
+                const root = document.documentElement;
+                if (st.primaryColor) root.style.setProperty('--brand-primary', st.primaryColor);
+                if (st.accentColor) root.style.setProperty('--brand-accent', st.accentColor);
             }
 
             // 3. Render About
@@ -2509,6 +2636,25 @@
             }
         }
 
+        // og:url and canonical are absolute URLs, so they go stale the moment the
+        // site moves domain. Deriving them from the live location keeps link
+        // previews correct on any host without editing this file again.
+        function syncCanonicalUrls() {
+            const href = window.location.origin + window.location.pathname;
+
+            const og = document.querySelector('meta[property="og:url"]');
+            if (og) og.setAttribute('content', href);
+
+            let canonical = document.querySelector('link[rel="canonical"]');
+            if (!canonical) {
+                canonical = document.createElement('link');
+                canonical.setAttribute('rel', 'canonical');
+                document.head.appendChild(canonical);
+            }
+            canonical.setAttribute('href', href);
+        }
+
+        document.addEventListener('DOMContentLoaded', syncCanonicalUrls);
         document.addEventListener('DOMContentLoaded', loadCatererCmsContent);
 
         // Initial scroll state & language state

@@ -36,6 +36,12 @@ export async function PUT(
     if (typeof body.price === "number" && !isNaN(body.price) && body.price >= 0) {
       updateData.price = body.price;
     }
+    if (body.priceMode === "amount" || body.priceMode === "quote") {
+      updateData.priceMode = body.priceMode;
+    }
+    if (typeof body.basisPax === "number" && !isNaN(body.basisPax) && body.basisPax >= 0) {
+      updateData.basisPax = body.basisPax;
+    }
     if (typeof body.priceUnitEn === "string") updateData.priceUnitEn = body.priceUnitEn.trim();
     if (typeof body.priceUnitHi === "string") updateData.priceUnitHi = body.priceUnitHi.trim();
     if (body.badgeEn === null || typeof body.badgeEn === "string") updateData.badgeEn = body.badgeEn?.trim() || null;
