@@ -1,0 +1,83 @@
+// Banarasia Caterer CMS schema.
+//
+// NOTE: these tables are currently INERT. The runtime persistence layer
+// (src/lib/caterer/store.ts) is a dual-mode JSON / Vercel Blob store and does
+// not read or write Postgres. Only scripts/seed-caterer.mjs touches these
+// tables. Kept because the models came across from the source fork; drop this
+// directory (and the prisma/pg dependencies) if the blob store is final.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// Prisma 7 moved the connection URL out of the schema; it now lives in
+// prisma.config.ts.
+datasource db {
+  provider = "postgresql"
+}
+
+// ==============================================================================
+// Caterer CMS models (sample-caterer content management)
+// ==============================================================================
+
+// Editable catering package options (Silver, Gold, Royal, etc.).
+model CatererPackage {
+  id           String   @id @default(cuid())
+  nameEn       String
+  nameHi       String
+  price        Float
+  priceUnitEn  String   @default("/ Plate")
+  priceUnitHi  String   @default("/ प्लेट")
+  badgeEn      String?
+  badgeHi      String?
+  featuresEn   Json     @default("[]")
+  featuresHi   Json     @default("[]")
+  sortOrder    Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("caterer_package")
+}
+
+// Editable catering gallery images and bilingual captions.
+model CatererGalleryItem {
+  id        String   @id @default(cuid())
+  imageUrl  String
+  captionEn String
+  captionHi String
+  sortOrder Int      @default(0)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([sortOrder])
+  @@map("caterer_gallery_item")
+}
+
+// Single editable About section record for sample-caterer.
+model CatererAbout {
+  id              String   @id @default(cuid())
+  slug            String   @unique @default("default")
+  storyTitleEn    String   @default("Our Story")
+  storyTitleHi    String   @default("हमारी कहानी")
+  titleEn         String   @default("Crafting Memorable Celebrations")
+  titleHi         String   @default("स्मरणोत्सवों को खास बनाना")
+  descriptionEn   String
+  descriptionHi   String
+  mottoEn         String   @default("\"Swad Adab Se Chakhayenge\"")
+  mottoHi         String   @default("\"स्वाद अदब से चखायेंगे\"")
+  subMottoEn      String?  @default("That's why we proudly say")
+  subMottoHi      String?  @default("इसलिए हम गर्व से कहते हैं")
+  establishedYear Int      @default(2015)
+  stats           Json     @default("[]")
+  expertise       Json     @default("[]")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("caterer_about")
+}
+
