@@ -1264,24 +1264,28 @@
                 <div class="reveal-left">
                     <div class="bg-white rounded-3xl p-8 shadow-xl border border-amber-200/70 shadow-orange-500/10">
                         <h3 data-i18n="form_title" class="font-display text-2xl font-bold text-brown-900 mb-6">Send Inquiry</h3>
-                        <form class="space-y-4">
+                        <!-- Inquiry form — posts to /api/caterer/leads (admin: Leads tab) -->
+                        <form id="inquiry-form" class="space-y-4" novalidate>
                             <div class="grid grid-cols-2 gap-4">
-                                <input type="text" data-i18n-ph="ph_name" placeholder="Your Name" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm">
-                                <input type="tel" data-i18n-ph="ph_phone" placeholder="Phone Number" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm">
+                                <input type="text" name="name" data-i18n-ph="ph_name" placeholder="Your Name" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm">
+                                <input type="tel" name="phone" data-i18n-ph="ph_phone" placeholder="Phone Number" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm">
                             </div>
-                            <input type="email" data-i18n-ph="ph_email" placeholder="Email Address" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm">
-                            <select class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm text-brown-600">
-                                <option data-i18n-opt="opt_select_event">Select Event Type</option>
-                                <option data-i18n-opt="opt_wedding">Wedding</option>
-                                <option data-i18n-opt="opt_engagement">Engagement</option>
-                                <option data-i18n-opt="opt_birthday">Birthday</option>
-                                <option data-i18n-opt="opt_corporate">Corporate</option>
-                                <option data-i18n-opt="opt_reception">Reception</option>
-                                <option data-i18n-opt="opt_other">Other</option>
+                            <input type="email" name="email" data-i18n-ph="ph_email" placeholder="Email Address" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm">
+                            <!-- Option values stay English so a lead reads the same whichever
+                                 language the visitor submitted it in. -->
+                            <select name="eventType" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm text-brown-600">
+                                <option value="" data-i18n-opt="opt_select_event">Select Event Type</option>
+                                <option value="Wedding" data-i18n-opt="opt_wedding">Wedding</option>
+                                <option value="Engagement" data-i18n-opt="opt_engagement">Engagement</option>
+                                <option value="Birthday" data-i18n-opt="opt_birthday">Birthday</option>
+                                <option value="Corporate" data-i18n-opt="opt_corporate">Corporate</option>
+                                <option value="Reception" data-i18n-opt="opt_reception">Reception</option>
+                                <option value="Other" data-i18n-opt="opt_other">Other</option>
                             </select>
-                            <input type="number" data-i18n-ph="ph_guests" placeholder="Number of Guests" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm">
-                            <textarea data-i18n-ph="ph_msg" placeholder="Your Message / Special Requirements" rows="3" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm resize-none"></textarea>
-                            <button type="submit" data-i18n="btn_send_inquiry" class="w-full py-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-amber-500/40 transition-all transform hover:scale-[1.02]">Send Inquiry</button>
+                            <input type="number" name="guests" data-i18n-ph="ph_guests" placeholder="Number of Guests" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm">
+                            <textarea name="message" data-i18n-ph="ph_msg" placeholder="Your Message / Special Requirements" rows="3" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm resize-none"></textarea>
+                            <button type="submit" data-i18n="btn_send_inquiry" class="w-full py-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/30 hover:shadow-amber-500/40 transition-all transform hover:scale-[1.02] disabled:opacity-60">Send Inquiry</button>
+                            <p data-lead-status class="hidden text-sm" role="status" aria-live="polite"></p>
                         </form>
                     </div>
                 </div>
@@ -1774,7 +1778,15 @@
                 ftr_brand_desc: "Premium catering services in Lucknow since 2015. Making every celebration a grand feast with authentic flavors and elegant presentation.",
                 ftr_news_title: "Stay updated with our latest offerings",
                 ph_newsletter: "Your email address",
+                ph_newsletter_phone: "Phone number",
                 btn_subscribe: "Subscribe",
+                lead_sending: "Sending…",
+                lead_need_contact: "Please enter your email or phone number.",
+                lead_thanks_news: "Thank you! We will keep you updated.",
+                lead_thanks_inquiry: "Thank you! We will call you back shortly.",
+                lead_invalid: "Please check the email and phone number entered.",
+                lead_too_many: "Too many attempts. Please try again in a few minutes.",
+                lead_failed: "Could not send right now. Please call +91 99186 29017.",
                 ftr_quick_links: "Quick Links",
                 ftr_contact_us: "Contact Us",
                 ftr_yt_channel: "YouTube Channel",
@@ -2056,7 +2068,15 @@
                 ftr_brand_desc: "2015 से लखनऊ में प्रीमियम कैटरिंग सेवाएं। प्रामाणिक स्वाद और शानदार प्रस्तुति के साथ हर उत्सव को दावत बनाना।",
                 ftr_news_title: "हमारे नवीनतम प्रस्तावों से अपडेट रहें",
                 ph_newsletter: "आपका ईमेल पता",
+                ph_newsletter_phone: "फोन नंबर",
                 btn_subscribe: "सब्सक्राइब करें",
+                lead_sending: "भेजा जा रहा है…",
+                lead_need_contact: "कृपया अपना ईमेल या फोन नंबर दर्ज करें।",
+                lead_thanks_news: "धन्यवाद! हम आपको अपडेट भेजते रहेंगे।",
+                lead_thanks_inquiry: "धन्यवाद! हम शीघ्र ही आपसे संपर्क करेंगे।",
+                lead_invalid: "कृपया दर्ज किया गया ईमेल और फोन नंबर जांचें।",
+                lead_too_many: "बहुत अधिक प्रयास। कृपया कुछ मिनट बाद पुनः प्रयास करें।",
+                lead_failed: "अभी भेज नहीं सके। कृपया +91 99186 29017 पर कॉल करें।",
                 ftr_quick_links: "त्वरित लिंक",
                 ftr_contact_us: "संपर्क जानकारी",
                 ftr_yt_channel: "यूट्यूब चैनल",
