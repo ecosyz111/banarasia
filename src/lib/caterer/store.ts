@@ -61,12 +61,14 @@ export type CatererVenue = {
   updatedAt?: string;
 };
 
-// Branding the owner can change without a deploy: the logo swap and the two
-// colours the public page derives every accent from.
+// Branding the owner can change without a deploy: the logo swap, the two
+// colours the public page derives every accent from, and the WhatsApp line
+// every wa.me link on the site points at (stored with country code, no "+").
 export type CatererSettings = {
   logoUrl: string;
   primaryColor: string;
   accentColor: string;
+  whatsappNumber: string;
   updatedAt?: string;
 };
 
@@ -146,6 +148,7 @@ export const DEFAULT_SETTINGS: CatererSettings = {
   logoUrl: "/sample-caterer/tl.png",
   primaryColor: "#ea580c",
   accentColor: "#eab308",
+  whatsappNumber: "919918629017",
 };
 
 // ---------------------------------------------------------------------------

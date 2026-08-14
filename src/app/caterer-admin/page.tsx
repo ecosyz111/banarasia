@@ -77,6 +77,7 @@ type CatererSettings = {
   logoUrl: string;
   primaryColor: string;
   accentColor: string;
+  whatsappNumber: string;
 };
 
 type CatererStat = {
@@ -207,6 +208,7 @@ const DEFAULT_SETTINGS_FORM: CatererSettings = {
   logoUrl: "/sample-caterer/tl.png",
   primaryColor: "#ea580c",
   accentColor: "#eab308",
+  whatsappNumber: "919918629017",
 };
 
 const DEFAULT_GALLERY_FORM: GalleryFormData = {
@@ -1120,12 +1122,20 @@ export default function CatererAdminDashboard() {
       return;
     }
 
+    // Send the wa.me-ready digits rather than what was typed, so the field
+    // shows the same number the public site will dial after saving.
+    const waNumber = whatsappNumber(settingsForm.whatsappNumber);
+    if (waNumber.length < 10 || waNumber.length > 15) {
+      showToast("error", "Enter a valid WhatsApp number, e.g. 9918629017.");
+      return;
+    }
+
     setSubmittingSettings(true);
     try {
       const res = await apiFetch("/api/caterer/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settingsForm),
+        body: JSON.stringify({ ...settingsForm, whatsappNumber: waNumber }),
       });
 
       if (res.ok) {
@@ -2636,6 +2646,46 @@ export default function CatererAdminDashboard() {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              {/* WhatsApp line */}
+              <div className="rounded-2xl border border-stone-200 bg-white p-6 shadow-sm space-y-4">
+                <h3 className="text-sm font-bold uppercase tracking-wider text-stone-500">
+                  WhatsApp Number
+                </h3>
+
+                <div>
+                  <input
+                    type="tel"
+                    value={settingsForm.whatsappNumber}
+                    onChange={(e) =>
+                      setSettingsForm((prev) => ({ ...prev, whatsappNumber: e.target.value }))
+                    }
+                    className="w-full rounded-xl border border-stone-200 px-3 py-2 font-mono text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                    placeholder="9918629017"
+                  />
+                  <p className="mt-2 text-xs text-stone-500">
+                    Every WhatsApp button on the public site uses this line, and a submitted
+                    enquiry opens a chat here with the visitor&apos;s details already typed out.
+                    A plain 10-digit number is fine — +91 is added for you.
+                  </p>
+                </div>
+
+                {whatsappNumber(settingsForm.whatsappNumber).length >= 10 && (
+                  <div className="rounded-xl border border-stone-100 bg-[#FAF8F5] p-4">
+                    <p className="mb-2 text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Chats open at
+                    </p>
+                    <a
+                      href={`https://wa.me/${whatsappNumber(settingsForm.whatsappNumber)}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-mono text-sm font-semibold text-green-700 hover:underline"
+                    >
+                      wa.me/{whatsappNumber(settingsForm.whatsappNumber)}
+                    </a>
+                  </div>
+                )}
               </div>
 
               <div className="flex justify-end">

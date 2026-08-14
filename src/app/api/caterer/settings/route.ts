@@ -15,6 +15,16 @@ function isSafeLogoUrl(url: string): boolean {
   return url.startsWith("/") || url.startsWith("https://");
 }
 
+// The number is pasted into wa.me links, which take digits with a country code
+// and no "+". Owners type it however they say it aloud ("+91 99186 29017",
+// "09918629017"), so normalise here and assume +91 for a bare Indian number.
+function normaliseWhatsapp(input: string): string {
+  const digits = input.replace(/\D/g, "");
+  if (digits.length === 10) return `91${digits}`;
+  if (digits.length === 11 && digits.startsWith("0")) return `91${digits.slice(1)}`;
+  return digits;
+}
+
 // GET /api/caterer/settings — Branding for the admin console
 export async function GET(req: Request) {
   const denied = requireAdmin(req);
@@ -63,6 +73,22 @@ export async function PUT(req: Request) {
         }
         updateData[key] = value.trim().toLowerCase();
       }
+    }
+
+    if (typeof body.whatsappNumber === "string" && body.whatsappNumber.trim()) {
+      const number = normaliseWhatsapp(body.whatsappNumber);
+      // E.164 tops out at 15 digits; anything under 10 cannot be a reachable
+      // number with a country code in front of it.
+      if (number.length < 10 || number.length > 15) {
+        return NextResponse.json(
+          {
+            error:
+              "whatsappNumber must be a phone number with country code, e.g. 919918629017.",
+          },
+          { status: 400 }
+        );
+      }
+      updateData.whatsappNumber = number;
     }
 
     const settings = await updateSettings(updateData);

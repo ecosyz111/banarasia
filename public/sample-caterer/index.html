@@ -2603,6 +2603,16 @@
                 const root = document.documentElement;
                 if (st.primaryColor) root.style.setProperty('--brand-primary', st.primaryColor);
                 if (st.accentColor) root.style.setProperty('--brand-accent', st.accentColor);
+
+                // Point every WhatsApp entry point at the CMS number: the contact
+                // button, the footer icon and the floating chat bubble. The inquiry
+                // form reads its target off these links, so it follows along too.
+                const waDigits = String(st.whatsappNumber || '').replace(/\D/g, '');
+                if (waDigits) {
+                    document.querySelectorAll('a[href*="wa.me/"]').forEach(a => {
+                        a.setAttribute('href', 'https://wa.me/' + waDigits);
+                    });
+                }
             }
 
             // 3. Render About
@@ -2732,11 +2742,14 @@
             if (ok === false) el.classList.add(errClass);
         }
 
-        // The caterer's WhatsApp line is read off the existing wa.me links so
-        // there is still only one place on the page to change the number.
+        // The caterer's WhatsApp line is read off the page's own wa.me links,
+        // which the CMS branding settings rewrite on load — so the enquiry
+        // handoff always dials whatever the WhatsApp buttons dial.
         function whatsappNumber() {
             const link = document.querySelector('a[href*="wa.me/"]');
-            const digits = link ? (link.getAttribute('href').split('wa.me/')[1] || '').replace(/\D/g, '') : '';
+            const path = link ? (link.getAttribute('href').split('wa.me/')[1] || '') : '';
+            // Stop at the first ?/#/ so a prefilled ?text= never leaks digits in.
+            const digits = path.split(/[?#/]/)[0].replace(/\D/g, '');
             return digits || '919918629017';
         }
 
