@@ -25,6 +25,8 @@ const KINDS = {
   logo: { prefix: "logo", blobDir: "caterer/branding" },
   venue: { prefix: "venue", blobDir: "caterer/venues" },
   cuisine: { prefix: "cuisine", blobDir: "caterer/cuisines" },
+  service: { prefix: "service", blobDir: "caterer/services" },
+  feature: { prefix: "feature", blobDir: "caterer/features" },
   // The fixed page photography — hero, About, section backdrops, share image
   // and favicon. One folder keeps them together in the Blob store.
   site: { prefix: "site", blobDir: "caterer/site" },

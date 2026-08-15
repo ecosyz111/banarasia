@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import PhotoCardCollection, { type PhotoCard } from "@/components/PhotoCardCollection";
 
 // ---------------------------------------------------------------------------
 // Types & Interfaces
@@ -480,6 +481,8 @@ export default function CatererAdminDashboard() {
     | "venues"
     | "gallery"
     | "cuisines"
+    | "services"
+    | "features"
     | "reviews"
     | "leads"
     | "about"
@@ -496,6 +499,9 @@ export default function CatererAdminDashboard() {
   const [venues, setVenues] = useState<CatererVenue[]>([]);
   const [leads, setLeads] = useState<CatererLead[]>([]);
   const [cuisines, setCuisines] = useState<CatererCuisine[]>([]);
+  // "Our Services" and "Why Choose Us" — same record, own collections.
+  const [services, setServices] = useState<PhotoCard[]>([]);
+  const [features, setFeatures] = useState<PhotoCard[]>([]);
   const [testimonials, setTestimonials] = useState<CatererTestimonial[]>([]);
 
   // Loading states
@@ -505,6 +511,8 @@ export default function CatererAdminDashboard() {
   const [loadingVenues, setLoadingVenues] = useState(false);
   const [loadingLeads, setLoadingLeads] = useState(false);
   const [loadingCuisines, setLoadingCuisines] = useState(false);
+  const [loadingServices, setLoadingServices] = useState(false);
+  const [loadingFeatures, setLoadingFeatures] = useState(false);
   const [loadingTestimonials, setLoadingTestimonials] = useState(false);
 
   // Leads — status toggle and delete confirmation
@@ -756,6 +764,44 @@ export default function CatererAdminDashboard() {
     }
   }, [apiFetch, showToast]);
 
+  const fetchServices = useCallback(async () => {
+    setLoadingServices(true);
+    try {
+      const res = await apiFetch("/api/caterer/services", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setServices(data.services ?? []);
+      } else {
+        showToast("error", "Failed to fetch services.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "Unable to load services. Please try again.");
+      }
+    } finally {
+      setLoadingServices(false);
+    }
+  }, [apiFetch, showToast]);
+
+  const fetchFeatures = useCallback(async () => {
+    setLoadingFeatures(true);
+    try {
+      const res = await apiFetch("/api/caterer/features", { cache: "no-store" });
+      if (res.ok) {
+        const data = await res.json();
+        setFeatures(data.features ?? []);
+      } else {
+        showToast("error", "Failed to fetch the Why Choose Us tiles.");
+      }
+    } catch (err) {
+      if ((err as Error).message !== "Unauthorized") {
+        showToast("error", "Unable to load the Why Choose Us tiles. Please try again.");
+      }
+    } finally {
+      setLoadingFeatures(false);
+    }
+  }, [apiFetch, showToast]);
+
   const fetchTestimonials = useCallback(async () => {
     setLoadingTestimonials(true);
     try {
@@ -817,6 +863,8 @@ export default function CatererAdminDashboard() {
     fetchLeads();
     fetchSettings();
     fetchCuisines();
+    fetchServices();
+    fetchFeatures();
     fetchTestimonials();
     fetchSite();
   }, [
@@ -828,6 +876,8 @@ export default function CatererAdminDashboard() {
     fetchLeads,
     fetchSettings,
     fetchCuisines,
+    fetchServices,
+    fetchFeatures,
     fetchTestimonials,
     fetchSite,
   ]);
@@ -2023,10 +2073,12 @@ export default function CatererAdminDashboard() {
 
         {/* Navigation Tabs */}
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <nav className="-mb-px flex space-x-6">
+          {/* Eleven tabs no longer fit a laptop width, so the strip scrolls
+              sideways rather than wrapping labels onto two lines. */}
+          <nav className="-mb-px flex space-x-6 overflow-x-auto">
             <button
               onClick={() => setActiveTab("packages")}
-              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-semibold transition ${
                 activeTab === "packages"
                   ? "border-orange-600 text-orange-600"
                   : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
@@ -2043,7 +2095,7 @@ export default function CatererAdminDashboard() {
 
             <button
               onClick={() => setActiveTab("venues")}
-              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-semibold transition ${
                 activeTab === "venues"
                   ? "border-orange-600 text-orange-600"
                   : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
@@ -2061,7 +2113,7 @@ export default function CatererAdminDashboard() {
 
             <button
               onClick={() => setActiveTab("gallery")}
-              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-semibold transition ${
                 activeTab === "gallery"
                   ? "border-orange-600 text-orange-600"
                   : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
@@ -2078,7 +2130,7 @@ export default function CatererAdminDashboard() {
 
             <button
               onClick={() => setActiveTab("cuisines")}
-              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-semibold transition ${
                 activeTab === "cuisines"
                   ? "border-orange-600 text-orange-600"
                   : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
@@ -2094,8 +2146,42 @@ export default function CatererAdminDashboard() {
             </button>
 
             <button
+              onClick={() => setActiveTab("services")}
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-semibold transition ${
+                activeTab === "services"
+                  ? "border-orange-600 text-orange-600"
+                  : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
+              }`}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+              <span>Services</span>
+              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
+                {services.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab("features")}
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-semibold transition ${
+                activeTab === "features"
+                  ? "border-orange-600 text-orange-600"
+                  : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
+              }`}
+            >
+              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+              <span>Why Choose Us</span>
+              <span className="rounded-full bg-stone-100 px-2 py-0.5 text-xs font-medium text-stone-600">
+                {features.length}
+              </span>
+            </button>
+
+            <button
               onClick={() => setActiveTab("reviews")}
-              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-semibold transition ${
                 activeTab === "reviews"
                   ? "border-orange-600 text-orange-600"
                   : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
@@ -2112,7 +2198,7 @@ export default function CatererAdminDashboard() {
 
             <button
               onClick={() => setActiveTab("leads")}
-              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-semibold transition ${
                 activeTab === "leads"
                   ? "border-orange-600 text-orange-600"
                   : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
@@ -2137,7 +2223,7 @@ export default function CatererAdminDashboard() {
 
             <button
               onClick={() => setActiveTab("about")}
-              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-semibold transition ${
                 activeTab === "about"
                   ? "border-orange-600 text-orange-600"
                   : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
@@ -2151,7 +2237,7 @@ export default function CatererAdminDashboard() {
 
             <button
               onClick={() => setActiveTab("site")}
-              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-semibold transition ${
                 activeTab === "site"
                   ? "border-orange-600 text-orange-600"
                   : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
@@ -2165,7 +2251,7 @@ export default function CatererAdminDashboard() {
 
             <button
               onClick={() => setActiveTab("branding")}
-              className={`flex items-center gap-2 border-b-2 py-3 px-1 text-sm font-semibold transition ${
+              className={`flex shrink-0 items-center gap-2 whitespace-nowrap border-b-2 py-3 px-1 text-sm font-semibold transition ${
                 activeTab === "branding"
                   ? "border-orange-600 text-orange-600"
                   : "border-transparent text-stone-500 hover:border-stone-300 hover:text-stone-700"
@@ -2774,6 +2860,56 @@ export default function CatererAdminDashboard() {
               </div>
             )}
           </section>
+        )}
+
+        {/* ================================================================ */}
+        {/* TAB: SERVICES */}
+        {/* ================================================================ */}
+        {activeTab === "services" && (
+          <PhotoCardCollection
+            items={services}
+            loading={loadingServices}
+            endpoint="/api/caterer/services"
+            uploadKind="service"
+            heading="Our Services"
+            blurb="The photo tiles under &ldquo;Our Services&rdquo;. Each one is a kind of event you cater."
+            singular="service"
+            emptyBody="The services section keeps its built-in tiles until you add your own."
+            placeholders={{
+              nameEn: "Wedding Catering",
+              nameHi: "वेडिंग कैटरिंग",
+              descEn: "Grand shaadi ka grand bhoj",
+              descHi: "भव्य शादी का भव्य भोज",
+            }}
+            apiFetch={apiFetch}
+            showToast={showToast}
+            onChanged={fetchServices}
+          />
+        )}
+
+        {/* ================================================================ */}
+        {/* TAB: WHY CHOOSE US */}
+        {/* ================================================================ */}
+        {activeTab === "features" && (
+          <PhotoCardCollection
+            items={features}
+            loading={loadingFeatures}
+            endpoint="/api/caterer/features"
+            uploadKind="feature"
+            heading="Why Choose Us"
+            blurb="The photo tiles under &ldquo;Why Choose Us&rdquo; — the reasons a client should book you."
+            singular="reason"
+            emptyBody="The Why Choose Us section keeps its built-in tiles until you add your own."
+            placeholders={{
+              nameEn: "Freshly Prepared",
+              nameHi: "ताज़ा तैयार",
+              descEn: "Taaza aur swadisht, har baar",
+              descHi: "ताज़ा और स्वादिष्ट, हर बार",
+            }}
+            apiFetch={apiFetch}
+            showToast={showToast}
+            onChanged={fetchFeatures}
+          />
         )}
 
         {/* ================================================================ */}

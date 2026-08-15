@@ -162,10 +162,14 @@
         .ornament-divider::after { background: linear-gradient(90deg, rgba(250,204,21,0.5), transparent); }
         .ornament-dot { display: inline-block; width: 8px; height: 8px; background: currentColor; transform: rotate(45deg); opacity: 0.85; }
 
-        /* Smooth image loading */
+        /* Smooth image loading. The fade is opt-in: an image is only hidden once
+           the script has taken charge of revealing it (see initLazyImageFade).
+           Keying this on the attribute instead would leave any image the script
+           never reaches — a CMS-rendered one, or all of them if the script
+           fails — stuck at opacity 0 forever. */
         img { opacity: 1; transition: opacity 0.4s ease; }
-        img[loading="lazy"] { opacity: 0; }
-        img[loading="lazy"].loaded { opacity: 1; }
+        img.img-fade { opacity: 0; }
+        img.img-fade.loaded { opacity: 1; }
     </style>
 </head>
 <body class="bg-cream-50 text-brown-900 overflow-x-hidden">
@@ -186,7 +190,6 @@
                     <a href="#about" data-i18n="nav_about" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="about">About Us</a>
                     <a href="#services" data-i18n="nav_services" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="services">Services</a>
                     <a href="#packages" data-i18n="nav_packages" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="packages">Packages</a>
-                    <a href="#menu" data-i18n="nav_menu" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="menu">Menu</a>
                     <a href="#venues" data-i18n="nav_venues" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="venues">Venues</a>
                     <a href="#gallery" data-i18n="nav_gallery" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="gallery">Gallery</a>
                     <a href="#reviews" data-i18n="nav_reviews" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="reviews">Reviews</a>
@@ -198,7 +201,7 @@
                         <span class="text-amber-400/40 px-1 text-xs font-light select-none">|</span>
                         <span id="lang-hi-desktop" class="px-3 py-1 rounded-full text-cream-200/80 hover:text-white font-medium text-xs transition-all duration-300">हिंदी</span>
                     </div>
-                    <a href="#contact" data-i18n="btn_book_catering" class="hidden sm:inline-flex px-6 py-2.5 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 hover:from-amber-500 hover:to-brandOrange-600 text-white font-semibold text-sm rounded-full shadow-md shadow-brandOrange-600/30 hover:shadow-lg hover:shadow-amber-500/40 transition-all duration-300 transform hover:scale-[1.03]">Book Catering</a>
+                    <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="booking" data-i18n="btn_book_catering" class="hidden sm:inline-flex px-6 py-2.5 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 hover:from-amber-500 hover:to-brandOrange-600 text-white font-semibold text-sm rounded-full shadow-md shadow-brandOrange-600/30 hover:shadow-lg hover:shadow-amber-500/40 transition-all duration-300 transform hover:scale-[1.03]">Book Catering</a>
                     <button id="mobile-menu-btn" class="lg:hidden text-brown-800 p-2.5 rounded-xl hover:bg-amber-100/50 transition-colors" aria-label="Toggle menu" aria-expanded="false">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                     </button>
@@ -217,13 +220,12 @@
                 <a href="#about" data-i18n="nav_about" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">About</a>
                 <a href="#services" data-i18n="nav_services" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Services</a>
                 <a href="#packages" data-i18n="nav_packages" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Packages</a>
-                <a href="#menu" data-i18n="nav_menu" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Menu</a>
                 <a href="#venues" data-i18n="nav_venues" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Venues</a>
                 <a href="#gallery" data-i18n="nav_gallery" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Gallery</a>
                 <a href="#reviews" data-i18n="nav_reviews" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Reviews</a>
                 <a href="#contact" data-i18n="nav_contact" class="text-cream-100 hover:text-amber-400 hover:bg-brandOrange-500/20 transition-all font-medium py-3 px-4 rounded-xl">Contact</a>
                 <div class="pt-2">
-                    <a href="#contact" data-i18n="btn_book_catering" class="block px-6 py-3.5 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold text-center rounded-full shadow-lg shadow-brandOrange-600/30">Book Catering</a>
+                    <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="booking" data-i18n="btn_book_catering" class="block px-6 py-3.5 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold text-center rounded-full shadow-lg shadow-brandOrange-600/30">Book Catering</a>
                 </div>
             </div>
         </div>
@@ -253,7 +255,7 @@
                 <p id="caterer-hero-desc" data-i18n="hero_desc" class="text-cream-200 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style="text-shadow: 0 1px 8px rgba(0,0,0,0.2);">Premium catering experiences crafted with authentic taste, elegant presentation, and heartfelt hospitality.</p>
 
                 <div class="flex flex-wrap justify-center gap-3 sm:gap-4 mb-16">
-                    <a href="#contact" data-i18n="btn_book_now" class="px-8 py-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 hover:from-amber-500 hover:to-brandOrange-600 text-white font-semibold rounded-full shadow-lg shadow-brandOrange-600/35 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 transform hover:scale-[1.04] text-base sm:text-lg">Book Now</a>
+                    <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="booking" data-i18n="btn_book_now" class="px-8 py-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 hover:from-amber-500 hover:to-brandOrange-600 text-white font-semibold rounded-full shadow-lg shadow-brandOrange-600/35 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 transform hover:scale-[1.04] text-base sm:text-lg">Book Now</a>
                     <a href="#packages" data-i18n="btn_view_packages" class="px-8 py-4 border-2 border-amber-400/60 text-amber-300 font-semibold rounded-full hover:bg-amber-400/20 hover:border-amber-400 transition-all duration-300 text-base sm:text-lg">View Packages</a>
                     <a href="https://youtube.com/@banarasiabuffetart?si=toOrkdaRR2pTff9F" target="_blank" rel="noopener" class="px-8 py-4 border-2 border-cream-300/25 text-cream-200 font-semibold rounded-full hover:bg-brandOrange-500/20 hover:border-amber-400/50 transition-all duration-300 text-base sm:text-lg flex items-center gap-2">
                         <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814z"/><path fill="#fff" d="M9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
@@ -444,69 +446,86 @@
                 <p data-i18n="srv_desc" class="text-cream-200 max-w-2xl mx-auto text-lg">Har khushi ke mauke ke liye, professional catering services.</p>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                <div class="glass rounded-2xl p-6 text-center card-hover reveal group border border-brandOrange-500/20 hover:border-amber-400/50">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500/30 to-amber-500/30 border border-brandOrange-500/40 flex items-center justify-center group-hover:from-brandOrange-500 group-hover:to-amber-500 transition-all shadow-md shadow-orange-500/20">
-                        <svg class="w-8 h-8 text-amber-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg>
+            <!-- Services grid — hydrated from /api/caterer/content (CMS: Services tab) -->
+            <div id="caterer-services-container" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal border border-brandOrange-500/20">
+                    <img src="https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80" alt="Wedding catering for a grand shaadi celebration" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/92 via-brown-950/45 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="srv_1_title" class="text-white font-display text-lg font-bold">Wedding Catering</h3>
+                            <p data-i18n="srv_1_desc" class="text-amber-300 text-sm font-medium">Grand shaadi ka grand bhoj</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="srv_1_title" class="text-white font-display text-lg font-bold mb-2">Wedding Catering</h3>
-                    <p data-i18n="srv_1_desc" class="text-cream-300 text-sm">Grand shaadi ka grand bhoj</p>
                 </div>
 
-                <div class="glass rounded-2xl p-6 text-center card-hover reveal group border border-brandOrange-500/20 hover:border-amber-400/50">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500/30 to-amber-500/30 border border-brandOrange-500/40 flex items-center justify-center group-hover:from-brandOrange-500 group-hover:to-amber-500 transition-all shadow-md shadow-orange-500/20">
-                        <svg class="w-8 h-8 text-amber-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal border border-brandOrange-500/20">
+                    <img src="https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80" alt="Engagement ceremony catering" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/92 via-brown-950/45 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="srv_2_title" class="text-white font-display text-lg font-bold">Engagement</h3>
+                            <p data-i18n="srv_2_desc" class="text-amber-300 text-sm font-medium">Ring ceremony feast</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="srv_2_title" class="text-white font-display text-lg font-bold mb-2">Engagement</h3>
-                    <p data-i18n="srv_2_desc" class="text-cream-300 text-sm">Ring ceremony feast</p>
                 </div>
 
-                <div class="glass rounded-2xl p-6 text-center card-hover reveal group border border-brandOrange-500/20 hover:border-amber-400/50">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500/30 to-amber-500/30 border border-brandOrange-500/40 flex items-center justify-center group-hover:from-brandOrange-500 group-hover:to-amber-500 transition-all shadow-md shadow-orange-500/20">
-                        <svg class="w-8 h-8 text-amber-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A1.75 1.75 0 003 15.546M12 3v1m0 11v1m-4-6h1m6 0h1m-8.5 3.5l.7-.7m7.6-7.6l.7-.7m-8 0l-.7-.7m7.6 7.6l.7.7"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal border border-brandOrange-500/20">
+                    <img src="https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80" alt="Birthday party catering setup" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/92 via-brown-950/45 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="srv_3_title" class="text-white font-display text-lg font-bold">Birthday Parties</h3>
+                            <p data-i18n="srv_3_desc" class="text-amber-300 text-sm font-medium">Special birthday menu</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="srv_3_title" class="text-white font-display text-lg font-bold mb-2">Birthday Parties</h3>
-                    <p data-i18n="srv_3_desc" class="text-cream-300 text-sm">Special birthday menu</p>
                 </div>
 
-                <div class="glass rounded-2xl p-6 text-center card-hover reveal group border border-brandOrange-500/20 hover:border-amber-400/50">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500/30 to-amber-500/30 border border-brandOrange-500/40 flex items-center justify-center group-hover:from-brandOrange-500 group-hover:to-amber-500 transition-all shadow-md shadow-orange-500/20">
-                        <svg class="w-8 h-8 text-amber-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal border border-brandOrange-500/20">
+                    <img src="https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&q=80" alt="Corporate event catering venue" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/92 via-brown-950/45 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="srv_4_title" class="text-white font-display text-lg font-bold">Corporate Events</h3>
+                            <p data-i18n="srv_4_desc" class="text-amber-300 text-sm font-medium">Professional service</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="srv_4_title" class="text-white font-display text-lg font-bold mb-2">Corporate Events</h3>
-                    <p data-i18n="srv_4_desc" class="text-cream-300 text-sm">Professional service</p>
                 </div>
 
-                <div class="glass rounded-2xl p-6 text-center card-hover reveal group border border-brandOrange-500/20 hover:border-amber-400/50">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500/30 to-amber-500/30 border border-brandOrange-500/40 flex items-center justify-center group-hover:from-brandOrange-500 group-hover:to-amber-500 transition-all shadow-md shadow-orange-500/20">
-                        <svg class="w-8 h-8 text-amber-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal border border-brandOrange-500/20">
+                    <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80" alt="Grand reception banquet table setting" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/92 via-brown-950/45 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="srv_5_title" class="text-white font-display text-lg font-bold">Reception</h3>
+                            <p data-i18n="srv_5_desc" class="text-amber-300 text-sm font-medium">Grand reception feast</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="srv_5_title" class="text-white font-display text-lg font-bold mb-2">Reception</h3>
-                    <p data-i18n="srv_5_desc" class="text-cream-300 text-sm">Grand reception feast</p>
                 </div>
 
-                <div class="glass rounded-2xl p-6 text-center card-hover reveal group border border-brandOrange-500/20 hover:border-amber-400/50">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500/30 to-amber-500/30 border border-brandOrange-500/40 flex items-center justify-center group-hover:from-brandOrange-500 group-hover:to-amber-500 transition-all shadow-md shadow-orange-500/20">
-                        <svg class="w-8 h-8 text-amber-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal border border-brandOrange-500/20">
+                    <img src="https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80" alt="Festive Indian snacks and samosas" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/92 via-brown-950/45 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="srv_6_title" class="text-white font-display text-lg font-bold">Festive Catering</h3>
+                            <p data-i18n="srv_6_desc" class="text-amber-300 text-sm font-medium">Tyohaar ki dawaat</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="srv_6_title" class="text-white font-display text-lg font-bold mb-2">Festive Catering</h3>
-                    <p data-i18n="srv_6_desc" class="text-cream-300 text-sm">Tyohaar ki dawaat</p>
                 </div>
 
-                <div class="glass rounded-2xl p-6 text-center card-hover reveal group border border-brandOrange-500/20 hover:border-amber-400/50">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500/30 to-amber-500/30 border border-brandOrange-500/40 flex items-center justify-center group-hover:from-brandOrange-500 group-hover:to-amber-500 transition-all shadow-md shadow-orange-500/20">
-                        <svg class="w-8 h-8 text-amber-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal border border-brandOrange-500/20">
+                    <img src="https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=600&q=80" alt="Family gathering shared meal" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/92 via-brown-950/45 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="srv_7_title" class="text-white font-display text-lg font-bold">Family Gatherings</h3>
+                            <p data-i18n="srv_7_desc" class="text-amber-300 text-sm font-medium">Ghar jaisi mehfil</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="srv_7_title" class="text-white font-display text-lg font-bold mb-2">Family Gatherings</h3>
-                    <p data-i18n="srv_7_desc" class="text-cream-300 text-sm">Ghar jaisi mehfil</p>
                 </div>
 
-                <div class="glass rounded-2xl p-6 text-center card-hover reveal group border border-brandOrange-500/20 hover:border-amber-400/50">
-                    <div class="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500/30 to-amber-500/30 border border-brandOrange-500/40 flex items-center justify-center group-hover:from-brandOrange-500 group-hover:to-amber-500 transition-all shadow-md shadow-orange-500/20">
-                        <svg class="w-8 h-8 text-amber-300 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal border border-brandOrange-500/20">
+                    <img src="https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80" alt="Live counter cooking paneer tikka fresh" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/92 via-brown-950/45 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="srv_8_title" class="text-white font-display text-lg font-bold">Live Counters</h3>
+                            <p data-i18n="srv_8_desc" class="text-amber-300 text-sm font-medium">Fresh live cooking</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="srv_8_title" class="text-white font-display text-lg font-bold mb-2">Live Counters</h3>
-                    <p data-i18n="srv_8_desc" class="text-cream-300 text-sm">Fresh live cooking</p>
                 </div>
             </div>
         </div>
@@ -546,7 +565,7 @@
                             <li class="flex items-center text-brown-700 text-sm"><svg class="w-5 h-5 text-brandOrange-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pkg_silver_f5">Jain Food Available</span></li>
                         </ul>
                     </div>
-                    <a href="#contact" data-i18n="btn_get_price_quote" class="mt-auto block w-full text-center py-3 px-6 border-2 border-brandOrange-500 text-brandOrange-600 font-semibold rounded-full hover:bg-gradient-to-r hover:from-brandOrange-500 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300">Get Price Quote</a>
+                    <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="package" data-wa-subject="Silver Package" data-i18n="btn_get_price_quote" class="mt-auto block w-full text-center py-3 px-6 border-2 border-brandOrange-500 text-brandOrange-600 font-semibold rounded-full hover:bg-gradient-to-r hover:from-brandOrange-500 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300">Get Price Quote</a>
                 </div>
 
                 <!-- Gold Package -->
@@ -572,7 +591,7 @@
                             <li class="flex items-center text-brown-700 text-sm"><svg class="w-5 h-5 text-brandOrange-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pkg_gold_f6">Jain &amp; Custom Options</span></li>
                         </ul>
                     </div>
-                    <a href="#contact" data-i18n="btn_get_price_quote" class="mt-auto block w-full text-center py-3 px-6 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 hover:from-amber-500 hover:to-brandOrange-600 text-white font-semibold rounded-full shadow-lg shadow-orange-500/35 hover:shadow-amber-500/40 transition-all duration-300">Get Price Quote</a>
+                    <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="package" data-wa-subject="Gold Package" data-i18n="btn_get_price_quote" class="mt-auto block w-full text-center py-3 px-6 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 hover:from-amber-500 hover:to-brandOrange-600 text-white font-semibold rounded-full shadow-lg shadow-orange-500/35 hover:shadow-amber-500/40 transition-all duration-300">Get Price Quote</a>
                 </div>
 
                 <!-- Royal Package -->
@@ -598,7 +617,7 @@
                             <li class="flex items-center text-brown-700 text-sm"><svg class="w-5 h-5 text-brandOrange-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/></svg><span data-i18n="pkg_royal_f6">Full Customization</span></li>
                         </ul>
                     </div>
-                    <a href="#contact" data-i18n="btn_get_price_quote" class="mt-auto block w-full text-center py-3 px-6 border-2 border-amber-500 text-amber-800 font-semibold rounded-full hover:bg-gradient-to-r hover:from-brandOrange-500 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300">Get Price Quote</a>
+                    <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="package" data-wa-subject="Royal Package" data-i18n="btn_get_price_quote" class="mt-auto block w-full text-center py-3 px-6 border-2 border-amber-500 text-amber-800 font-semibold rounded-full hover:bg-gradient-to-r hover:from-brandOrange-500 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300">Get Price Quote</a>
                 </div>
             </div>
 
@@ -638,7 +657,7 @@
             </div>
 
             <!-- Our Expertise -->
-            <div class="mb-20 reveal">
+            <div class="reveal">
                 <h3 data-i18n="about_exp_title" class="font-display text-2xl sm:text-3xl font-bold text-center text-white mb-10">Our <span class="gradient-text">Expertise</span></h3>
                 <div id="caterer-about-expertise" class="flex flex-wrap justify-center gap-4">
                     <div data-i18n="exp_item_1" class="px-6 py-3 rounded-full border border-golden-500/40 bg-gradient-to-r from-brown-800/80 to-brown-900/80 backdrop-blur-sm text-golden-300 font-medium text-sm hover:border-golden-400 hover:bg-golden-500/10 hover:-translate-y-1 transition-all duration-300 cursor-default shadow-lg shadow-golden-900/10">Wedding &amp; More</div>
@@ -654,220 +673,6 @@
                 </div>
             </div>
 
-            <!-- Section Title -->
-            <div id="menu" class="scroll-mt-28 text-center mb-16 reveal">
-                <p data-i18n="menu_eyebrow" class="font-script text-golden-400 text-3xl mb-2">Apna Menu Chunein</p>
-                <h2 data-i18n="menu_title" class="font-display text-4xl sm:text-5xl font-bold text-white mb-4">Pick Your <span class="gradient-text">Menu</span></h2>
-                <p data-i18n="menu_desc" class="text-brown-300 max-w-2xl mx-auto text-lg">Curated buffet experiences crafted for every celebration.</p>
-            </div>
-
-            <!-- Menu Cards Grid -->
-            <div class="grid lg:grid-cols-3 gap-8 items-start">
-
-                <!-- Classic Menu Card -->
-                <div class="reveal rounded-3xl overflow-hidden border border-golden-700/30 bg-gradient-to-b from-brown-800/90 to-brown-900/95 backdrop-blur-md shadow-2xl card-hover group relative">
-                    <div class="absolute inset-0 bg-gradient-to-b from-golden-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="relative p-8">
-                        <div class="text-center mb-6">
-                            <div data-i18n="menu_classic_badge" class="inline-block px-4 py-1 rounded-full bg-brown-700/50 border border-golden-600/30 text-golden-400 text-xs font-semibold tracking-wider uppercase mb-4">Classic</div>
-                            <h3 data-i18n="menu_classic" class="font-display text-2xl font-bold text-white">Classic Menu</h3>
-                            <p data-i18n="menu_classic_count" class="text-brown-400 text-xs mt-1">17 Items Included</p>
-                            <div class="w-16 h-[2px] mx-auto mt-3 bg-gradient-to-r from-transparent via-golden-500 to-transparent"></div>
-                        </div>
-                        <ul class="space-y-2.5 text-sm">
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_welcome_drink">Welcome Drink</span><span class="text-golden-400 font-semibold">2</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_soup">Soup</span><span class="text-golden-400 font-semibold">1</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_appetizers">Appetizers</span><span class="text-golden-400 font-semibold">5</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_live_stalls">Live Stalls</span><span class="text-golden-400 font-semibold">3</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_salad_bar">Salad Bar</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_paneer">Paneer</span><span class="text-golden-400 font-semibold">1</span></li>
-                        </ul>
-                        <div class="mt-3 text-center">
-                            <p data-i18n="menu_classic_more" class="text-brown-500 text-xs mb-4">+ 11 more items including Rice, Breads, Desserts...</p>
-                        </div>
-                        <div class="space-y-3">
-                            <button onclick="openMenuModal('classic')" class="w-full py-3 px-6 bg-gradient-to-r from-brown-700/60 to-brown-800/60 border border-golden-500/30 text-golden-400 font-semibold rounded-full hover:border-golden-400 hover:bg-golden-500/10 transition-all duration-300 text-sm flex items-center justify-center gap-2">
-                                <span data-i18n="btn_see_full_menu">See Full Menu</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                            </button>
-                            <a href="#contact" data-i18n="btn_enquire_now" class="inline-block w-full py-3 px-6 border border-golden-500/50 text-golden-400 font-semibold rounded-full hover:bg-golden-500 hover:text-white transition-all duration-300 text-sm text-center">Enquire Now</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Deluxe Menu Card (Featured) -->
-                <div class="reveal rounded-3xl overflow-hidden border-2 border-golden-500/50 bg-gradient-to-b from-brown-800/95 to-brown-950/95 backdrop-blur-md shadow-2xl card-hover group relative golden-glow-strong lg:-mt-4 lg:mb-[-16px]">
-                    <div class="absolute inset-0 bg-gradient-to-b from-golden-500/10 via-transparent to-golden-500/5"></div>
-                    <div class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-golden-600 via-golden-400 to-golden-600"></div>
-                    <div data-i18n="menu_deluxe_badge" class="absolute top-4 right-4 z-10 px-4 py-1.5 bg-gradient-to-r from-brandOrange-500 to-brandOrange-600 text-white text-xs font-bold rounded-full shadow-lg shadow-brandOrange-500/30">Most Popular</div>
-                    <div class="relative p-8">
-                        <div class="text-center mb-6">
-                            <div data-i18n="menu_deluxe" class="inline-block px-4 py-1 rounded-full bg-golden-500/20 border border-golden-400/40 text-golden-300 text-xs font-semibold tracking-wider uppercase mb-4">Deluxe</div>
-                            <h3 data-i18n="menu_deluxe" class="font-display text-3xl font-bold text-white">Deluxe Menu</h3>
-                            <p data-i18n="menu_deluxe_sub" class="text-golden-400/80 text-xs mt-2">Best for Weddings &amp; Grand Events</p>
-                            <p data-i18n="menu_deluxe_count" class="text-brown-400 text-xs mt-1">20 Items Included</p>
-                            <div class="w-20 h-[2px] mx-auto mt-3 bg-gradient-to-r from-transparent via-golden-400 to-transparent"></div>
-                        </div>
-                        <ul class="space-y-2.5 text-sm">
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-golden-700/30"><span data-i18n="mi_welcome_drink">Welcome Drink</span><span class="text-golden-300 font-semibold">3</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-golden-700/30"><span data-i18n="mi_soup">Soup</span><span class="text-golden-300 font-semibold">2</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-golden-700/30"><span data-i18n="mi_appetizers">Appetizers</span><span class="text-golden-300 font-semibold">6</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-golden-700/30"><span data-i18n="mi_live_stalls">Live Stalls</span><span class="text-golden-300 font-semibold">3</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-golden-700/30"><span data-i18n="mi_fruit_counter">Fruit Counter</span><span class="text-golden-300 font-semibold">4</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-golden-700/30"><span data-i18n="mi_paneer">Paneer</span><span class="text-golden-300 font-semibold">2</span></li>
-                        </ul>
-                        <div class="mt-3 text-center">
-                            <p data-i18n="menu_deluxe_more" class="text-brown-500 text-xs mb-4">+ 14 more items including Chef Special, Desserts...</p>
-                        </div>
-                        <div class="space-y-3">
-                            <button onclick="openMenuModal('deluxe')" class="w-full py-3 px-6 bg-gradient-to-r from-golden-600/20 to-golden-500/20 border border-golden-400/40 text-golden-300 font-semibold rounded-full hover:border-golden-300 hover:bg-golden-500/20 transition-all duration-300 text-sm flex items-center justify-center gap-2">
-                                <span data-i18n="btn_see_full_menu">See Full Menu</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                            </button>
-                            <a href="#contact" data-i18n="btn_book_this_menu" class="inline-block w-full py-3.5 px-6 bg-gradient-to-r from-brandOrange-500 to-brandOrange-600 text-white font-semibold rounded-full hover:shadow-xl hover:shadow-brandOrange-500/30 transition-all duration-300 text-sm text-center transform hover:scale-[1.02]">Book This Menu</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Premium Menu Card -->
-                <div class="reveal rounded-3xl overflow-hidden border border-golden-700/30 bg-gradient-to-b from-brown-800/90 to-brown-900/95 backdrop-blur-md shadow-2xl card-hover group relative">
-                    <div class="absolute inset-0 bg-gradient-to-b from-golden-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div data-i18n="menu_premium_badge" class="absolute top-4 right-4 z-10 px-3 py-1 bg-brown-700/80 border border-golden-500/30 text-golden-400 text-xs font-semibold rounded-full">Royal Choice</div>
-                    <div class="relative p-8">
-                        <div class="text-center mb-6">
-                            <div data-i18n="menu_premium" class="inline-block px-4 py-1 rounded-full bg-brown-700/50 border border-golden-600/30 text-golden-400 text-xs font-semibold tracking-wider uppercase mb-4">Premium</div>
-                            <h3 data-i18n="menu_premium" class="font-display text-2xl font-bold text-white">Premium Menu</h3>
-                            <p data-i18n="menu_premium_count" class="text-brown-400 text-xs mt-1">21 Items Included</p>
-                            <div class="w-16 h-[2px] mx-auto mt-3 bg-gradient-to-r from-transparent via-golden-500 to-transparent"></div>
-                        </div>
-                        <ul class="space-y-2.5 text-sm">
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_cafeteria">Cafeteria</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_appetizers">Appetizers</span><span class="text-golden-400 font-semibold">7</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_live_stalls">Live Stalls</span><span class="text-golden-400 font-semibold">4</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_fruit_counter">Fruit Counter</span><span class="text-golden-400 font-semibold">4</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_main_live">Main Course Live Counter</span><span class="text-golden-400 font-semibold">2</span></li>
-                            <li class="flex justify-between items-center text-cream-200 py-1 border-b border-brown-700/40"><span data-i18n="mi_chef_special">Chef Special</span><span class="text-golden-400 font-semibold">3</span></li>
-                        </ul>
-                        <div class="mt-3 text-center">
-                            <p data-i18n="menu_premium_more" class="text-brown-500 text-xs mb-4">+ 15 more items including Desserts, Ice Cream...</p>
-                        </div>
-                        <div class="space-y-3">
-                            <button onclick="openMenuModal('premium')" class="w-full py-3 px-6 bg-gradient-to-r from-brown-700/60 to-brown-800/60 border border-golden-500/30 text-golden-400 font-semibold rounded-full hover:border-golden-400 hover:bg-golden-500/10 transition-all duration-300 text-sm flex items-center justify-center gap-2">
-                                <span data-i18n="btn_see_full_menu">See Full Menu</span>
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                            </button>
-                            <a href="#contact" data-i18n="btn_enquire_now" class="inline-block w-full py-3 px-6 border border-golden-500/50 text-golden-400 font-semibold rounded-full hover:bg-golden-500 hover:text-white transition-all duration-300 text-sm text-center">Enquire Now</a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Additional Menu Offerings (Breakfast, Lunch Box, Lunch, Dinner) -->
-            <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-12 items-stretch">
-
-                <!-- Breakfast Card -->
-                <div class="reveal rounded-3xl overflow-hidden border border-golden-700/30 bg-gradient-to-b from-brown-800/90 to-brown-900/95 backdrop-blur-md shadow-2xl card-hover group relative flex flex-col justify-between">
-                    <div class="absolute inset-0 bg-gradient-to-b from-golden-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="relative p-6 flex flex-col justify-between h-full">
-                        <div>
-                            <div class="text-center mb-5">
-                                <div data-i18n="menu_bf_badge" class="inline-block px-3 py-1 rounded-full bg-brown-700/50 border border-golden-600/30 text-golden-400 text-xs font-semibold tracking-wider uppercase mb-3">Morning Special</div>
-                                <h3 data-i18n="menu_bf" class="font-display text-2xl font-bold text-white">Breakfast</h3>
-                                <p data-i18n="menu_bf_sub" class="text-brown-400 text-xs mt-1">Fresh &amp; Energizing Start</p>
-                                <div class="w-12 h-[2px] mx-auto mt-3 bg-gradient-to-r from-transparent via-golden-500 to-transparent"></div>
-                            </div>
-                            <ul class="space-y-2 text-xs text-cream-200">
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_bf_i1">South &amp; North Indian</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_bf_i2">Live Tea &amp; Coffee</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_bf_i3">Fresh Juices &amp; Snacks</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                            </ul>
-                        </div>
-                        <div class="mt-6">
-                            <a href="#contact" data-i18n="btn_enquire_now" class="inline-block w-full py-2.5 px-5 border border-golden-500/50 text-golden-400 font-semibold rounded-full hover:bg-golden-500 hover:text-white transition-all duration-300 text-xs text-center">Enquire Now</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Lunch Box Card -->
-                <div class="reveal rounded-3xl overflow-hidden border border-golden-700/30 bg-gradient-to-b from-brown-800/90 to-brown-900/95 backdrop-blur-md shadow-2xl card-hover group relative flex flex-col justify-between">
-                    <div class="absolute inset-0 bg-gradient-to-b from-golden-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="relative p-6 flex flex-col justify-between h-full">
-                        <div>
-                            <div class="text-center mb-5">
-                                <div data-i18n="menu_lb_badge" class="inline-block px-3 py-1 rounded-full bg-brown-700/50 border border-golden-600/30 text-golden-400 text-xs font-semibold tracking-wider uppercase mb-3">On-The-Go</div>
-                                <h3 data-i18n="menu_lb" class="font-display text-2xl font-bold text-white">Lunch Box</h3>
-                                <p data-i18n="menu_lb_sub" class="text-brown-400 text-xs mt-1">Hassle-Free Meal Packs</p>
-                                <div class="w-12 h-[2px] mx-auto mt-3 bg-gradient-to-r from-transparent via-golden-500 to-transparent"></div>
-                            </div>
-                            <ul class="space-y-2 text-xs text-cream-200">
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_lb_i1">Hygienic Packed Meals</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_lb_i2">Balanced Delicacies</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_lb_i3">Corporate &amp; Event Packs</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                            </ul>
-                        </div>
-                        <div class="mt-6">
-                            <a href="#contact" data-i18n="btn_enquire_now" class="inline-block w-full py-2.5 px-5 border border-golden-500/50 text-golden-400 font-semibold rounded-full hover:bg-golden-500 hover:text-white transition-all duration-300 text-xs text-center">Enquire Now</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Lunch Card -->
-                <div class="reveal rounded-3xl overflow-hidden border border-golden-700/30 bg-gradient-to-b from-brown-800/90 to-brown-900/95 backdrop-blur-md shadow-2xl card-hover group relative flex flex-col justify-between">
-                    <div class="absolute inset-0 bg-gradient-to-b from-golden-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="relative p-6 flex flex-col justify-between h-full">
-                        <div>
-                            <div class="text-center mb-5">
-                                <div data-i18n="menu_lunch_badge" class="inline-block px-3 py-1 rounded-full bg-brown-700/50 border border-golden-600/30 text-golden-400 text-xs font-semibold tracking-wider uppercase mb-3">Midday Feast</div>
-                                <h3 data-i18n="menu_lunch" class="font-display text-2xl font-bold text-white">Lunch</h3>
-                                <p data-i18n="menu_lunch_sub" class="text-brown-400 text-xs mt-1">Full Course Buffet</p>
-                                <div class="w-12 h-[2px] mx-auto mt-3 bg-gradient-to-r from-transparent via-golden-500 to-transparent"></div>
-                            </div>
-                            <ul class="space-y-2 text-xs text-cream-200">
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_lunch_i1">Traditional &amp; Fusion</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_lunch_i2">Live Roti &amp; Gravy Stalls</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_lunch_i3">Delectable Desserts</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                            </ul>
-                        </div>
-                        <div class="mt-6">
-                            <a href="#contact" data-i18n="btn_enquire_now" class="inline-block w-full py-2.5 px-5 border border-golden-500/50 text-golden-400 font-semibold rounded-full hover:bg-golden-500 hover:text-white transition-all duration-300 text-xs text-center">Enquire Now</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dinner Card -->
-                <div class="reveal rounded-3xl overflow-hidden border border-golden-700/30 bg-gradient-to-b from-brown-800/90 to-brown-900/95 backdrop-blur-md shadow-2xl card-hover group relative flex flex-col justify-between">
-                    <div class="absolute inset-0 bg-gradient-to-b from-golden-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-                    <div class="relative p-6 flex flex-col justify-between h-full">
-                        <div>
-                            <div class="text-center mb-5">
-                                <div data-i18n="menu_dn_badge" class="inline-block px-3 py-1 rounded-full bg-brown-700/50 border border-golden-600/30 text-golden-400 text-xs font-semibold tracking-wider uppercase mb-3">Grand Night</div>
-                                <h3 data-i18n="menu_dn" class="font-display text-2xl font-bold text-white">Dinner</h3>
-                                <p data-i18n="menu_dn_sub" class="text-brown-400 text-xs mt-1">Royal Evening Buffet</p>
-                                <div class="w-12 h-[2px] mx-auto mt-3 bg-gradient-to-r from-transparent via-golden-500 to-transparent"></div>
-                            </div>
-                            <ul class="space-y-2 text-xs text-cream-200">
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_dn_i1">Luxury Multi-Cuisine</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_dn_i2">Live Food Counters</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                                <li class="flex items-center justify-between py-1 border-b border-brown-700/40"><span data-i18n="menu_dn_i3">Royal Sweets &amp; Ice Cream</span><span class="text-golden-400 font-semibold">&#10003;</span></li>
-                            </ul>
-                        </div>
-                        <div class="mt-6">
-                            <a href="#contact" data-i18n="btn_enquire_now" class="inline-block w-full py-2.5 px-5 border border-golden-500/50 text-golden-400 font-semibold rounded-full hover:bg-golden-500 hover:text-white transition-all duration-300 text-xs text-center">Enquire Now</a>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-
-            <!-- Bottom note -->
-            <div class="text-center mt-12 reveal">
-                <p data-i18n="menu_custom_note" class="text-brown-400 text-sm">* Menu items can be customized as per your requirements. Contact us for personalized menu planning.</p>
-                <a href="#contact" class="inline-flex items-center gap-2 mt-4 text-golden-400 hover:text-golden-300 font-medium text-sm transition">
-                    <span data-i18n="btn_get_custom_quote">Get Custom Quote</span>
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-                </a>
-            </div>
         </div>
 
         <!-- Decorative bottom border -->
@@ -886,53 +691,66 @@
                 <p data-i18n="wcu_desc" class="text-brown-600 max-w-2xl mx-auto text-lg">What makes Banarasia Buffet Art the preferred choice for premium events.</p>
             </div>
 
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-8">
-                <div class="text-center reveal group">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 flex items-center justify-center group-hover:from-amber-500 group-hover:to-brandOrange-600 transition-all duration-300 shadow-lg shadow-orange-500/25">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <!-- Why Choose Us grid — hydrated from /api/caterer/content (CMS: Why Choose Us tab) -->
+            <div id="caterer-features-container" class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal shadow-lg border border-amber-200/60">
+                    <img src="https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=600&q=80" alt="Fresh vegetables prepared daily" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/90 via-brown-900/35 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="wcu_c1_t" class="text-white font-display text-lg font-bold">Freshly Prepared</h3>
+                            <p data-i18n="wcu_c1_d" class="text-amber-300 text-sm font-medium">Taaza aur swadisht, har baar</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="wcu_c1_t" class="font-display text-lg font-bold text-brown-900 mb-2">Freshly Prepared</h3>
-                    <p data-i18n="wcu_c1_d" class="text-brown-600 text-sm">Taaza aur swadisht, har baar</p>
                 </div>
 
-                <div class="text-center reveal group">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 flex items-center justify-center group-hover:from-amber-500 group-hover:to-brandOrange-600 transition-all duration-300 shadow-lg shadow-orange-500/25">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 5a1 1 0 011-1h14a1 1 0 011 1v2a1 1 0 01-1 1H5a1 1 0 01-1-1V5zM4 13a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H5a1 1 0 01-1-1v-6zM16 13a1 1 0 011-1h2a1 1 0 011 1v6a1 1 0 01-1 1h-2a1 1 0 01-1-1v-6z"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal shadow-lg border border-amber-200/60">
+                    <img src="https://images.unsplash.com/photo-1587899897387-091ebd01a6b2?w=600&q=80" alt="Elegant table setting and buffet presentation" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/90 via-brown-900/35 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="wcu_c2_t" class="text-white font-display text-lg font-bold">Elegant Setup</h3>
+                            <p data-i18n="wcu_c2_d" class="text-amber-300 text-sm font-medium">Shahi buffet presentation</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="wcu_c2_t" class="font-display text-lg font-bold text-brown-900 mb-2">Elegant Setup</h3>
-                    <p data-i18n="wcu_c2_d" class="text-brown-600 text-sm">Shahi buffet presentation</p>
                 </div>
 
-                <div class="text-center reveal group">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 flex items-center justify-center group-hover:from-amber-500 group-hover:to-brandOrange-600 transition-all duration-300 shadow-lg shadow-orange-500/25">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal shadow-lg border border-amber-200/60">
+                    <img src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&q=80" alt="Trained catering staff plating food" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/90 via-brown-900/35 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="wcu_c3_t" class="text-white font-display text-lg font-bold">Professional Staff</h3>
+                            <p data-i18n="wcu_c3_d" class="text-amber-300 text-sm font-medium">Trained &amp; courteous team</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="wcu_c3_t" class="font-display text-lg font-bold text-brown-900 mb-2">Professional Staff</h3>
-                    <p data-i18n="wcu_c3_d" class="text-brown-600 text-sm">Trained &amp; courteous team</p>
                 </div>
 
-                <div class="text-center reveal group">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 flex items-center justify-center group-hover:from-amber-500 group-hover:to-brandOrange-600 transition-all duration-300 shadow-lg shadow-orange-500/25">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal shadow-lg border border-amber-200/60">
+                    <img src="https://images.unsplash.com/photo-1505253758473-96b7015fcd40?w=600&q=80" alt="Pure vegetarian Indian curry with bread" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/90 via-brown-900/35 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="wcu_c4_t" class="text-white font-display text-lg font-bold">Pure Veg &amp; Jain</h3>
+                            <p data-i18n="wcu_c4_d" class="text-amber-300 text-sm font-medium">100% vegetarian guarantee</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="wcu_c4_t" class="font-display text-lg font-bold text-brown-900 mb-2">Pure Veg &amp; Jain</h3>
-                    <p data-i18n="wcu_c4_d" class="text-brown-600 text-sm">100% vegetarian guarantee</p>
                 </div>
 
-                <div class="text-center reveal group">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 flex items-center justify-center group-hover:from-amber-500 group-hover:to-brandOrange-600 transition-all duration-300 shadow-lg shadow-orange-500/25">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal shadow-lg border border-amber-200/60">
+                    <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80" alt="Large banquet hall seating many guests" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/90 via-brown-900/35 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="wcu_c5_t" class="text-white font-display text-lg font-bold">Large Capacity</h3>
+                            <p data-i18n="wcu_c5_d" class="text-amber-300 text-sm font-medium">10,000+ guests handled</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="wcu_c5_t" class="font-display text-lg font-bold text-brown-900 mb-2">Large Capacity</h3>
-                    <p data-i18n="wcu_c5_d" class="text-brown-600 text-sm">10,000+ guests handled</p>
                 </div>
 
-                <div class="text-center reveal group">
-                    <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 flex items-center justify-center group-hover:from-amber-500 group-hover:to-brandOrange-600 transition-all duration-300 shadow-lg shadow-orange-500/25">
-                        <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                <div class="group card-hover rounded-2xl overflow-hidden relative img-zoom reveal shadow-lg border border-amber-200/60">
+                    <img src="https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80" alt="Spices laid out for a custom menu" loading="lazy" class="w-full h-56 object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-brown-950/90 via-brown-900/35 to-transparent flex items-end p-5">
+                        <div>
+                            <h3 data-i18n="wcu_c6_t" class="text-white font-display text-lg font-bold">Custom Menus</h3>
+                            <p data-i18n="wcu_c6_d" class="text-amber-300 text-sm font-medium">Aapki pasand ka menu</p>
+                        </div>
                     </div>
-                    <h3 data-i18n="wcu_c6_t" class="font-display text-lg font-bold text-brown-900 mb-2">Custom Menus</h3>
-                    <p data-i18n="wcu_c6_d" class="text-brown-600 text-sm">Aapki pasand ka menu</p>
                 </div>
             </div>
         </div>
@@ -1223,8 +1041,8 @@
                 <p data-i18n="cta_p_title" class="font-script text-brandOrange-600 text-2xl mb-3">Let's Plan Your Perfect Event</p>
                 <p data-i18n="cta_p_sub" class="text-brown-600 text-sm mb-8 max-w-md mx-auto">Ready to create an unforgettable celebration? We're just a call away.</p>
                 <div class="flex flex-wrap justify-center gap-4">
-                    <a href="#contact" data-i18n="btn_book_catering" class="px-8 py-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold rounded-full shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 transform hover:scale-105 text-sm">Book Catering</a>
-                    <a href="#contact" data-i18n="btn_get_free_quote" class="px-8 py-4 border-2 border-brandOrange-500 text-brandOrange-600 font-semibold rounded-full hover:bg-gradient-to-r hover:from-brandOrange-500 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300 text-sm">Get Free Quote</a>
+                    <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="booking" data-i18n="btn_book_catering" class="px-8 py-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold rounded-full shadow-lg shadow-orange-500/30 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 transform hover:scale-105 text-sm">Book Catering</a>
+                    <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="quote" data-i18n="btn_get_free_quote" class="px-8 py-4 border-2 border-brandOrange-500 text-brandOrange-600 font-semibold rounded-full hover:bg-gradient-to-r hover:from-brandOrange-500 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300 text-sm">Get Free Quote</a>
                 </div>
             </div>
         </div>
@@ -1246,9 +1064,9 @@
             <h2 data-i18n="cta_title" class="font-display text-4xl sm:text-5xl font-bold text-white mb-6">Make Your Celebration <span class="gradient-text">Memorable</span></h2>
             <p data-i18n="cta_sub" class="text-cream-200 text-lg mb-10 max-w-2xl mx-auto">Let us craft the perfect feast for your special occasion.</p>
             <div class="flex flex-wrap justify-center gap-4">
-                <a href="#contact" data-i18n="btn_book_catering" class="px-8 py-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold rounded-full shadow-lg shadow-orange-500/35 hover:shadow-amber-500/40 transition-all transform hover:scale-105">Book Catering</a>
+                <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="booking" data-i18n="btn_book_catering" class="px-8 py-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold rounded-full shadow-lg shadow-orange-500/35 hover:shadow-amber-500/40 transition-all transform hover:scale-105">Book Catering</a>
                 <a data-site-phone-link href="tel:9918629017" data-i18n="btn_call_now" class="px-8 py-4 border-2 border-amber-400/60 text-amber-300 font-semibold rounded-full hover:bg-amber-400/20 transition-all">Call Now</a>
-                <a href="#contact" data-i18n="btn_get_quote" class="px-8 py-4 border-2 border-cream-300/30 text-cream-200 font-semibold rounded-full hover:bg-white/10 transition-all">Get Quote</a>
+                <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="quote" data-i18n="btn_get_quote" class="px-8 py-4 border-2 border-cream-300/30 text-cream-200 font-semibold rounded-full hover:bg-white/10 transition-all">Get Quote</a>
             </div>
         </div>
     </section>
@@ -1462,7 +1280,7 @@
 
     <!-- Sticky Mobile CTA -->
     <div id="mobile-sticky-cta" class="mobile-sticky-cta sm:hidden">
-        <a href="#contact" data-i18n="btn_book_catering_now" class="block w-full py-3.5 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold text-center rounded-full shadow-lg shadow-orange-500/35 text-sm">Book Catering Now</a>
+        <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="booking" data-i18n="btn_book_catering_now" class="block w-full py-3.5 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold text-center rounded-full shadow-lg shadow-orange-500/35 text-sm">Book Catering Now</a>
     </div>
 
     <!-- Menu Detail Modal -->
@@ -1482,7 +1300,7 @@
                 <div class="p-6 pt-4">
                     <ul id="modalMenuList" class="space-y-2 text-sm"></ul>
                     <div class="mt-8 pt-4 border-t border-brandOrange-500/30 text-center">
-                        <a href="#contact" onclick="closeMenuModal()" data-i18n="btn_book_this_menu" class="inline-block w-full py-3.5 px-6 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold rounded-full shadow-lg shadow-orange-500/30 hover:shadow-amber-500/40 transition-all duration-300 text-sm">Book This Menu</a>
+                        <a href="https://wa.me/919918629017" target="_blank" rel="noopener" onclick="closeMenuModal()" data-wa-cta="menu" data-i18n="btn_book_this_menu" class="inline-block w-full py-3.5 px-6 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white font-semibold rounded-full shadow-lg shadow-orange-500/30 hover:shadow-amber-500/40 transition-all duration-300 text-sm">Book This Menu</a>
                         <p data-i18n="modal_custom_note" class="text-cream-200/60 text-xs mt-3">* Customization available on request</p>
                     </div>
                 </div>
@@ -2233,6 +2051,15 @@
                 </li>`;
             }).join('');
 
+            // The book button opens WhatsApp naming whichever menu is on screen.
+            // The title stays the English one so the enquiry reads the same in
+            // both languages, as everywhere else.
+            const modalCta = modal.querySelector('a[data-wa-cta]');
+            if (modalCta) {
+                modalCta.setAttribute('data-wa-subject', data.title);
+                modalCta.setAttribute('href', waCtaHref('menu', data.title));
+            }
+
             modal.classList.remove('hidden');
             document.body.style.overflow = 'hidden';
             requestAnimationFrame(() => {
@@ -2422,13 +2249,25 @@
         createParticles();
 
         // --- Lazy Image Loading ---
-        document.querySelectorAll('img[loading="lazy"]').forEach(img => {
-            if (img.complete) {
-                img.classList.add('loaded');
-            } else {
-                img.addEventListener('load', () => img.classList.add('loaded'), { once: true });
-            }
-        });
+        // Opts each lazy image into the fade and reveals it once it decodes.
+        // renderCmsContent() calls this again over the markup it injects: those
+        // images arrive long after this first pass, and without a second pass
+        // they would carry .img-fade's opacity 0 with nothing to clear it.
+        // A failed load reveals too, so a bad URL shows its alt text rather
+        // than a silent blank tile.
+        function initLazyImageFade(root) {
+            (root || document).querySelectorAll('img[loading="lazy"]:not(.img-fade)').forEach(img => {
+                img.classList.add('img-fade');
+                if (img.complete) {
+                    img.classList.add('loaded');
+                    return;
+                }
+                const reveal = () => img.classList.add('loaded');
+                img.addEventListener('load', reveal, { once: true });
+                img.addEventListener('error', reveal, { once: true });
+            });
+        }
+        initLazyImageFade();
 
         // --- Smooth Scroll for Anchor Links ---
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
@@ -2472,6 +2311,80 @@
                 return { href: 'tel:' + local, label: `+91 ${local.slice(0, 5)} ${local.slice(5)}` };
             }
             return { href: 'tel:' + digits, label: '+' + digits };
+        }
+
+        // Three grids on the page are the same card — Cuisine Specialization,
+        // Our Services and Why Choose Us. They differ only in tile size and
+        // border, so one renderer draws all three off a style entry.
+        const PHOTO_CARD_STYLES = {
+            cuisines: {
+                shape: 'rounded-3xl',
+                photoExtra: 'border border-amber-200/60',
+                height: 'h-64',
+                pad: 'p-6',
+                title: 'text-xl',
+                fallbackTitle: 'text-2xl',
+                overlay: 'from-brown-950/90 via-brown-900/30 to-transparent',
+            },
+            services: {
+                shape: 'rounded-2xl',
+                photoExtra: 'border border-brandOrange-500/20',
+                height: 'h-56',
+                pad: 'p-5',
+                title: 'text-lg',
+                fallbackTitle: 'text-lg',
+                overlay: 'from-brown-950/92 via-brown-950/45 to-transparent',
+            },
+            features: {
+                shape: 'rounded-2xl',
+                photoExtra: 'shadow-lg border border-amber-200/60',
+                height: 'h-56',
+                pad: 'p-5',
+                title: 'text-lg',
+                fallbackTitle: 'text-lg',
+                overlay: 'from-brown-950/90 via-brown-900/35 to-transparent',
+            },
+        };
+
+        // An empty list leaves the shipped markup alone, so an owner who has
+        // not touched a grid still gets the designed one rather than a hole.
+        function renderPhotoCardGrid(containerId, items, styleKey, isHi) {
+            if (!Array.isArray(items) || items.length === 0) return;
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            const s = PHOTO_CARD_STYLES[styleKey];
+            const sorted = [...items].sort((a, b) => a.sortOrder - b.sortOrder);
+
+            container.innerHTML = sorted.map(c => {
+                const name = isHi ? (c.nameHi || c.nameEn) : (c.nameEn || c.nameHi);
+                const desc = isHi ? (c.descHi || c.descEn) : (c.descEn || c.descHi);
+                const imgSrc = (c.imageUrl || '').trim();
+                const safeName = esc(name);
+
+                // No photo means the gradient tile the cuisine grid has always
+                // closed with — not a broken image.
+                if (!imgSrc) {
+                    return `
+                        <div class="group card-hover ${s.shape} overflow-hidden relative img-zoom reveal active bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 flex items-center justify-center ${s.height} shadow-xl shadow-orange-500/25">
+                            <div class="text-center ${s.pad}">
+                                <p class="text-white font-display ${s.fallbackTitle} font-bold mb-2">${safeName}</p>
+                                <p class="text-amber-100 text-sm font-medium">${esc(desc)}</p>
+                            </div>
+                        </div>`;
+                }
+
+                return `
+                        <div class="group card-hover ${s.shape} overflow-hidden relative img-zoom reveal active ${s.photoExtra}">
+                            <img src="${esc(imgSrc)}" alt="${safeName}" loading="lazy" class="w-full ${s.height} object-cover">
+                            <div class="absolute inset-0 bg-gradient-to-t ${s.overlay} flex items-end ${s.pad}">
+                                <div>
+                                    <h3 class="text-white font-display ${s.title} font-bold">${safeName}</h3>
+                                    <p class="text-amber-300 text-sm font-medium">${esc(desc)}</p>
+                                </div>
+                            </div>
+                        </div>`;
+            }).join('');
         }
 
         function renderCmsContent(data) {
@@ -2549,7 +2462,7 @@
                                     ${featuresHtml}
                                 </ul>
                             </div>
-                            <a href="#contact" class="${btnClasses}">${btnText}</a>
+                            <a href="${waCtaHref('package', pkg.nameEn || name)}" target="_blank" rel="noopener" class="${btnClasses}">${btnText}</a>
                         </div>`;
                     }).join('');
                 }
@@ -2622,40 +2535,10 @@
                 }
             }
 
-            // 2c. Render the cuisine grid
-            if (Array.isArray(data.cuisines)) {
-                const cuiContainer = document.getElementById('caterer-cuisine-container');
-                if (cuiContainer && data.cuisines.length > 0) {
-                    const sortedCuisines = [...data.cuisines].sort((a, b) => a.sortOrder - b.sortOrder);
-                    cuiContainer.innerHTML = sortedCuisines.map(c => {
-                        const name = isHi ? (c.nameHi || c.nameEn) : (c.nameEn || c.nameHi);
-                        const desc = isHi ? (c.descHi || c.descEn) : (c.descEn || c.descHi);
-                        const imgSrc = (c.imageUrl || '').trim();
-                        const safeName = esc(name);
-                        // No photo means the gradient "Custom Menu" tile the grid
-                        // has always closed with — not a broken image.
-                        if (!imgSrc) {
-                            return `
-                        <div class="group card-hover rounded-3xl overflow-hidden relative img-zoom reveal active bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 flex items-center justify-center h-64 shadow-xl shadow-orange-500/25">
-                            <div class="text-center p-6">
-                                <p class="text-white font-display text-2xl font-bold mb-2">${safeName}</p>
-                                <p class="text-amber-100 text-sm font-medium">${esc(desc)}</p>
-                            </div>
-                        </div>`;
-                        }
-                        return `
-                        <div class="group card-hover rounded-3xl overflow-hidden relative img-zoom reveal active border border-amber-200/60">
-                            <img src="${esc(imgSrc)}" alt="${safeName}" loading="lazy" class="w-full h-64 object-cover">
-                            <div class="absolute inset-0 bg-gradient-to-t from-brown-950/90 via-brown-900/30 to-transparent flex items-end p-6">
-                                <div>
-                                    <h3 class="text-white font-display text-xl font-bold">${safeName}</h3>
-                                    <p class="text-amber-300 text-sm font-medium">${esc(desc)}</p>
-                                </div>
-                            </div>
-                        </div>`;
-                    }).join('');
-                }
-            }
+            // 2c. Render the three photo-card grids
+            renderPhotoCardGrid('caterer-cuisine-container', data.cuisines, 'cuisines', isHi);
+            renderPhotoCardGrid('caterer-services-container', data.services, 'services', isHi);
+            renderPhotoCardGrid('caterer-features-container', data.features, 'features', isHi);
 
             // 2d. Render client reviews. The track scrolls by translating itself
             // -50%, so the list is emitted twice — the second copy is what the
@@ -2730,12 +2613,16 @@
                 if (st.accentColor) root.style.setProperty('--brand-accent', st.accentColor);
 
                 // Point every WhatsApp entry point at the CMS number: the contact
-                // button, the footer icon and the floating chat bubble. The inquiry
-                // form reads its target off these links, so it follows along too.
+                // button, the footer icon, the floating chat bubble and every CTA
+                // on the page. The inquiry form reads its target off these links,
+                // so it follows along too.
                 const waDigits = String(st.whatsappNumber || '').replace(/\D/g, '');
                 if (waDigits) {
                     document.querySelectorAll('a[href*="wa.me/"]').forEach(a => {
-                        a.setAttribute('href', 'https://wa.me/' + waDigits);
+                        // Carry any prefilled ?text= across — that is the message
+                        // naming the package or menu the CTA sits on.
+                        const query = a.getAttribute('href').split('?')[1];
+                        a.setAttribute('href', 'https://wa.me/' + waDigits + (query ? '?' + query : ''));
                     });
                 }
             }
@@ -2880,6 +2767,11 @@
                 }
             }
 
+            // Fade in the images this render just injected (venues, cuisines,
+            // services, features). They are lazy, so the load-time pass never
+            // saw them.
+            initLazyImageFade();
+
             // Observe newly inserted reveal elements
             if (typeof revealObserver !== 'undefined' && revealObserver.observe) {
                 document.querySelectorAll('#caterer-packages-container .reveal, #caterer-gallery-container .reveal').forEach(el => {
@@ -2966,6 +2858,40 @@
             // Stop at the first ?/#/ so a prefilled ?text= never leaks digits in.
             const digits = path.split(/[?#/]/)[0].replace(/\D/g, '');
             return digits || '919918629017';
+        }
+
+        // Every "book" / "quote" / "enquire" button opens a chat rather than
+        // scrolling to the form, so an enquiry costs one tap. A button says what
+        // it is about through data-wa-cta, plus data-wa-subject for the package
+        // or menu it sits on, and that becomes the message the visitor sends —
+        // the caterer knows which card was tapped before anyone types a word.
+        //
+        // Messages stay English for the same reason the form's do: an enquiry
+        // reads the same whichever language the visitor browsed in.
+        const waCtaMessages = {
+            booking: () => 'Namaste! I would like to book catering for my event.',
+            quote: () => 'Namaste! I would like a quote for catering.',
+            custom: () => 'Namaste! I would like a customised menu planned for my event.',
+            package: (subject) => `Namaste! I am interested in the ${subject || 'catering packages'}. Please share a quote.`,
+            menu: (subject) => `Namaste! I am interested in the ${subject || 'catering menus'}. Please share the details and pricing.`
+        };
+
+        function waCtaHref(intent, subject) {
+            const build = waCtaMessages[intent] || waCtaMessages.booking;
+            return 'https://wa.me/' + whatsappNumber() + '?text=' + encodeURIComponent(build(subject));
+        }
+
+        // The static buttons ship with a bare wa.me href so they still work
+        // without scripting; this only adds the prefilled message. The CMS
+        // number sync keeps that message when it swaps the digits, so a CTA
+        // wired here never has to be rewired.
+        function initWhatsAppCtas() {
+            document.querySelectorAll('a[data-wa-cta]').forEach(a => {
+                a.setAttribute('href', waCtaHref(
+                    a.getAttribute('data-wa-cta'),
+                    a.getAttribute('data-wa-subject')
+                ));
+            });
         }
 
         // Labels stay English so an enquiry reads the same in WhatsApp whichever
@@ -3061,6 +2987,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', syncCanonicalUrls);
+        document.addEventListener('DOMContentLoaded', initWhatsAppCtas);
         document.addEventListener('DOMContentLoaded', loadCatererCmsContent);
         document.addEventListener('DOMContentLoaded', wireLeadForms);
 

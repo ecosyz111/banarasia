@@ -98,10 +98,15 @@ export const SETTINGS_IMAGE_KEYS = [
 
 export type SettingsImageKey = (typeof SETTINGS_IMAGE_KEYS)[number];
 
-// A cuisine tile in the "Cuisine Specialization" grid. An empty imageUrl is
-// meaningful rather than missing: it renders the gradient "Custom Menu" card
-// the page has always ended the grid with.
-export type CatererCuisine = {
+// Three grids on the page are the same thing — a photo with a bilingual title
+// and one line under it: Cuisine Specialization, Our Services and Why Choose
+// Us. One record shape serves all three, so the store, the API and the admin
+// screen each only have to understand it once.
+//
+// An empty imageUrl is meaningful rather than missing: it renders the gradient
+// card the cuisine grid has always ended with, and is what a Services or Why
+// Choose Us tile falls back to when its photo has not been chosen yet.
+export type CatererPhotoCard = {
   id: string;
   nameEn: string;
   nameHi: string;
@@ -113,6 +118,17 @@ export type CatererCuisine = {
   createdAt?: string;
   updatedAt?: string;
 };
+
+// Named separately because they are separate collections with separate admin
+// tabs, even though the shape they carry is identical.
+export type CatererCuisine = CatererPhotoCard;
+export type CatererService = CatererPhotoCard;
+export type CatererFeature = CatererPhotoCard;
+
+// The photo-card collections, listed once so the generic store operations,
+// the API routes and the backfill all agree on what exists.
+export const PHOTO_CARD_COLLECTIONS = ["cuisines", "services", "features"] as const;
+export type PhotoCardCollection = (typeof PHOTO_CARD_COLLECTIONS)[number];
 
 export type CatererTestimonial = {
   id: string;
@@ -239,6 +255,8 @@ export type CatererStoreData = {
   gallery: CatererGalleryItem[];
   venues: CatererVenue[];
   cuisines: CatererCuisine[];
+  services: CatererService[];
+  features: CatererFeature[];
   testimonials: CatererTestimonial[];
   leads: CatererLead[];
   about: CatererAbout;
@@ -575,6 +593,154 @@ const INITIAL_DEFAULTS: CatererStoreData = {
       isActive: true,
     },
   ],
+  // The eight "Our Services" tiles. Every photo is a stand-in the owner is
+  // expected to replace with their own event photography — they are only here
+  // so the grid is never empty on a fresh install.
+  services: [
+    {
+      id: "srv-wedding",
+      nameEn: "Wedding Catering",
+      nameHi: "वेडिंग कैटरिंग",
+      descEn: "Grand shaadi ka grand bhoj",
+      descHi: "भव्य शादी का भव्य भोज",
+      imageUrl: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80",
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      id: "srv-engagement",
+      nameEn: "Engagement",
+      nameHi: "सगाई",
+      descEn: "Ring ceremony feast",
+      descHi: "रिंग सेरेमनी की दावत",
+      imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80",
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      id: "srv-birthday",
+      nameEn: "Birthday Parties",
+      nameHi: "बर्थडे पार्टी",
+      descEn: "Special birthday menu",
+      descHi: "खास बर्थडे मेनू",
+      imageUrl: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80",
+      sortOrder: 3,
+      isActive: true,
+    },
+    {
+      id: "srv-corporate",
+      nameEn: "Corporate Events",
+      nameHi: "कॉर्पोरेट इवेंट",
+      descEn: "Professional service",
+      descHi: "प्रोफेशनल सेवा",
+      imageUrl: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&q=80",
+      sortOrder: 4,
+      isActive: true,
+    },
+    {
+      id: "srv-reception",
+      nameEn: "Reception",
+      nameHi: "रिसेप्शन",
+      descEn: "Grand reception feast",
+      descHi: "भव्य रिसेप्शन दावत",
+      imageUrl: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80",
+      sortOrder: 5,
+      isActive: true,
+    },
+    {
+      id: "srv-festive",
+      nameEn: "Festive Catering",
+      nameHi: "त्योहार कैटरिंग",
+      descEn: "Tyohaar ki dawaat",
+      descHi: "त्योहार की दावत",
+      imageUrl: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80",
+      sortOrder: 6,
+      isActive: true,
+    },
+    {
+      id: "srv-family",
+      nameEn: "Family Gatherings",
+      nameHi: "फैमिली गैदरिंग",
+      descEn: "Ghar jaisi mehfil",
+      descHi: "घर जैसी महफ़िल",
+      imageUrl: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=600&q=80",
+      sortOrder: 7,
+      isActive: true,
+    },
+    {
+      id: "srv-live-counters",
+      nameEn: "Live Counters",
+      nameHi: "लाइव काउंटर",
+      descEn: "Fresh live cooking",
+      descHi: "ताज़ा लाइव कुकिंग",
+      imageUrl: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80",
+      sortOrder: 8,
+      isActive: true,
+    },
+  ],
+  // The six "Why Choose Us" tiles — same shape, same placeholder caveat.
+  features: [
+    {
+      id: "feat-fresh",
+      nameEn: "Freshly Prepared",
+      nameHi: "ताज़ा तैयार",
+      descEn: "Taaza aur swadisht, har baar",
+      descHi: "ताज़ा और स्वादिष्ट, हर बार",
+      imageUrl: "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=600&q=80",
+      sortOrder: 1,
+      isActive: true,
+    },
+    {
+      id: "feat-setup",
+      nameEn: "Elegant Setup",
+      nameHi: "शानदार सेटअप",
+      descEn: "Shahi buffet presentation",
+      descHi: "शाही बफे प्रस्तुति",
+      imageUrl: "https://images.unsplash.com/photo-1587899897387-091ebd01a6b2?w=600&q=80",
+      sortOrder: 2,
+      isActive: true,
+    },
+    {
+      id: "feat-staff",
+      nameEn: "Professional Staff",
+      nameHi: "प्रोफेशनल स्टाफ",
+      descEn: "Trained & courteous team",
+      descHi: "प्रशिक्षित एवं विनम्र टीम",
+      imageUrl: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&q=80",
+      sortOrder: 3,
+      isActive: true,
+    },
+    {
+      id: "feat-pure-veg",
+      nameEn: "Pure Veg & Jain",
+      nameHi: "शुद्ध शाकाहारी व जैन",
+      descEn: "100% vegetarian guarantee",
+      descHi: "100% शाकाहारी गारंटी",
+      imageUrl: "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?w=600&q=80",
+      sortOrder: 4,
+      isActive: true,
+    },
+    {
+      id: "feat-capacity",
+      nameEn: "Large Capacity",
+      nameHi: "बड़ी क्षमता",
+      descEn: "10,000+ guests handled",
+      descHi: "10,000+ मेहमानों की सेवा",
+      imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80",
+      sortOrder: 5,
+      isActive: true,
+    },
+    {
+      id: "feat-custom-menu",
+      nameEn: "Custom Menus",
+      nameHi: "कस्टम मेनू",
+      descEn: "Aapki pasand ka menu",
+      descHi: "आपकी पसंद का मेनू",
+      imageUrl: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80",
+      sortOrder: 6,
+      isActive: true,
+    },
+  ],
   testimonials: [
     {
       id: "rev-1",
@@ -748,13 +914,22 @@ async function readFromStorage(): Promise<CatererStoreData> {
       }))
     : INITIAL_DEFAULTS.venues;
 
-  // Cuisines and testimonials arrived after the first snapshots were written.
-  // An absent array means "this store predates the feature", so it seeds from
-  // the defaults — an emptied-out collection is saved as [] and stays empty,
-  // which only an explicit array in the snapshot can express.
+  // Cuisines, services, features and testimonials each arrived after the first
+  // snapshots were written. An absent array means "this store predates the
+  // feature", so it seeds from the defaults — an emptied-out collection is
+  // saved as [] and stays empty, which only an explicit array in the snapshot
+  // can express.
   const cuisines = Array.isArray(snap?.cuisines)
     ? (snap!.cuisines as CatererCuisine[])
     : INITIAL_DEFAULTS.cuisines;
+
+  const services = Array.isArray(snap?.services)
+    ? (snap!.services as CatererService[])
+    : INITIAL_DEFAULTS.services;
+
+  const features = Array.isArray(snap?.features)
+    ? (snap!.features as CatererFeature[])
+    : INITIAL_DEFAULTS.features;
 
   const testimonials = Array.isArray(snap?.testimonials)
     ? (snap!.testimonials as CatererTestimonial[])
@@ -765,6 +940,8 @@ async function readFromStorage(): Promise<CatererStoreData> {
     gallery: Array.isArray(snap?.gallery) ? (snap!.gallery as CatererGalleryItem[]) : INITIAL_DEFAULTS.gallery,
     venues,
     cuisines,
+    services,
+    features,
     testimonials,
     // Leads are visitor-generated, so an absent array means "none captured
     // yet" — never the seed data other collections fall back to.
@@ -807,6 +984,8 @@ function backfillSections(data: CatererStoreData): CatererStoreData {
   data.gallery ??= [];
   data.venues ??= [];
   data.cuisines ??= [];
+  data.services ??= [];
+  data.features ??= [];
   data.testimonials ??= [];
   data.leads ??= [];
   data.settings = { ...DEFAULT_SETTINGS, ...(data.settings ?? {}) };
@@ -1018,64 +1197,102 @@ export async function deleteVenue(id: string): Promise<boolean> {
 }
 
 // ---------------------------------------------------------------------------
-// Store Operations (Cuisines)
+// Store Operations (Photo-card collections: Cuisines, Services, Features)
 // ---------------------------------------------------------------------------
 
-export async function getAllCuisines(): Promise<CatererCuisine[]> {
-  await ensureHydrated();
-  const data = getState().data!;
-  return [...data.cuisines].sort((a, b) => a.sortOrder - b.sortOrder);
+// All three collections hold the same record and need the same five
+// operations, so they are written once and bound to a collection key. The
+// per-collection names below are what the API routes import — the indirection
+// stays inside this file.
+function photoCardOps(collection: PhotoCardCollection, idPrefix: string) {
+  return {
+    async getAll(): Promise<CatererPhotoCard[]> {
+      await ensureHydrated();
+      const data = getState().data!;
+      return [...data[collection]].sort((a, b) => a.sortOrder - b.sortOrder);
+    },
+
+    async getById(id: string): Promise<CatererPhotoCard | null> {
+      await ensureHydrated();
+      const data = getState().data!;
+      return data[collection].find((c) => c.id === id) ?? null;
+    },
+
+    async create(
+      input: Omit<CatererPhotoCard, "id"> & { id?: string }
+    ): Promise<CatererPhotoCard> {
+      return mutateStore((data) => {
+        const now = new Date().toISOString();
+        const created: CatererPhotoCard = {
+          ...input,
+          id: input.id || `${idPrefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+          createdAt: now,
+          updatedAt: now,
+        };
+        data[collection].push(created);
+        return created;
+      });
+    },
+
+    async update(
+      id: string,
+      updates: Partial<CatererPhotoCard>
+    ): Promise<CatererPhotoCard | null> {
+      return mutateStore((data) => {
+        const idx = data[collection].findIndex((c) => c.id === id);
+        if (idx === -1) return null;
+
+        const existing = data[collection][idx];
+        const updated: CatererPhotoCard = {
+          ...existing,
+          ...updates,
+          id: existing.id, // Immutable
+          updatedAt: new Date().toISOString(),
+        };
+        data[collection][idx] = updated;
+        return updated;
+      });
+    },
+
+    async remove(id: string): Promise<boolean> {
+      return mutateStore((data) => {
+        const initialLen = data[collection].length;
+        data[collection] = data[collection].filter((c) => c.id !== id);
+        return data[collection].length < initialLen;
+      });
+    },
+  };
 }
 
-export async function getCuisineById(id: string): Promise<CatererCuisine | null> {
-  await ensureHydrated();
-  const data = getState().data!;
-  return data.cuisines.find((c) => c.id === id) ?? null;
-}
+const cuisineOps = photoCardOps("cuisines", "cui");
+const serviceOps = photoCardOps("services", "srv");
+const featureOps = photoCardOps("features", "feat");
 
-export async function createCuisine(
-  input: Omit<CatererCuisine, "id"> & { id?: string }
-): Promise<CatererCuisine> {
-  return mutateStore((data) => {
-    const now = new Date().toISOString();
-    const newCuisine: CatererCuisine = {
-      ...input,
-      id: input.id || `cui-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-      createdAt: now,
-      updatedAt: now,
-    };
-    data.cuisines.push(newCuisine);
-    return newCuisine;
-  });
-}
+export const getAllCuisines = cuisineOps.getAll;
+export const getCuisineById = cuisineOps.getById;
+export const createCuisine = cuisineOps.create;
+export const updateCuisine = cuisineOps.update;
+export const deleteCuisine = cuisineOps.remove;
 
-export async function updateCuisine(
-  id: string,
-  updates: Partial<CatererCuisine>
-): Promise<CatererCuisine | null> {
-  return mutateStore((data) => {
-    const idx = data.cuisines.findIndex((c) => c.id === id);
-    if (idx === -1) return null;
+export const getAllServices = serviceOps.getAll;
+export const getServiceById = serviceOps.getById;
+export const createService = serviceOps.create;
+export const updateService = serviceOps.update;
+export const deleteService = serviceOps.remove;
 
-    const existing = data.cuisines[idx];
-    const updated: CatererCuisine = {
-      ...existing,
-      ...updates,
-      id: existing.id, // Immutable
-      updatedAt: new Date().toISOString(),
-    };
-    data.cuisines[idx] = updated;
-    return updated;
-  });
-}
+export const getAllFeatures = featureOps.getAll;
+export const getFeatureById = featureOps.getById;
+export const createFeature = featureOps.create;
+export const updateFeature = featureOps.update;
+export const deleteFeature = featureOps.remove;
 
-export async function deleteCuisine(id: string): Promise<boolean> {
-  return mutateStore((data) => {
-    const initialLen = data.cuisines.length;
-    data.cuisines = data.cuisines.filter((c) => c.id !== id);
-    return data.cuisines.length < initialLen;
-  });
-}
+// Bound by collection name so an API route can resolve its own operations from
+// its URL segment without a switch at every call site.
+export const PHOTO_CARD_OPS: Record<PhotoCardCollection, ReturnType<typeof photoCardOps>> = {
+  cuisines: cuisineOps,
+  services: serviceOps,
+  features: featureOps,
+};
 
 // ---------------------------------------------------------------------------
 // Store Operations (Testimonials)
@@ -1351,18 +1568,25 @@ export async function getCatererContentPublic() {
       sortOrder: v.sortOrder,
     }));
 
-  const cuisines = data.cuisines
-    .filter((c) => c.isActive)
-    .sort((a, b) => a.sortOrder - b.sortOrder)
-    .map((c) => ({
-      id: c.id,
-      nameEn: c.nameEn,
-      nameHi: c.nameHi,
-      descEn: c.descEn,
-      descHi: c.descHi,
-      imageUrl: c.imageUrl ?? "",
-      sortOrder: c.sortOrder,
-    }));
+  // Cuisines, services and features are the same card, so one projection
+  // serves all three.
+  const publicPhotoCards = (items: CatererPhotoCard[]) =>
+    items
+      .filter((c) => c.isActive)
+      .sort((a, b) => a.sortOrder - b.sortOrder)
+      .map((c) => ({
+        id: c.id,
+        nameEn: c.nameEn,
+        nameHi: c.nameHi,
+        descEn: c.descEn,
+        descHi: c.descHi,
+        imageUrl: c.imageUrl ?? "",
+        sortOrder: c.sortOrder,
+      }));
+
+  const cuisines = publicPhotoCards(data.cuisines);
+  const services = publicPhotoCards(data.services);
+  const features = publicPhotoCards(data.features);
 
   const testimonials = data.testimonials
     .filter((t) => t.isActive)
@@ -1383,6 +1607,8 @@ export async function getCatererContentPublic() {
     gallery,
     venues,
     cuisines,
+    services,
+    features,
     testimonials,
     about: data.about,
     settings: data.settings,
