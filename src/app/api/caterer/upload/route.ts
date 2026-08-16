@@ -9,6 +9,12 @@ export const runtime = "nodejs";
 
 const useBlob = !!process.env.BLOB_READ_WRITE_TOKEN;
 
+// The local-dev fallback writes into public/, which only exists on a real disk.
+// On Vercel the bundle lives in a read-only /var/task, so that branch used to
+// die with a bare ENOENT; /tmp is writable but nothing serves it, so there is no
+// fallback worth taking here — the deployment simply needs a Blob store.
+const isServerless = !!process.env.VERCEL;
+
 // Allowed image MIME types for gallery upload
 const ALLOWED_TYPES = new Set([
   "image/jpeg",
@@ -38,6 +44,19 @@ type UploadKind = keyof typeof KINDS;
 export async function POST(req: Request) {
   const denied = requireAdmin(req);
   if (denied) return denied;
+
+  if (!useBlob && isServerless) {
+    console.error(
+      "POST /api/caterer/upload: BLOB_READ_WRITE_TOKEN is missing — image uploads need a Vercel Blob store."
+    );
+    return NextResponse.json(
+      {
+        error:
+          "Image uploads are not configured on this deployment. Connect a Vercel Blob store so BLOB_READ_WRITE_TOKEN is set, then redeploy.",
+      },
+      { status: 503 }
+    );
+  }
 
   try {
     const formData = await req.formData();
