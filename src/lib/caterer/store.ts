@@ -392,7 +392,6 @@ const SHARDED_COLLECTIONS = [
   "testimonials",
   "leads",
 ] as const;
-type ShardedCollection = (typeof SHARDED_COLLECTIONS)[number];
 
 // Single-record sections — one file each, no directory.
 const SINGLETON_FILES = {

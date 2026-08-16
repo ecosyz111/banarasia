@@ -73,6 +73,33 @@ for (const name of COLLECTIONS) {
 }
 
 await writeShard("about.json", seed.about, stats);
+
+// Seeding into a store that already holds records is the case that goes wrong
+// quietly: a kept file and a newly written one can claim the same sortOrder, and
+// since every read path sorts by it the grid then renders in an arbitrary order.
+// Report it rather than leave the owner to notice a card in the wrong place.
+for (const name of COLLECTIONS) {
+  const dir = path.join(DATA_ROOT, name);
+  let files;
+  try {
+    files = (await fs.readdir(dir)).filter((f) => f.endsWith(".json"));
+  } catch {
+    continue;
+  }
+  const seen = new Map();
+  for (const file of files) {
+    const record = JSON.parse(await fs.readFile(path.join(dir, file), "utf-8"));
+    const clash = seen.get(record.sortOrder);
+    if (clash) {
+      console.warn(
+        `  ! ${name}: "${clash}" and "${record.id}" both have sortOrder ${record.sortOrder}` +
+          ` — re-run with --force to take the seed's ordering.`
+      );
+    }
+    seen.set(record.sortOrder, record.id);
+  }
+}
+
 // settings.json and site.json are deliberately not seeded: DEFAULT_SETTINGS and
 // DEFAULT_SITE live in store.ts and the store writes them on its first save.
 // Duplicating them here would give branding two sources of truth.

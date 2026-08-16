@@ -39,14 +39,49 @@ warning. Production returns 503 until you configure one.
 `src/lib/caterer/store.ts` is a dual-mode store, selected by
 `BLOB_READ_WRITE_TOKEN`:
 
-- **set** — Vercel Blob, at key `system/caterer/content.json`
-- **unset** — a local JSON file at `data/caterer/content.json`
+- **set** — Vercel Blob, under `system/caterer/`
+- **unset** — local files under `data/caterer/`
 
-On Vercel without the token the file lands in `/tmp`, so every edit is lost on
+Either way the layout is the same: **one JSON file per record**, so a save
+rewrites only the record that changed rather than the whole catalogue.
+
+```
+data/caterer/
+├── manifest.json              marks the store as initialised
+├── packages/pkg-silver.json   one file per package
+├── gallery/gal-1.json         …per gallery item, venue, cuisine,
+├── venues/ven-1.json             service, feature, testimonial, lead
+├── about.json                 single-record sections
+├── settings.json
+└── site.json
+```
+
+`manifest.json` is what tells an empty `cuisines/` directory apart from a store
+that has never been written — without it the first read cannot know whether to
+seed from defaults or respect a collection the owner deliberately emptied.
+
+A store still in the old single-file `content.json` layout is read once and
+re-sharded on its next write, so no manual migration is needed.
+
+On Vercel without the token the files land in `/tmp`, so every edit is lost on
 the next cold start. Set the token in any deployed environment.
 
 Image uploads follow the same switch: Blob under `caterer/gallery/` when the
 token is set, otherwise `public/uploads/caterer/`.
+
+### Seeding
+
+A store with no data of its own falls back to `src/lib/caterer/seed-data.json`
+(118 records) and writes it out on the first save. To materialise those files
+up front for local development:
+
+```bash
+npm run seed:shards           # write any shard that is missing
+npm run seed:shards -- --force  # overwrite existing shards too
+```
+
+Existing files are left alone unless `--force` is passed, so it cannot silently
+revert content you have already edited.
 
 ## The Prisma models are inert
 
