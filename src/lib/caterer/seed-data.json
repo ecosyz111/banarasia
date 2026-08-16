@@ -1,0 +1,1497 @@
+{
+  "packages": [
+    {
+      "id": "pkg-silver",
+      "nameEn": "Silver Package",
+      "nameHi": "सिल्वर पैकेज",
+      "price": 900,
+      "priceMode": "amount",
+      "basisPax": 400,
+      "priceUnitEn": "/ Plate",
+      "priceUnitHi": "/ प्लेट",
+      "badgeEn": "Popular",
+      "badgeHi": "लोकप्रिय",
+      "featuresEn": [
+        "Standard Buffet Setup",
+        "Service Staff Included",
+        "Quality Tableware",
+        "8+ Dishes Menu",
+        "Jain Food Available"
+      ],
+      "featuresHi": [
+        "स्टैंडर्ड बफे सेटअप",
+        "सर्विस स्टाफ शामिल",
+        "उत्कृष्ट बर्तन व क्रॉकरी",
+        "8+ व्यंजन मेनू",
+        "जैन भोजन उपलब्ध"
+      ],
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "pkg-gold",
+      "nameEn": "Gold Package",
+      "nameHi": "गोल्ड पैकेज",
+      "price": 1200,
+      "priceMode": "amount",
+      "basisPax": 400,
+      "priceUnitEn": "/ Plate",
+      "priceUnitHi": "/ प्लेट",
+      "badgeEn": "Best for Weddings",
+      "badgeHi": "शादियों के लिए बेस्ट",
+      "featuresEn": [
+        "Premium Buffet Setup",
+        "Professional Service Staff",
+        "Premium Tableware",
+        "2 Live Food Counters",
+        "12+ Dishes Menu",
+        "Jain & Custom Options"
+      ],
+      "featuresHi": [
+        "प्रीमियम बफे सेटअप",
+        "प्रोफेशनल सर्विस स्टाफ",
+        "प्रीमियम क्रॉकरी",
+        "2 लाइव फूड काउंटर",
+        "12+ व्यंजन मेनू",
+        "जैन एवं कस्टम विकल्प"
+      ],
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "pkg-royal",
+      "nameEn": "Royal Package",
+      "nameHi": "रॉयल पैकेज",
+      "price": 1500,
+      "priceMode": "amount",
+      "basisPax": 400,
+      "priceUnitEn": "/ Plate",
+      "priceUnitHi": "/ प्लेट",
+      "badgeEn": "Premium Choice",
+      "badgeHi": "शाही पसंद",
+      "featuresEn": [
+        "Royal Luxury Setup",
+        "Dedicated Service Team",
+        "Designer Tableware",
+        "4+ Live Food Counters",
+        "18+ Dishes + Desserts",
+        "Full Customization"
+      ],
+      "featuresHi": [
+        "रॉयल लक्जरी सेटअप",
+        "समर्पित सर्विस टीम",
+        "डिजाइनर क्रॉकरी",
+        "4+ लाइव फूड काउंटर",
+        "18+ व्यंजन + मिठाइयां",
+        "पूर्ण कस्टमाइजेशन"
+      ],
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "pkg-classic",
+      "nameEn": "Classic Package",
+      "nameHi": "क्लासिक पैकेज",
+      "price": 650,
+      "priceMode": "amount",
+      "basisPax": 500,
+      "priceUnitEn": "/ Plate",
+      "priceUnitHi": "/ प्लेट",
+      "badgeEn": "Budget Friendly",
+      "badgeHi": "किफ़ायती",
+      "featuresEn": [
+        "Simple Buffet Setup",
+        "Service Staff Included",
+        "6+ Dishes Menu",
+        "Steel Tableware",
+        "Jain Food Available"
+      ],
+      "featuresHi": [
+        "सादा बफे सेटअप",
+        "सर्विस स्टाफ शामिल",
+        "6+ व्यंजन मेनू",
+        "स्टील बर्तन",
+        "जैन भोजन उपलब्ध"
+      ],
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "pkg-platinum",
+      "nameEn": "Platinum Package",
+      "nameHi": "प्लैटिनम पैकेज",
+      "price": 1800,
+      "priceMode": "amount",
+      "basisPax": 300,
+      "priceUnitEn": "/ Plate",
+      "priceUnitHi": "/ प्लेट",
+      "badgeEn": "Luxury",
+      "badgeHi": "लक्जरी",
+      "featuresEn": [
+        "Themed Luxury Setup",
+        "Dedicated Event Manager",
+        "Designer Crockery",
+        "6+ Live Counters",
+        "24+ Dishes + Dessert Bar",
+        "Welcome Drink Station"
+      ],
+      "featuresHi": [
+        "थीम आधारित लक्जरी सेटअप",
+        "समर्पित इवेंट मैनेजर",
+        "डिजाइनर क्रॉकरी",
+        "6+ लाइव काउंटर",
+        "24+ व्यंजन + डेज़र्ट बार",
+        "वेलकम ड्रिंक स्टेशन"
+      ],
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "pkg-maharaja",
+      "nameEn": "Maharaja Thali",
+      "nameHi": "महाराजा थाली",
+      "price": 0,
+      "priceMode": "quote",
+      "basisPax": 0,
+      "priceUnitEn": "/ Plate",
+      "priceUnitHi": "/ प्लेट",
+      "badgeEn": "On Request",
+      "badgeHi": "अनुरोध पर",
+      "featuresEn": [
+        "Served Silver Thali",
+        "Traditional Seating Option",
+        "Personal Server Per Table",
+        "30+ Item Thali",
+        "Fully Customised Menu"
+      ],
+      "featuresHi": [
+        "सिल्वर थाली में परोसा गया",
+        "पारंपरिक बैठक व्यवस्था",
+        "प्रति टेबल निजी सर्वर",
+        "30+ आइटम थाली",
+        "पूर्ण कस्टमाइज्ड मेनू"
+      ],
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "pkg-mehndi-haldi",
+      "nameEn": "Mehndi & Haldi Package",
+      "nameHi": "मेहंदी व हल्दी पैकेज",
+      "price": 550,
+      "priceMode": "amount",
+      "basisPax": 200,
+      "priceUnitEn": "/ Plate",
+      "priceUnitHi": "/ प्लेट",
+      "badgeEn": "Day Function",
+      "badgeHi": "दिन का समारोह",
+      "featuresEn": [
+        "Colourful Day Setup",
+        "Chaat & Snack Counters",
+        "Seasonal Beverages",
+        "8+ Dishes Menu",
+        "Jain Food Available"
+      ],
+      "featuresHi": [
+        "रंगीन डे सेटअप",
+        "चाट व स्नैक काउंटर",
+        "मौसमी पेय",
+        "8+ व्यंजन मेनू",
+        "जैन भोजन उपलब्ध"
+      ],
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "id": "pkg-corporate-lunch",
+      "nameEn": "Corporate Lunch Box",
+      "nameHi": "कॉर्पोरेट लंच बॉक्स",
+      "price": 350,
+      "priceMode": "amount",
+      "basisPax": 100,
+      "priceUnitEn": "/ Box",
+      "priceUnitHi": "/ बॉक्स",
+      "badgeEn": "Office Orders",
+      "badgeHi": "ऑफिस ऑर्डर",
+      "featuresEn": [
+        "Sealed Hygienic Packing",
+        "On-Time Office Delivery",
+        "Rotating Weekly Menu",
+        "5 Item Meal Box",
+        "Bulk Orders Welcome"
+      ],
+      "featuresHi": [
+        "सील्ड हाइजीनिक पैकिंग",
+        "समय पर ऑफिस डिलीवरी",
+        "हर सप्ताह बदलता मेनू",
+        "5 आइटम मील बॉक्स",
+        "थोक ऑर्डर स्वीकार्य"
+      ],
+      "sortOrder": 8,
+      "isActive": true
+    },
+    {
+      "id": "pkg-baina-box",
+      "nameEn": "Baina Box Special",
+      "nameHi": "बयना बॉक्स स्पेशल",
+      "price": 280,
+      "priceMode": "amount",
+      "basisPax": 0,
+      "priceUnitEn": "/ Box",
+      "priceUnitHi": "/ बॉक्स",
+      "badgeEn": "Traditional",
+      "badgeHi": "पारंपरिक",
+      "featuresEn": [
+        "Traditional Sweets & Namkeen",
+        "Decorative Gift Packing",
+        "Custom Name Card",
+        "Pure Veg Only",
+        "Same Day Dispatch"
+      ],
+      "featuresHi": [
+        "पारंपरिक मिठाई व नमकीन",
+        "सजावटी गिफ्ट पैकिंग",
+        "कस्टम नाम कार्ड",
+        "केवल शुद्ध शाकाहारी",
+        "उसी दिन डिस्पैच"
+      ],
+      "sortOrder": 9,
+      "isActive": true
+    },
+    {
+      "id": "pkg-breakfast-stall",
+      "nameEn": "Breakfast Stall Package",
+      "nameHi": "ब्रेकफास्ट स्टॉल पैकेज",
+      "price": 250,
+      "priceMode": "amount",
+      "basisPax": 150,
+      "priceUnitEn": "/ Plate",
+      "priceUnitHi": "/ प्लेट",
+      "badgeEn": "Morning Function",
+      "badgeHi": "प्रातःकालीन आयोजन",
+      "featuresEn": [
+        "Poori Sabzi & Halwa Counter",
+        "Live Chai & Coffee",
+        "South Indian Corner",
+        "Fresh Fruit Platter",
+        "Setup From 6 AM"
+      ],
+      "featuresHi": [
+        "पूरी सब्ज़ी व हलवा काउंटर",
+        "लाइव चाय व कॉफी",
+        "साउथ इंडियन कॉर्नर",
+        "ताज़ा फ्रूट प्लेटर",
+        "सुबह 6 बजे से सेटअप"
+      ],
+      "sortOrder": 10,
+      "isActive": true
+    },
+    {
+      "id": "pkg-jain-special",
+      "nameEn": "Jain Special Package",
+      "nameHi": "जैन स्पेशल पैकेज",
+      "price": 1100,
+      "priceMode": "amount",
+      "basisPax": 300,
+      "priceUnitEn": "/ Plate",
+      "priceUnitHi": "/ प्लेट",
+      "badgeEn": "No Onion Garlic",
+      "badgeHi": "बिना प्याज़ लहसुन",
+      "featuresEn": [
+        "Strictly No Onion & Garlic",
+        "Separate Jain Kitchen",
+        "Dedicated Serving Staff",
+        "14+ Dishes Menu",
+        "Sattvik Sweets"
+      ],
+      "featuresHi": [
+        "पूर्णतः बिना प्याज़ व लहसुन",
+        "अलग जैन रसोई",
+        "समर्पित सर्विंग स्टाफ",
+        "14+ व्यंजन मेनू",
+        "सात्विक मिठाइयां"
+      ],
+      "sortOrder": 11,
+      "isActive": true
+    },
+    {
+      "id": "pkg-high-tea",
+      "nameEn": "High Tea Package",
+      "nameHi": "हाई टी पैकेज",
+      "price": 450,
+      "priceMode": "amount",
+      "basisPax": 150,
+      "priceUnitEn": "/ Plate",
+      "priceUnitHi": "/ प्लेट",
+      "badgeEn": "Evening Snacks",
+      "badgeHi": "सांध्य नाश्ता",
+      "featuresEn": [
+        "Assorted Snack Platter",
+        "Live Chai Counter",
+        "Bakery & Dessert Corner",
+        "10+ Snack Items",
+        "Elegant Table Setup"
+      ],
+      "featuresHi": [
+        "विविध स्नैक प्लेटर",
+        "लाइव चाय काउंटर",
+        "बेकरी व डेज़र्ट कॉर्नर",
+        "10+ स्नैक आइटम",
+        "शानदार टेबल सेटअप"
+      ],
+      "sortOrder": 12,
+      "isActive": true
+    }
+  ],
+  "gallery": [
+    {
+      "id": "gal-1",
+      "imageUrl": "https://images.unsplash.com/photo-1555244162-803834f70033?w=600&q=80",
+      "captionEn": "Premium Buffet Setup",
+      "captionHi": "प्रीमियम बफे सेटअप",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "gal-2",
+      "imageUrl": "https://images.unsplash.com/photo-1530062845289-9109b2c9c868?w=600&q=80",
+      "captionEn": "Wedding Feast",
+      "captionHi": "वेडिंग दावत",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "gal-3",
+      "imageUrl": "https://images.unsplash.com/photo-1567521464027-f127ff144326?w=600&q=80",
+      "captionEn": "Event Catering",
+      "captionHi": "इवेंट कैटरिंग",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "gal-4",
+      "imageUrl": "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80",
+      "captionEn": "Live Food Counter",
+      "captionHi": "लाइव फूड काउंटर",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "gal-5",
+      "imageUrl": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80",
+      "captionEn": "Traditional Dishes",
+      "captionHi": "पारंपरिक व्यंजन",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "gal-6",
+      "imageUrl": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80",
+      "captionEn": "Banquet Arrangement",
+      "captionHi": "बैंक्वेट सजावट",
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "gal-7",
+      "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80",
+      "captionEn": "Haldi Ceremony Spread",
+      "captionHi": "हल्दी सेरेमनी स्प्रेड",
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "id": "gal-8",
+      "imageUrl": "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=600&q=80",
+      "captionEn": "Chaat Counter",
+      "captionHi": "चाट काउंटर",
+      "sortOrder": 8,
+      "isActive": true
+    },
+    {
+      "id": "gal-9",
+      "imageUrl": "https://images.unsplash.com/photo-1530062845289-9109b2c9c868?w=600&q=80",
+      "captionEn": "Sangeet Night Dinner",
+      "captionHi": "संगीत नाइट डिनर",
+      "sortOrder": 9,
+      "isActive": true
+    },
+    {
+      "id": "gal-10",
+      "imageUrl": "https://images.unsplash.com/photo-1630383249896-424e482df921?w=600&q=80",
+      "captionEn": "South Indian Corner",
+      "captionHi": "साउथ इंडियन कॉर्नर",
+      "sortOrder": 10,
+      "isActive": true
+    },
+    {
+      "id": "gal-11",
+      "imageUrl": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=600&q=80",
+      "captionEn": "Tandoor Live Station",
+      "captionHi": "तंदूर लाइव स्टेशन",
+      "sortOrder": 11,
+      "isActive": true
+    },
+    {
+      "id": "gal-12",
+      "imageUrl": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80",
+      "captionEn": "Dessert Bar",
+      "captionHi": "डेज़र्ट बार",
+      "sortOrder": 12,
+      "isActive": true
+    },
+    {
+      "id": "gal-13",
+      "imageUrl": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80",
+      "captionEn": "Reception Buffet",
+      "captionHi": "रिसेप्शन बफे",
+      "sortOrder": 13,
+      "isActive": true
+    },
+    {
+      "id": "gal-14",
+      "imageUrl": "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=600&q=80",
+      "captionEn": "Mughlai Platter",
+      "captionHi": "मुगलई प्लेटर",
+      "sortOrder": 14,
+      "isActive": true
+    },
+    {
+      "id": "gal-15",
+      "imageUrl": "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&q=80",
+      "captionEn": "Corporate Lunch Setup",
+      "captionHi": "कॉर्पोरेट लंच सेटअप",
+      "sortOrder": 15,
+      "isActive": true
+    },
+    {
+      "id": "gal-16",
+      "imageUrl": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=600&q=80",
+      "captionEn": "Welcome Drink Station",
+      "captionHi": "वेलकम ड्रिंक स्टेशन",
+      "sortOrder": 16,
+      "isActive": true
+    },
+    {
+      "id": "gal-17",
+      "imageUrl": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=600&q=80",
+      "captionEn": "Open Lawn Dining",
+      "captionHi": "खुले लॉन में भोजन",
+      "sortOrder": 17,
+      "isActive": true
+    },
+    {
+      "id": "gal-18",
+      "imageUrl": "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=600&q=80",
+      "captionEn": "Chinese Live Wok",
+      "captionHi": "चाइनीज लाइव वोक",
+      "sortOrder": 18,
+      "isActive": true
+    },
+    {
+      "id": "gal-19",
+      "imageUrl": "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80",
+      "captionEn": "Engagement Dinner",
+      "captionHi": "सगाई डिनर",
+      "sortOrder": 19,
+      "isActive": true
+    },
+    {
+      "id": "gal-20",
+      "imageUrl": "https://images.unsplash.com/photo-1567337710282-00832b415979?w=600&q=80",
+      "captionEn": "Bengali Sweet Counter",
+      "captionHi": "बंगाली मिठाई काउंटर",
+      "sortOrder": 20,
+      "isActive": true
+    },
+    {
+      "id": "gal-21",
+      "imageUrl": "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&q=80",
+      "captionEn": "Service Team On Duty",
+      "captionHi": "सेवा टीम ड्यूटी पर",
+      "sortOrder": 21,
+      "isActive": true
+    },
+    {
+      "id": "gal-22",
+      "imageUrl": "https://images.unsplash.com/photo-1587899897387-091ebd01a6b2?w=600&q=80",
+      "captionEn": "Designer Table Layout",
+      "captionHi": "डिजाइनर टेबल लेआउट",
+      "sortOrder": 22,
+      "isActive": true
+    },
+    {
+      "id": "gal-23",
+      "imageUrl": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80",
+      "captionEn": "Birthday Celebration",
+      "captionHi": "बर्थडे सेलिब्रेशन",
+      "sortOrder": 23,
+      "isActive": true
+    },
+    {
+      "id": "gal-24",
+      "imageUrl": "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?w=600&q=80",
+      "captionEn": "Pure Veg Thali",
+      "captionHi": "शुद्ध शाकाहारी थाली",
+      "sortOrder": 24,
+      "isActive": true
+    },
+    {
+      "id": "gal-25",
+      "imageUrl": "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=600&q=80",
+      "captionEn": "Grand Hall Banquet",
+      "captionHi": "भव्य हॉल बैंक्वेट",
+      "sortOrder": 25,
+      "isActive": true
+    },
+    {
+      "id": "gal-26",
+      "imageUrl": "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=600&q=80",
+      "captionEn": "Family Gathering Meal",
+      "captionHi": "पारिवारिक भोज",
+      "sortOrder": 26,
+      "isActive": true
+    },
+    {
+      "id": "gal-27",
+      "imageUrl": "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=600&q=80",
+      "captionEn": "Fresh From The Kitchen",
+      "captionHi": "रसोई से ताज़ा",
+      "sortOrder": 27,
+      "isActive": true
+    },
+    {
+      "id": "gal-28",
+      "imageUrl": "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80",
+      "captionEn": "Wedding Mandap Catering",
+      "captionHi": "वेडिंग मंडप कैटरिंग",
+      "sortOrder": 28,
+      "isActive": true
+    },
+    {
+      "id": "gal-29",
+      "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80",
+      "captionEn": "Large Gathering Service",
+      "captionHi": "बड़े आयोजन की सेवा",
+      "sortOrder": 29,
+      "isActive": true
+    },
+    {
+      "id": "gal-30",
+      "imageUrl": "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80",
+      "captionEn": "Evening High Tea",
+      "captionHi": "सांध्य हाई टी",
+      "sortOrder": 30,
+      "isActive": true
+    }
+  ],
+  "venues": [
+    {
+      "id": "ven-1",
+      "nameEn": "Banarasia Lawn",
+      "nameHi": "बनारसिया लॉन",
+      "areaEn": "Gomti Nagar, Lucknow",
+      "areaHi": "गोमती नगर, लखनऊ",
+      "capacity": "500-800",
+      "imageUrl": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=80",
+      "notesEn": "Open lawn with covered dining area and ample parking.",
+      "notesHi": "खुला लॉन, ढका हुआ डाइनिंग क्षेत्र एवं पर्याप्त पार्किंग।",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "ven-2",
+      "nameEn": "Banquet Hall",
+      "nameHi": "बैंक्वेट हॉल",
+      "areaEn": "Hazratganj, Lucknow",
+      "areaHi": "हजरतगंज, लखनऊ",
+      "capacity": "200-400",
+      "imageUrl": "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=800&q=80",
+      "notesEn": "Fully air-conditioned indoor hall, ideal for receptions.",
+      "notesHi": "पूर्ण वातानुकूलित इनडोर हॉल, रिसेप्शन के लिए आदर्श।",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "ven-3",
+      "nameEn": "Your Own Venue",
+      "nameHi": "आपका अपना वेन्यू",
+      "areaEn": "Anywhere in Lucknow & nearby",
+      "areaHi": "लखनऊ एवं आसपास कहीं भी",
+      "capacity": "50-2000",
+      "imageUrl": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80",
+      "notesEn": "We bring the full setup, staff and live counters to your location.",
+      "notesHi": "हम पूरा सेटअप, स्टाफ एवं लाइव काउंटर आपके स्थान पर लाते हैं।",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "ven-4",
+      "nameEn": "Rooftop Terrace",
+      "nameHi": "रूफटॉप टेरेस",
+      "areaEn": "Aliganj, Lucknow",
+      "areaHi": "अलीगंज, लखनऊ",
+      "capacity": "100-250",
+      "imageUrl": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80",
+      "notesEn": "Open-air rooftop with evening lighting and a covered service bay.",
+      "notesHi": "खुली छत, सांध्य प्रकाश व्यवस्था एवं ढका हुआ सर्विस क्षेत्र।",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "ven-5",
+      "nameEn": "Community Hall",
+      "nameHi": "कम्युनिटी हॉल",
+      "areaEn": "Indira Nagar, Lucknow",
+      "areaHi": "इंदिरा नगर, लखनऊ",
+      "capacity": "150-350",
+      "imageUrl": "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=800&q=80",
+      "notesEn": "Air-conditioned hall with a dedicated kitchen and stage area.",
+      "notesHi": "वातानुकूलित हॉल, समर्पित रसोई एवं मंच क्षेत्र।",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "ven-6",
+      "nameEn": "Farmhouse Grounds",
+      "nameHi": "फार्महाउस ग्राउंड",
+      "areaEn": "Sultanpur Road, Lucknow",
+      "areaHi": "सुल्तानपुर रोड, लखनऊ",
+      "capacity": "800-1500",
+      "imageUrl": "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=80",
+      "notesEn": "Sprawling grounds for large weddings, with generous parking.",
+      "notesHi": "बड़ी शादियों के लिए विशाल मैदान, पर्याप्त पार्किंग सहित।",
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "ven-7",
+      "nameEn": "Hotel Banquet",
+      "nameHi": "होटल बैंक्वेट",
+      "areaEn": "Vibhuti Khand, Lucknow",
+      "areaHi": "विभूति खंड, लखनऊ",
+      "capacity": "150-400",
+      "imageUrl": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=800&q=80",
+      "notesEn": "Premium indoor banquet with valet parking and guest rooms nearby.",
+      "notesHi": "प्रीमियम इनडोर बैंक्वेट, वैले पार्किंग एवं पास में गेस्ट रूम।",
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "id": "ven-8",
+      "nameEn": "Temple Bhandara Ground",
+      "nameHi": "मंदिर भंडारा ग्राउंड",
+      "areaEn": "Chowk, Lucknow",
+      "areaHi": "चौक, लखनऊ",
+      "capacity": "300-1000",
+      "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=800&q=80",
+      "notesEn": "Sattvik-only kitchen setup for bhandara and religious functions.",
+      "notesHi": "भंडारा एवं धार्मिक आयोजनों हेतु पूर्णतः सात्विक रसोई व्यवस्था।",
+      "sortOrder": 8,
+      "isActive": true
+    },
+    {
+      "id": "ven-9",
+      "nameEn": "Corporate Cafeteria",
+      "nameHi": "कॉर्पोरेट कैफेटेरिया",
+      "areaEn": "Vibhuti Khand, Lucknow",
+      "areaHi": "विभूति खंड, लखनऊ",
+      "capacity": "50-200",
+      "imageUrl": "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=800&q=80",
+      "notesEn": "Weekday lunch service and office event catering on site.",
+      "notesHi": "कार्यदिवस लंच सेवा एवं ऑफिस इवेंट कैटरिंग मौके पर।",
+      "sortOrder": 9,
+      "isActive": true
+    },
+    {
+      "id": "ven-10",
+      "nameEn": "Marriage Garden",
+      "nameHi": "मैरिज गार्डन",
+      "areaEn": "Faizabad Road, Lucknow",
+      "areaHi": "फैजाबाद रोड, लखनऊ",
+      "capacity": "400-900",
+      "imageUrl": "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=800&q=80",
+      "notesEn": "Landscaped garden with a permanent mandap and buffet pavilion.",
+      "notesHi": "सुसज्जित उद्यान, स्थायी मंडप एवं बफे पवेलियन सहित।",
+      "sortOrder": 10,
+      "isActive": true
+    },
+    {
+      "id": "ven-11",
+      "nameEn": "Riverside Lawn",
+      "nameHi": "रिवरसाइड लॉन",
+      "areaEn": "Gomti Riverfront, Lucknow",
+      "areaHi": "गोमती रिवरफ्रंट, लखनऊ",
+      "capacity": "200-600",
+      "imageUrl": "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80",
+      "notesEn": "Waterfront lawn, best for evening receptions and sangeet.",
+      "notesHi": "नदी किनारे लॉन, सांध्य रिसेप्शन एवं संगीत के लिए उत्तम।",
+      "sortOrder": 11,
+      "isActive": true
+    },
+    {
+      "id": "ven-12",
+      "nameEn": "Club Poolside",
+      "nameHi": "क्लब पूलसाइड",
+      "areaEn": "Mahanagar, Lucknow",
+      "areaHi": "महानगर, लखनऊ",
+      "capacity": "80-200",
+      "imageUrl": "https://images.unsplash.com/photo-1530062845289-9109b2c9c868?w=800&q=80",
+      "notesEn": "Intimate poolside setting for cocktails, high tea and small parties.",
+      "notesHi": "छोटी पार्टियों, हाई टी एवं कॉकटेल हेतु आत्मीय पूलसाइड स्थल।",
+      "sortOrder": 12,
+      "isActive": true
+    },
+    {
+      "id": "ven-13",
+      "nameEn": "Convention Centre",
+      "nameHi": "कन्वेंशन सेंटर",
+      "areaEn": "Shaheed Path, Lucknow",
+      "areaHi": "शहीद पथ, लखनऊ",
+      "capacity": "600-2000",
+      "imageUrl": "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=800&q=80",
+      "notesEn": "Pillar-free hall for conferences and very large receptions.",
+      "notesHi": "सम्मेलनों एवं अत्यंत बड़े रिसेप्शन हेतु स्तंभरहित हॉल।",
+      "sortOrder": 13,
+      "isActive": true
+    },
+    {
+      "id": "ven-14",
+      "nameEn": "Home Aangan",
+      "nameHi": "होम आँगन",
+      "areaEn": "Anywhere in Lucknow & nearby",
+      "areaHi": "लखनऊ एवं आसपास कहीं भी",
+      "capacity": "25-100",
+      "imageUrl": "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=800&q=80",
+      "notesEn": "Small home functions — we bring compact setup, staff and crockery.",
+      "notesHi": "छोटे घरेलू आयोजन — हम कॉम्पैक्ट सेटअप, स्टाफ एवं क्रॉकरी लाते हैं।",
+      "sortOrder": 14,
+      "isActive": true
+    }
+  ],
+  "cuisines": [
+    {
+      "id": "cui-north-indian",
+      "nameEn": "North Indian",
+      "nameHi": "नॉर्थ इंडियन",
+      "descEn": "Rich curries & tandoor specials",
+      "descHi": "स्वादिष्ट ग्रेवी और तंदूर स्पेशल",
+      "imageUrl": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&q=80",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "cui-south-indian",
+      "nameEn": "South Indian",
+      "nameHi": "साउथ इंडियन",
+      "descEn": "Authentic dosas & idlis",
+      "descHi": "प्रामाणिक डोसा और इडली",
+      "imageUrl": "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400&q=80",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "cui-chinese",
+      "nameEn": "Chinese",
+      "nameHi": "चाइनीज",
+      "descEn": "Indo-Chinese favorites",
+      "descHi": "इंडो-चाइनीज पसंदीदा व्यंजन",
+      "imageUrl": "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400&q=80",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "cui-continental",
+      "nameEn": "Continental",
+      "nameHi": "कॉन्टिनेंटल",
+      "descEn": "Elegant international flavors",
+      "descHi": "अंतर्राष्ट्रीय स्वाद",
+      "imageUrl": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "cui-mughlai",
+      "nameEn": "Mughlai",
+      "nameHi": "मुगलई",
+      "descEn": "Royal Mughlai delicacies",
+      "descHi": "शाही मुगलई पकवान",
+      "imageUrl": "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=400&q=80",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "cui-punjabi",
+      "nameEn": "Punjabi",
+      "nameHi": "पंजाबी",
+      "descEn": "Hearty Punjabi tadka",
+      "descHi": "चटपटा पंजाबी तड़का",
+      "imageUrl": "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400&q=80",
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "cui-bengali",
+      "nameEn": "Bengali",
+      "nameHi": "बंगाली",
+      "descEn": "Sweet & savory classics",
+      "descHi": "मीठे और नमकीन पारंपरिक व्यंजन",
+      "imageUrl": "https://images.unsplash.com/photo-1567337710282-00832b415979?w=400&q=80",
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "id": "cui-awadhi",
+      "nameEn": "Awadhi",
+      "nameHi": "अवधी",
+      "descEn": "Lucknowi dum-cooked classics",
+      "descHi": "लखनवी दम पकवान",
+      "imageUrl": "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=400&q=80",
+      "sortOrder": 8,
+      "isActive": true
+    },
+    {
+      "id": "cui-banarasi",
+      "nameEn": "Banarasi",
+      "nameHi": "बनारसी",
+      "descEn": "Kashi ka asli swaad",
+      "descHi": "काशी का असली स्वाद",
+      "imageUrl": "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&q=80",
+      "sortOrder": 9,
+      "isActive": true
+    },
+    {
+      "id": "cui-rajasthani",
+      "nameEn": "Rajasthani",
+      "nameHi": "राजस्थानी",
+      "descEn": "Dal baati & marwari thali",
+      "descHi": "दाल बाटी व मारवाड़ी थाली",
+      "imageUrl": "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?w=400&q=80",
+      "sortOrder": 10,
+      "isActive": true
+    },
+    {
+      "id": "cui-gujarati",
+      "nameEn": "Gujarati",
+      "nameHi": "गुजराती",
+      "descEn": "Sweet-savoury Gujarati thali",
+      "descHi": "मीठी-नमकीन गुजराती थाली",
+      "imageUrl": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=400&q=80",
+      "sortOrder": 11,
+      "isActive": true
+    },
+    {
+      "id": "cui-jain",
+      "nameEn": "Jain Sattvik",
+      "nameHi": "जैन सात्विक",
+      "descEn": "No onion, no garlic, full taste",
+      "descHi": "बिना प्याज़ लहसुन, पूरा स्वाद",
+      "imageUrl": "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=400&q=80",
+      "sortOrder": 12,
+      "isActive": true
+    },
+    {
+      "id": "cui-street",
+      "nameEn": "Indian Street Food",
+      "nameHi": "इंडियन स्ट्रीट फूड",
+      "descEn": "Chaat, tikki & golgappe",
+      "descHi": "चाट, टिक्की व गोलगप्पे",
+      "imageUrl": "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400&q=80",
+      "sortOrder": 13,
+      "isActive": true
+    },
+    {
+      "id": "cui-italian",
+      "nameEn": "Italian",
+      "nameHi": "इटैलियन",
+      "descEn": "Wood-fired pizza & pasta",
+      "descHi": "वुड-फायर्ड पिज़्ज़ा व पास्ता",
+      "imageUrl": "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80",
+      "sortOrder": 14,
+      "isActive": true
+    },
+    {
+      "id": "cui-mexican",
+      "nameEn": "Mexican",
+      "nameHi": "मैक्सिकन",
+      "descEn": "Tacos, nachos & salsa bar",
+      "descHi": "टैको, नाचोज़ व साल्सा बार",
+      "imageUrl": "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400&q=80",
+      "sortOrder": 15,
+      "isActive": true
+    },
+    {
+      "id": "cui-tandoor",
+      "nameEn": "Tandoor & Grill",
+      "nameHi": "तंदूर व ग्रिल",
+      "descEn": "Live sigri, kebab & naan",
+      "descHi": "लाइव सिगड़ी, कबाब व नान",
+      "imageUrl": "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=400&q=80",
+      "sortOrder": 16,
+      "isActive": true
+    },
+    {
+      "id": "cui-desserts",
+      "nameEn": "Desserts & Mithai",
+      "nameHi": "मिठाई व डेज़र्ट",
+      "descEn": "Halwai counter & live jalebi",
+      "descHi": "हलवाई काउंटर व लाइव जलेबी",
+      "imageUrl": "https://images.unsplash.com/photo-1567337710282-00832b415979?w=400&q=80",
+      "sortOrder": 17,
+      "isActive": true
+    },
+    {
+      "id": "cui-beverages",
+      "nameEn": "Beverages",
+      "nameHi": "पेय पदार्थ",
+      "descEn": "Mocktails, thandai & chai",
+      "descHi": "मॉकटेल, ठंडाई व चाय",
+      "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=400&q=80",
+      "sortOrder": 18,
+      "isActive": true
+    },
+    {
+      "id": "cui-salad-bar",
+      "nameEn": "Salad & Soup Bar",
+      "nameHi": "सलाद व सूप बार",
+      "descEn": "Fresh cut salads & hot soups",
+      "descHi": "ताज़ा कटे सलाद व गरम सूप",
+      "imageUrl": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80",
+      "sortOrder": 19,
+      "isActive": true
+    },
+    {
+      "id": "cui-custom",
+      "nameEn": "Custom Menu",
+      "nameHi": "कस्टम मेनू",
+      "descEn": "Aapki pasand, humari peshkash",
+      "descHi": "आपकी पसंद, हमारी पेशकश",
+      "imageUrl": "",
+      "sortOrder": 20,
+      "isActive": true
+    }
+  ],
+  "services": [
+    {
+      "id": "srv-wedding",
+      "nameEn": "Wedding Catering",
+      "nameHi": "वेडिंग कैटरिंग",
+      "descEn": "Grand shaadi ka grand bhoj",
+      "descHi": "भव्य शादी का भव्य भोज",
+      "imageUrl": "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "srv-engagement",
+      "nameEn": "Engagement",
+      "nameHi": "सगाई",
+      "descEn": "Ring ceremony feast",
+      "descHi": "रिंग सेरेमनी की दावत",
+      "imageUrl": "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "srv-birthday",
+      "nameEn": "Birthday Parties",
+      "nameHi": "बर्थडे पार्टी",
+      "descEn": "Special birthday menu",
+      "descHi": "खास बर्थडे मेनू",
+      "imageUrl": "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "srv-corporate",
+      "nameEn": "Corporate Events",
+      "nameHi": "कॉर्पोरेट इवेंट",
+      "descEn": "Professional service",
+      "descHi": "प्रोफेशनल सेवा",
+      "imageUrl": "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&q=80",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "srv-reception",
+      "nameEn": "Reception",
+      "nameHi": "रिसेप्शन",
+      "descEn": "Grand reception feast",
+      "descHi": "भव्य रिसेप्शन दावत",
+      "imageUrl": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "srv-festive",
+      "nameEn": "Festive Catering",
+      "nameHi": "त्योहार कैटरिंग",
+      "descEn": "Tyohaar ki dawaat",
+      "descHi": "त्योहार की दावत",
+      "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80",
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "srv-family",
+      "nameEn": "Family Gatherings",
+      "nameHi": "फैमिली गैदरिंग",
+      "descEn": "Ghar jaisi mehfil",
+      "descHi": "घर जैसी महफ़िल",
+      "imageUrl": "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=600&q=80",
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "id": "srv-live-counters",
+      "nameEn": "Live Counters",
+      "nameHi": "लाइव काउंटर",
+      "descEn": "Fresh live cooking",
+      "descHi": "ताज़ा लाइव कुकिंग",
+      "imageUrl": "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80",
+      "sortOrder": 8,
+      "isActive": true
+    },
+    {
+      "id": "srv-mehndi-haldi",
+      "nameEn": "Mehndi & Haldi",
+      "nameHi": "मेहंदी व हल्दी",
+      "descEn": "Rang-birangi day function",
+      "descHi": "रंग-बिरंगा दिन का समारोह",
+      "imageUrl": "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80",
+      "sortOrder": 9,
+      "isActive": true
+    },
+    {
+      "id": "srv-sangeet",
+      "nameEn": "Sangeet Night",
+      "nameHi": "संगीत नाइट",
+      "descEn": "Late-night dinner service",
+      "descHi": "देर रात तक डिनर सेवा",
+      "imageUrl": "https://images.unsplash.com/photo-1530062845289-9109b2c9c868?w=600&q=80",
+      "sortOrder": 10,
+      "isActive": true
+    },
+    {
+      "id": "srv-bhandara",
+      "nameEn": "Bhandara & Puja",
+      "nameHi": "भंडारा व पूजा",
+      "descEn": "Sattvik bulk serving",
+      "descHi": "सात्विक सामूहिक भोज",
+      "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80",
+      "sortOrder": 11,
+      "isActive": true
+    },
+    {
+      "id": "srv-baina-box",
+      "nameEn": "Baina & Gift Boxes",
+      "nameHi": "बयना व गिफ्ट बॉक्स",
+      "descEn": "Mithai boxes for guests",
+      "descHi": "मेहमानों के लिए मिठाई बॉक्स",
+      "imageUrl": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80",
+      "sortOrder": 12,
+      "isActive": true
+    },
+    {
+      "id": "srv-lunch-box",
+      "nameEn": "Lunch Box Delivery",
+      "nameHi": "लंच बॉक्स डिलीवरी",
+      "descEn": "Daily office tiffin service",
+      "descHi": "रोज़ाना ऑफिस टिफिन सेवा",
+      "imageUrl": "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&q=80",
+      "sortOrder": 13,
+      "isActive": true
+    },
+    {
+      "id": "srv-high-tea",
+      "nameEn": "High Tea & Kitty",
+      "nameHi": "हाई टी व किटी",
+      "descEn": "Evening snacks & chai",
+      "descHi": "सांध्य नाश्ता व चाय",
+      "imageUrl": "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80",
+      "sortOrder": 14,
+      "isActive": true
+    }
+  ],
+  "features": [
+    {
+      "id": "feat-fresh",
+      "nameEn": "Freshly Prepared",
+      "nameHi": "ताज़ा तैयार",
+      "descEn": "Taaza aur swadisht, har baar",
+      "descHi": "ताज़ा और स्वादिष्ट, हर बार",
+      "imageUrl": "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=600&q=80",
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "feat-setup",
+      "nameEn": "Elegant Setup",
+      "nameHi": "शानदार सेटअप",
+      "descEn": "Shahi buffet presentation",
+      "descHi": "शाही बफे प्रस्तुति",
+      "imageUrl": "https://images.unsplash.com/photo-1587899897387-091ebd01a6b2?w=600&q=80",
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "feat-staff",
+      "nameEn": "Professional Staff",
+      "nameHi": "प्रोफेशनल स्टाफ",
+      "descEn": "Trained & courteous team",
+      "descHi": "प्रशिक्षित एवं विनम्र टीम",
+      "imageUrl": "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&q=80",
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "feat-pure-veg",
+      "nameEn": "Pure Veg & Jain",
+      "nameHi": "शुद्ध शाकाहारी व जैन",
+      "descEn": "100% vegetarian guarantee",
+      "descHi": "100% शाकाहारी गारंटी",
+      "imageUrl": "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?w=600&q=80",
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "feat-capacity",
+      "nameEn": "Large Capacity",
+      "nameHi": "बड़ी क्षमता",
+      "descEn": "10,000+ guests handled",
+      "descHi": "10,000+ मेहमानों की सेवा",
+      "imageUrl": "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80",
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "feat-custom-menu",
+      "nameEn": "Custom Menus",
+      "nameHi": "कस्टम मेनू",
+      "descEn": "Aapki pasand ka menu",
+      "descHi": "आपकी पसंद का मेनू",
+      "imageUrl": "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80",
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "feat-hygiene",
+      "nameEn": "FSSAI Hygiene",
+      "nameHi": "एफएसएसएआई स्वच्छता",
+      "descEn": "Licensed & inspected kitchen",
+      "descHi": "लाइसेंस प्राप्त एवं निरीक्षित रसोई",
+      "imageUrl": "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=600&q=80",
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "id": "feat-on-time",
+      "nameEn": "Always On Time",
+      "nameHi": "हमेशा समय पर",
+      "descEn": "Setup ready before guests",
+      "descHi": "मेहमानों से पहले सेटअप तैयार",
+      "imageUrl": "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&q=80",
+      "sortOrder": 8,
+      "isActive": true
+    },
+    {
+      "id": "feat-tasting",
+      "nameEn": "Free Menu Tasting",
+      "nameHi": "निःशुल्क मेनू टेस्टिंग",
+      "descEn": "Taste before you book",
+      "descHi": "बुकिंग से पहले चखिए",
+      "imageUrl": "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80",
+      "sortOrder": 9,
+      "isActive": true
+    },
+    {
+      "id": "feat-transparent",
+      "nameEn": "Transparent Pricing",
+      "nameHi": "पारदर्शी मूल्य",
+      "descEn": "No hidden charges, ever",
+      "descHi": "कोई छुपा हुआ शुल्क नहीं",
+      "imageUrl": "https://images.unsplash.com/photo-1587899897387-091ebd01a6b2?w=600&q=80",
+      "sortOrder": 10,
+      "isActive": true
+    }
+  ],
+  "testimonials": [
+    {
+      "id": "rev-1",
+      "quoteEn": "\"Amazing taste and professional service. Our wedding guests were truly impressed!\"",
+      "quoteHi": "\"अद्भुत स्वाद और बेहतरीन सर्विस। शादी के सभी मेहमान प्रभावित हुए!\"",
+      "authorName": "Rajesh Gupta",
+      "eventEn": "Wedding, 2024",
+      "eventHi": "विवाह, 2024",
+      "rating": 5,
+      "sortOrder": 1,
+      "isActive": true
+    },
+    {
+      "id": "rev-2",
+      "quoteEn": "\"Guests loved the buffet presentation. Best catering in Lucknow!\"",
+      "quoteHi": "\"मेहमानों को बफे सेटअप बहुत पसंद आया। लखनऊ में सबसे बेहतरीन कैटरिंग!\"",
+      "authorName": "Priya Sharma",
+      "eventEn": "Engagement, 2024",
+      "eventHi": "सगाई, 2024",
+      "rating": 5,
+      "sortOrder": 2,
+      "isActive": true
+    },
+    {
+      "id": "rev-3",
+      "quoteEn": "\"Perfect catering for our wedding. Sab kuch ekdum first class tha!\"",
+      "quoteHi": "\"हमारी शादी के लिए एकदम सही कैटरिंग। सब कुछ फर्स्ट क्लास था!\"",
+      "authorName": "Amit Verma",
+      "eventEn": "Reception, 2023",
+      "eventHi": "रिसेप्शन, 2023",
+      "rating": 5,
+      "sortOrder": 3,
+      "isActive": true
+    },
+    {
+      "id": "rev-4",
+      "quoteEn": "\"Highly recommended for premium events. Quality aur quantity dono zabardast!\"",
+      "quoteHi": "\"प्रीमियम इवेंट्स के लिए अत्यधिक अनुशंसित। क्वालिटी और क्वांटिटी दोनों लाजवाब!\"",
+      "authorName": "Sunita Agarwal",
+      "eventEn": "Corporate Event, 2024",
+      "eventHi": "कॉर्पोरेट इवेंट, 2024",
+      "rating": 5,
+      "sortOrder": 4,
+      "isActive": true
+    },
+    {
+      "id": "rev-5",
+      "quoteEn": "\"Poore 700 mehman the aur khana kam nahi pada. Presentation bhi lajawab thi.\"",
+      "quoteHi": "\"पूरे 700 मेहमान थे और खाना कम नहीं पड़ा। प्रस्तुति भी लाजवाब थी।\"",
+      "authorName": "Anjali Srivastava",
+      "eventEn": "Wedding, 2025",
+      "eventHi": "विवाह, 2025",
+      "rating": 5,
+      "sortOrder": 5,
+      "isActive": true
+    },
+    {
+      "id": "rev-6",
+      "quoteEn": "\"The live tandoor counter was the highlight of our reception. Guests kept going back.\"",
+      "quoteHi": "\"लाइव तंदूर काउंटर हमारे रिसेप्शन का मुख्य आकर्षण रहा। मेहमान बार-बार वहीं जाते रहे।\"",
+      "authorName": "Mohd. Arif",
+      "eventEn": "Reception, 2025",
+      "eventHi": "रिसेप्शन, 2025",
+      "rating": 5,
+      "sortOrder": 6,
+      "isActive": true
+    },
+    {
+      "id": "rev-7",
+      "quoteEn": "\"Jain menu bilkul alag kitchen mein bana. Family bahut khush hui.\"",
+      "quoteHi": "\"जैन मेनू बिल्कुल अलग रसोई में बना। परिवार बहुत खुश हुआ।\"",
+      "authorName": "Priya Bhatnagar",
+      "eventEn": "Engagement, 2024",
+      "eventHi": "सगाई, 2024",
+      "rating": 5,
+      "sortOrder": 7,
+      "isActive": true
+    },
+    {
+      "id": "rev-8",
+      "quoteEn": "\"Punctual setup and clean service for our 300-person annual day.\"",
+      "quoteHi": "\"हमारे 300 लोगों के वार्षिकोत्सव के लिए समय पर सेटअप और स्वच्छ सेवा।\"",
+      "authorName": "Vikram Singh",
+      "eventEn": "Corporate Event, 2025",
+      "eventHi": "कॉर्पोरेट इवेंट, 2025",
+      "rating": 4,
+      "sortOrder": 8,
+      "isActive": true
+    },
+    {
+      "id": "rev-9",
+      "quoteEn": "\"Sattvik bhojan, bilkul shuddh. 1200 logon ka prasad shanti se bata.\"",
+      "quoteHi": "\"सात्विक भोजन, बिल्कुल शुद्ध। 1200 लोगों का प्रसाद शांति से बंटा।\"",
+      "authorName": "Meena Tripathi",
+      "eventEn": "Bhandara, 2024",
+      "eventHi": "भंडारा, 2024",
+      "rating": 5,
+      "sortOrder": 9,
+      "isActive": true
+    },
+    {
+      "id": "rev-10",
+      "quoteEn": "\"Kids loved the chaat counter, elders loved the thali. Perfect balance.\"",
+      "quoteHi": "\"बच्चों को चाट काउंटर पसंद आया, बड़ों को थाली। एकदम सही संतुलन।\"",
+      "authorName": "Rohit Kapoor",
+      "eventEn": "Birthday Party, 2025",
+      "eventHi": "बर्थडे पार्टी, 2025",
+      "rating": 5,
+      "sortOrder": 10,
+      "isActive": true
+    },
+    {
+      "id": "rev-11",
+      "quoteEn": "\"Team stayed till 1 AM without a single complaint. Truly professional.\"",
+      "quoteHi": "\"टीम रात 1 बजे तक बिना किसी शिकायत के डटी रही। वाकई पेशेवर।\"",
+      "authorName": "Shalini Verma",
+      "eventEn": "Sangeet, 2025",
+      "eventHi": "संगीत, 2025",
+      "rating": 5,
+      "sortOrder": 11,
+      "isActive": true
+    },
+    {
+      "id": "rev-12",
+      "quoteEn": "\"Chhote function ke liye bhi utna hi dhyan diya. Achha laga.\"",
+      "quoteHi": "\"छोटे आयोजन के लिए भी उतना ही ध्यान दिया। अच्छा लगा।\"",
+      "authorName": "Amit Rastogi",
+      "eventEn": "Housewarming, 2024",
+      "eventHi": "गृह प्रवेश, 2024",
+      "rating": 4,
+      "sortOrder": 12,
+      "isActive": true
+    },
+    {
+      "id": "rev-13",
+      "quoteEn": "\"Awadhi dishes tasted exactly like old Lucknow. My father was impressed.\"",
+      "quoteHi": "\"अवधी व्यंजनों का स्वाद बिल्कुल पुराने लखनऊ जैसा था। मेरे पिताजी प्रभावित हुए।\"",
+      "authorName": "Farhan Ahmed",
+      "eventEn": "Wedding, 2024",
+      "eventHi": "विवाह, 2024",
+      "rating": 5,
+      "sortOrder": 13,
+      "isActive": true
+    },
+    {
+      "id": "rev-14",
+      "quoteEn": "\"Colourful setup and the mocktail bar was such a hit in the afternoon heat.\"",
+      "quoteHi": "\"रंगीन सेटअप और मॉकटेल बार दोपहर की गर्मी में बहुत पसंद किया गया।\"",
+      "authorName": "Neha Dixit",
+      "eventEn": "Mehndi, 2025",
+      "eventHi": "मेहंदी, 2025",
+      "rating": 5,
+      "sortOrder": 14,
+      "isActive": true
+    },
+    {
+      "id": "rev-15",
+      "quoteEn": "\"Sab kuch waqt par, khana garam aur staff ekdum vinamra.\"",
+      "quoteHi": "\"सब कुछ वक्त पर, खाना गरम और स्टाफ एकदम विनम्र।\"",
+      "authorName": "Suresh Chandra",
+      "eventEn": "Retirement Party, 2024",
+      "eventHi": "सेवानिवृत्ति पार्टी, 2024",
+      "rating": 5,
+      "sortOrder": 15,
+      "isActive": true
+    },
+    {
+      "id": "rev-16",
+      "quoteEn": "\"High tea spread was generous and beautifully plated. Will book again.\"",
+      "quoteHi": "\"हाई टी का स्प्रेड भरपूर और बेहद खूबसूरती से सजाया गया था। दोबारा बुक करेंगे।\"",
+      "authorName": "Ritu Malhotra",
+      "eventEn": "Kitty Party, 2025",
+      "eventHi": "किटी पार्टी, 2025",
+      "rating": 4,
+      "sortOrder": 16,
+      "isActive": true
+    },
+    {
+      "id": "rev-17",
+      "quoteEn": "\"25th anniversary thi, unhone ise yaadgaar bana diya. Dhanyavaad.\"",
+      "quoteHi": "\"25वीं वर्षगांठ थी, उन्होंने इसे यादगार बना दिया। धन्यवाद।\"",
+      "authorName": "Deepak Yadav",
+      "eventEn": "Anniversary, 2025",
+      "eventHi": "वर्षगांठ, 2025",
+      "rating": 5,
+      "sortOrder": 17,
+      "isActive": true
+    },
+    {
+      "id": "rev-18",
+      "quoteEn": "\"Six months of daily office boxes and not one late delivery.\"",
+      "quoteHi": "\"छह महीने से रोज़ाना ऑफिस बॉक्स और एक भी डिलीवरी देर से नहीं।\"",
+      "authorName": "Kavita Sharma",
+      "eventEn": "Corporate Lunch, 2025",
+      "eventHi": "कॉर्पोरेट लंच, 2025",
+      "rating": 5,
+      "sortOrder": 18,
+      "isActive": true
+    }
+  ],
+  "about": {
+    "id": "default",
+    "slug": "default",
+    "storyTitleEn": "Our Story",
+    "storyTitleHi": "हमारी कहानी",
+    "titleEn": "Crafting Memorable Celebrations",
+    "titleHi": "यादगार उत्सवों का भव्य निर्माण",
+    "descriptionEn": "We are serving fresh food with good service for more than 10 years. Har event mein humari koshish hoti hai ki aapke mehman khush hokar jaayein.",
+    "descriptionHi": "हम 10 से अधिक वर्षों से ताज़ा भोजन और उत्तम सेवा प्रदान कर रहे हैं। हर इवेंट में हमारी कोशिश होती है कि आपके मेहमान खुश होकर जाएं।",
+    "mottoEn": "\"Swad Adab Se Chakhayenge\"",
+    "mottoHi": "\"स्वाद अदब से चखायेंगे\"",
+    "subMottoEn": "That's why we proudly say",
+    "subMottoHi": "इसलिए हम गर्व से कहते हैं",
+    "establishedYear": 2015,
+    "stats": [
+      {
+        "labelEn": "Since",
+        "labelHi": "स्थापना वर्ष",
+        "value": "2015"
+      },
+      {
+        "labelEn": "Events Done",
+        "labelHi": "सफल कार्यक्रम",
+        "value": "500+"
+      },
+      {
+        "labelEn": "Guest Capacity",
+        "labelHi": "मेहमान क्षमता",
+        "value": "10,000+"
+      },
+      {
+        "labelEn": "% Happy Clients",
+        "labelHi": "% संतुष्ट ग्राहक",
+        "value": "98%"
+      }
+    ],
+    "expertise": [
+      {
+        "textEn": "Wedding & More",
+        "textHi": "वेडिंग एवं अन्य आयोजन"
+      },
+      {
+        "textEn": "Home Parties",
+        "textHi": "होम पार्टीज़"
+      },
+      {
+        "textEn": "Special Baina Boxes",
+        "textHi": "स्पेशल बयना बॉक्स"
+      },
+      {
+        "textEn": "Lunch Box",
+        "textHi": "लंच बॉक्स"
+      },
+      {
+        "textEn": "Breakfast Stall",
+        "textHi": "ब्रेकफास्ट स्टॉल"
+      },
+      {
+        "textEn": "Lunch Stall",
+        "textHi": "लंच स्टॉल"
+      },
+      {
+        "textEn": "Dinner Stall",
+        "textHi": "डिनर स्टॉल"
+      },
+      {
+        "textEn": "Corporate Parties",
+        "textHi": "कॉर्पोरेट पार्टीज़"
+      },
+      {
+        "textEn": "Single Food Stall",
+        "textHi": "सिंगल फूड स्टॉल"
+      },
+      {
+        "textEn": "Bulk Food Boxes",
+        "textHi": "थोक भोजन डिब्बे"
+      }
+    ]
+  }
+}

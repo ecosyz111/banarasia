@@ -1,16 +1,28 @@
-// Caterer CMS persistence — Dual-mode JSON/Vercel-Blob backend.
+// Caterer CMS persistence — Dual-mode sharded JSON/Vercel-Blob backend.
+//
+// Every record is its own JSON file. A package edit rewrites that one package's
+// file and nothing else, so the cost of a save no longer grows with the size of
+// the catalogue, and two admins editing different sections cannot clobber each
+// other by each re-serialising the whole store.
+//
+//   data/caterer/packages/pkg-silver.json      system/caterer/packages/…
+//   data/caterer/gallery/gal-001.json          system/caterer/gallery/…
+//   data/caterer/settings.json                 system/caterer/settings.json
 //
 // Switches automatically based on BLOB_READ_WRITE_TOKEN:
-//   - Token set:   Vercel Blob at key `system/caterer/content.json`
-//   - Token unset: Local JSON file at `data/caterer/content.json` (/tmp on Vercel)
+//   - Token set:   Vercel Blob under `system/caterer/`
+//   - Token unset: Local files under `data/caterer/` (/tmp on Vercel)
 //
-// Initial defaults (3 packages, 6 gallery items, 1 About record) are loaded
-// from Banarasia website content if no store file exists yet.
+// Initial defaults are loaded from ./seed-data.json if no store exists yet, and
+// a store still in the old single-file layout is read once and re-sharded on
+// its next write — see readFromStorage.
 
 import "server-only";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { head, put } from "@vercel/blob";
+import crypto from "node:crypto";
+import { del, head, list, put } from "@vercel/blob";
+import SEED from "./seed-data.json";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -323,523 +335,112 @@ export const DEFAULT_SITE: CatererSite = {
 // Initial Defaults (Banarasia extracted data)
 // ---------------------------------------------------------------------------
 
+// The catalogue a store with no data of its own starts from: 118 records across
+// the seven collections, held in ./seed-data.json rather than inline here so
+// this module stays about persistence — and so scripts/seed-shards.mjs can
+// materialise the very same records without going through a TypeScript build.
+//
+// Treated as read-only: hydration hands out structuredClone copies, because the
+// store mutates the object it hydrates and would otherwise edit the seed itself.
 const INITIAL_DEFAULTS: CatererStoreData = {
-  packages: [
-    {
-      id: "pkg-silver",
-      nameEn: "Silver Package",
-      nameHi: "सिल्वर पैकेज",
-      price: 900,
-      // Listed, not hidden — the basisPax badge already tells the visitor the
-      // rate is costed against a gathering size, so the figure can be shown.
-      priceMode: "amount",
-      basisPax: 400,
-      priceUnitEn: "/ Plate",
-      priceUnitHi: "/ प्लेट",
-      badgeEn: "Popular",
-      badgeHi: "लोकप्रिय",
-      featuresEn: [
-        "Standard Buffet Setup",
-        "Service Staff Included",
-        "Quality Tableware",
-        "8+ Dishes Menu",
-        "Jain Food Available",
-      ],
-      featuresHi: [
-        "स्टैंडर्ड बफे सेटअप",
-        "सर्विस स्टाफ शामिल",
-        "उत्कृष्ट बर्तन व क्रॉकरी",
-        "8+ व्यंजन मेनू",
-        "जैन भोजन उपलब्ध",
-      ],
-      sortOrder: 1,
-      isActive: true,
-    },
-    {
-      id: "pkg-gold",
-      nameEn: "Gold Package",
-      nameHi: "गोल्ड पैकेज",
-      price: 1200,
-      priceMode: "amount",
-      basisPax: 400,
-      priceUnitEn: "/ Plate",
-      priceUnitHi: "/ प्लेट",
-      badgeEn: "Best for Weddings",
-      badgeHi: "शादियों के लिए बेस्ट",
-      featuresEn: [
-        "Premium Buffet Setup",
-        "Professional Service Staff",
-        "Premium Tableware",
-        "2 Live Food Counters",
-        "12+ Dishes Menu",
-        "Jain & Custom Options",
-      ],
-      featuresHi: [
-        "प्रीमियम बफे सेटअप",
-        "प्रोफेशनल सर्विस स्टाफ",
-        "प्रीमियम क्रॉकरी",
-        "2 लाइव फूड काउंटर",
-        "12+ व्यंजन मेनू",
-        "जैन एवं कस्टम विकल्प",
-      ],
-      sortOrder: 2,
-      isActive: true,
-    },
-    {
-      id: "pkg-royal",
-      nameEn: "Royal Package",
-      nameHi: "रॉयल पैकेज",
-      price: 1500,
-      priceMode: "amount",
-      basisPax: 400,
-      priceUnitEn: "/ Plate",
-      priceUnitHi: "/ प्लेट",
-      badgeEn: "Premium Choice",
-      badgeHi: "शाही पसंद",
-      featuresEn: [
-        "Royal Luxury Setup",
-        "Dedicated Service Team",
-        "Designer Tableware",
-        "4+ Live Food Counters",
-        "18+ Dishes + Desserts",
-        "Full Customization",
-      ],
-      featuresHi: [
-        "रॉयल लक्जरी सेटअप",
-        "समर्पित सर्विस टीम",
-        "डिजाइनर क्रॉकरी",
-        "4+ लाइव फूड काउंटर",
-        "18+ व्यंजन + मिठाइयां",
-        "पूर्ण कस्टमाइजेशन",
-      ],
-      sortOrder: 3,
-      isActive: true,
-    },
-  ],
-  gallery: [
-    {
-      id: "gal-1",
-      imageUrl: "https://images.unsplash.com/photo-1555244162-803834f70033?w=600&q=80",
-      captionEn: "Premium Buffet Setup",
-      captionHi: "प्रीमियम बफे सेटअप",
-      sortOrder: 1,
-      isActive: true,
-    },
-    {
-      id: "gal-2",
-      imageUrl: "https://images.unsplash.com/photo-1530062845289-9109b2c9c868?w=600&q=80",
-      captionEn: "Wedding Feast",
-      captionHi: "वेडिंग दावत",
-      sortOrder: 2,
-      isActive: true,
-    },
-    {
-      id: "gal-3",
-      imageUrl: "https://images.unsplash.com/photo-1567521464027-f127ff144326?w=600&q=80",
-      captionEn: "Event Catering",
-      captionHi: "इवेंट कैटरिंग",
-      sortOrder: 3,
-      isActive: true,
-    },
-    {
-      id: "gal-4",
-      imageUrl: "https://images.unsplash.com/photo-1544025162-d76694265947?w=600&q=80",
-      captionEn: "Live Food Counter",
-      captionHi: "लाइव फूड काउंटर",
-      sortOrder: 4,
-      isActive: true,
-    },
-    {
-      id: "gal-5",
-      imageUrl: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&q=80",
-      captionEn: "Traditional Dishes",
-      captionHi: "पारंपरिक व्यंजन",
-      sortOrder: 5,
-      isActive: true,
-    },
-    {
-      id: "gal-6",
-      imageUrl: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=600&q=80",
-      captionEn: "Banquet Arrangement",
-      captionHi: "बैंक्वेट सजावट",
-      sortOrder: 6,
-      isActive: true,
-    },
-  ],
-  venues: [
-    {
-      id: "ven-1",
-      nameEn: "Banarasia Lawn",
-      nameHi: "बनारसिया लॉन",
-      areaEn: "Gomti Nagar, Lucknow",
-      areaHi: "गोमती नगर, लखनऊ",
-      capacity: "500-800",
-      imageUrl:
-        "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?w=800&q=80",
-      notesEn: "Open lawn with covered dining area and ample parking.",
-      notesHi: "खुला लॉन, ढका हुआ डाइनिंग क्षेत्र एवं पर्याप्त पार्किंग।",
-      sortOrder: 1,
-      isActive: true,
-    },
-    {
-      id: "ven-2",
-      nameEn: "Banquet Hall",
-      nameHi: "बैंक्वेट हॉल",
-      areaEn: "Hazratganj, Lucknow",
-      areaHi: "हजरतगंज, लखनऊ",
-      capacity: "200-400",
-      imageUrl:
-        "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?w=800&q=80",
-      notesEn: "Fully air-conditioned indoor hall, ideal for receptions.",
-      notesHi: "पूर्ण वातानुकूलित इनडोर हॉल, रिसेप्शन के लिए आदर्श।",
-      sortOrder: 2,
-      isActive: true,
-    },
-    {
-      id: "ven-3",
-      nameEn: "Your Own Venue",
-      nameHi: "आपका अपना वेन्यू",
-      areaEn: "Anywhere in Lucknow & nearby",
-      areaHi: "लखनऊ एवं आसपास कहीं भी",
-      capacity: "50-2000",
-      imageUrl:
-        "https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=800&q=80",
-      notesEn: "We bring the full setup, staff and live counters to your location.",
-      notesHi: "हम पूरा सेटअप, स्टाफ एवं लाइव काउंटर आपके स्थान पर लाते हैं।",
-      sortOrder: 3,
-      isActive: true,
-    },
-  ],
-  cuisines: [
-    {
-      id: "cui-north-indian",
-      nameEn: "North Indian",
-      nameHi: "नॉर्थ इंडियन",
-      descEn: "Rich curries & tandoor specials",
-      descHi: "स्वादिष्ट ग्रेवी और तंदूर स्पेशल",
-      imageUrl: "https://images.unsplash.com/photo-1585937421612-70a008356fbe?w=400&q=80",
-      sortOrder: 1,
-      isActive: true,
-    },
-    {
-      id: "cui-south-indian",
-      nameEn: "South Indian",
-      nameHi: "साउथ इंडियन",
-      descEn: "Authentic dosas & idlis",
-      descHi: "प्रामाणिक डोसा और इडली",
-      imageUrl: "https://images.unsplash.com/photo-1630383249896-424e482df921?w=400&q=80",
-      sortOrder: 2,
-      isActive: true,
-    },
-    {
-      id: "cui-chinese",
-      nameEn: "Chinese",
-      nameHi: "चाइनीज",
-      descEn: "Indo-Chinese favorites",
-      descHi: "इंडो-चाइनीज पसंदीदा व्यंजन",
-      imageUrl: "https://images.unsplash.com/photo-1525755662778-989d0524087e?w=400&q=80",
-      sortOrder: 3,
-      isActive: true,
-    },
-    {
-      id: "cui-continental",
-      nameEn: "Continental",
-      nameHi: "कॉन्टिनेंटल",
-      descEn: "Elegant international flavors",
-      descHi: "अंतर्राष्ट्रीय स्वाद",
-      imageUrl: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&q=80",
-      sortOrder: 4,
-      isActive: true,
-    },
-    {
-      id: "cui-mughlai",
-      nameEn: "Mughlai",
-      nameHi: "मुगलई",
-      descEn: "Royal Mughlai delicacies",
-      descHi: "शाही मुगलई पकवान",
-      imageUrl: "https://images.unsplash.com/photo-1631515243349-e0cb75fb8d3a?w=400&q=80",
-      sortOrder: 5,
-      isActive: true,
-    },
-    {
-      id: "cui-punjabi",
-      nameEn: "Punjabi",
-      nameHi: "पंजाबी",
-      descEn: "Hearty Punjabi tadka",
-      descHi: "चटपटा पंजाबी तड़का",
-      imageUrl: "https://images.unsplash.com/photo-1596797038530-2c107229654b?w=400&q=80",
-      sortOrder: 6,
-      isActive: true,
-    },
-    {
-      id: "cui-bengali",
-      nameEn: "Bengali",
-      nameHi: "बंगाली",
-      descEn: "Sweet & savory classics",
-      descHi: "मीठे और नमकीन पारंपरिक व्यंजन",
-      imageUrl: "https://images.unsplash.com/photo-1567337710282-00832b415979?w=400&q=80",
-      sortOrder: 7,
-      isActive: true,
-    },
-    {
-      // No photo on purpose — this is the gradient card that closes the grid.
-      id: "cui-custom",
-      nameEn: "Custom Menu",
-      nameHi: "कस्टम मेनू",
-      descEn: "Aapki pasand, humari peshkash",
-      descHi: "आपकी पसंद, हमारी पेशकश",
-      imageUrl: "",
-      sortOrder: 8,
-      isActive: true,
-    },
-  ],
-  // The eight "Our Services" tiles. Every photo is a stand-in the owner is
-  // expected to replace with their own event photography — they are only here
-  // so the grid is never empty on a fresh install.
-  services: [
-    {
-      id: "srv-wedding",
-      nameEn: "Wedding Catering",
-      nameHi: "वेडिंग कैटरिंग",
-      descEn: "Grand shaadi ka grand bhoj",
-      descHi: "भव्य शादी का भव्य भोज",
-      imageUrl: "https://images.unsplash.com/photo-1606216794074-735e91aa2c92?w=600&q=80",
-      sortOrder: 1,
-      isActive: true,
-    },
-    {
-      id: "srv-engagement",
-      nameEn: "Engagement",
-      nameHi: "सगाई",
-      descEn: "Ring ceremony feast",
-      descHi: "रिंग सेरेमनी की दावत",
-      imageUrl: "https://images.unsplash.com/photo-1519741497674-611481863552?w=600&q=80",
-      sortOrder: 2,
-      isActive: true,
-    },
-    {
-      id: "srv-birthday",
-      nameEn: "Birthday Parties",
-      nameHi: "बर्थडे पार्टी",
-      descEn: "Special birthday menu",
-      descHi: "खास बर्थडे मेनू",
-      imageUrl: "https://images.unsplash.com/photo-1530103862676-de8c9debad1d?w=600&q=80",
-      sortOrder: 3,
-      isActive: true,
-    },
-    {
-      id: "srv-corporate",
-      nameEn: "Corporate Events",
-      nameHi: "कॉर्पोरेट इवेंट",
-      descEn: "Professional service",
-      descHi: "प्रोफेशनल सेवा",
-      imageUrl: "https://images.unsplash.com/photo-1552566626-52f8b828add9?w=600&q=80",
-      sortOrder: 4,
-      isActive: true,
-    },
-    {
-      id: "srv-reception",
-      nameEn: "Reception",
-      nameHi: "रिसेप्शन",
-      descEn: "Grand reception feast",
-      descHi: "भव्य रिसेप्शन दावत",
-      imageUrl: "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?w=600&q=80",
-      sortOrder: 5,
-      isActive: true,
-    },
-    {
-      id: "srv-festive",
-      nameEn: "Festive Catering",
-      nameHi: "त्योहार कैटरिंग",
-      descEn: "Tyohaar ki dawaat",
-      descHi: "त्योहार की दावत",
-      imageUrl: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=600&q=80",
-      sortOrder: 6,
-      isActive: true,
-    },
-    {
-      id: "srv-family",
-      nameEn: "Family Gatherings",
-      nameHi: "फैमिली गैदरिंग",
-      descEn: "Ghar jaisi mehfil",
-      descHi: "घर जैसी महफ़िल",
-      imageUrl: "https://images.unsplash.com/photo-1606491956689-2ea866880c84?w=600&q=80",
-      sortOrder: 7,
-      isActive: true,
-    },
-    {
-      id: "srv-live-counters",
-      nameEn: "Live Counters",
-      nameHi: "लाइव काउंटर",
-      descEn: "Fresh live cooking",
-      descHi: "ताज़ा लाइव कुकिंग",
-      imageUrl: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=600&q=80",
-      sortOrder: 8,
-      isActive: true,
-    },
-  ],
-  // The six "Why Choose Us" tiles — same shape, same placeholder caveat.
-  features: [
-    {
-      id: "feat-fresh",
-      nameEn: "Freshly Prepared",
-      nameHi: "ताज़ा तैयार",
-      descEn: "Taaza aur swadisht, har baar",
-      descHi: "ताज़ा और स्वादिष्ट, हर बार",
-      imageUrl: "https://images.unsplash.com/photo-1610348725531-843dff563e2c?w=600&q=80",
-      sortOrder: 1,
-      isActive: true,
-    },
-    {
-      id: "feat-setup",
-      nameEn: "Elegant Setup",
-      nameHi: "शानदार सेटअप",
-      descEn: "Shahi buffet presentation",
-      descHi: "शाही बफे प्रस्तुति",
-      imageUrl: "https://images.unsplash.com/photo-1587899897387-091ebd01a6b2?w=600&q=80",
-      sortOrder: 2,
-      isActive: true,
-    },
-    {
-      id: "feat-staff",
-      nameEn: "Professional Staff",
-      nameHi: "प्रोफेशनल स्टाफ",
-      descEn: "Trained & courteous team",
-      descHi: "प्रशिक्षित एवं विनम्र टीम",
-      imageUrl: "https://images.unsplash.com/photo-1577219491135-ce391730fb2c?w=600&q=80",
-      sortOrder: 3,
-      isActive: true,
-    },
-    {
-      id: "feat-pure-veg",
-      nameEn: "Pure Veg & Jain",
-      nameHi: "शुद्ध शाकाहारी व जैन",
-      descEn: "100% vegetarian guarantee",
-      descHi: "100% शाकाहारी गारंटी",
-      imageUrl: "https://images.unsplash.com/photo-1505253758473-96b7015fcd40?w=600&q=80",
-      sortOrder: 4,
-      isActive: true,
-    },
-    {
-      id: "feat-capacity",
-      nameEn: "Large Capacity",
-      nameHi: "बड़ी क्षमता",
-      descEn: "10,000+ guests handled",
-      descHi: "10,000+ मेहमानों की सेवा",
-      imageUrl: "https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=600&q=80",
-      sortOrder: 5,
-      isActive: true,
-    },
-    {
-      id: "feat-custom-menu",
-      nameEn: "Custom Menus",
-      nameHi: "कस्टम मेनू",
-      descEn: "Aapki pasand ka menu",
-      descHi: "आपकी पसंद का मेनू",
-      imageUrl: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=600&q=80",
-      sortOrder: 6,
-      isActive: true,
-    },
-  ],
-  testimonials: [
-    {
-      id: "rev-1",
-      quoteEn: '"Amazing taste and professional service. Our wedding guests were truly impressed!"',
-      quoteHi: '"अद्भुत स्वाद और बेहतरीन सर्विस। शादी के सभी मेहमान प्रभावित हुए!"',
-      authorName: "Rajesh Gupta",
-      eventEn: "Wedding, 2024",
-      eventHi: "विवाह, 2024",
-      rating: 5,
-      sortOrder: 1,
-      isActive: true,
-    },
-    {
-      id: "rev-2",
-      quoteEn: '"Guests loved the buffet presentation. Best catering in Lucknow!"',
-      quoteHi: '"मेहमानों को बफे सेटअप बहुत पसंद आया। लखनऊ में सबसे बेहतरीन कैटरिंग!"',
-      authorName: "Priya Sharma",
-      eventEn: "Engagement, 2024",
-      eventHi: "सगाई, 2024",
-      rating: 5,
-      sortOrder: 2,
-      isActive: true,
-    },
-    {
-      id: "rev-3",
-      quoteEn: '"Perfect catering for our wedding. Sab kuch ekdum first class tha!"',
-      quoteHi: '"हमारी शादी के लिए एकदम सही कैटरिंग। सब कुछ फर्स्ट क्लास था!"',
-      authorName: "Amit Verma",
-      eventEn: "Reception, 2023",
-      eventHi: "रिसेप्शन, 2023",
-      rating: 5,
-      sortOrder: 3,
-      isActive: true,
-    },
-    {
-      id: "rev-4",
-      quoteEn:
-        '"Highly recommended for premium events. Quality aur quantity dono zabardast!"',
-      quoteHi: '"प्रीमियम इवेंट्स के लिए अत्यधिक अनुशंसित। क्वालिटी और क्वांटिटी दोनों लाजवाब!"',
-      authorName: "Sunita Agarwal",
-      eventEn: "Corporate Event, 2024",
-      eventHi: "कॉर्पोरेट इवेंट, 2024",
-      rating: 5,
-      sortOrder: 4,
-      isActive: true,
-    },
-  ],
+  packages: SEED.packages as CatererPackage[],
+  gallery: SEED.gallery as CatererGalleryItem[],
+  venues: SEED.venues as CatererVenue[],
+  cuisines: SEED.cuisines as CatererCuisine[],
+  services: SEED.services as CatererService[],
+  features: SEED.features as CatererFeature[],
+  testimonials: SEED.testimonials as CatererTestimonial[],
+  // Visitor-generated: a fresh store has no enquiries, and seeding fake ones
+  // would put invented names in the owner's inbox.
   leads: [],
+  about: SEED.about as CatererAbout,
   settings: { ...DEFAULT_SETTINGS },
   site: { ...DEFAULT_SITE },
-  about: {
-    id: "default",
-    slug: "default",
-    storyTitleEn: "Our Story",
-    storyTitleHi: "हमारी कहानी",
-    titleEn: "Crafting Memorable Celebrations",
-    titleHi: "यादगार उत्सवों का भव्य निर्माण",
-    descriptionEn:
-      "We are serving fresh food with good service for more than 10 years. Har event mein humari koshish hoti hai ki aapke mehman khush hokar jaayein.",
-    descriptionHi:
-      "हम 10 से अधिक वर्षों से ताज़ा भोजन और उत्तम सेवा प्रदान कर रहे हैं। हर इवेंट में हमारी कोशिश होती है कि आपके मेहमान खुश होकर जाएं।",
-    mottoEn: '"Swad Adab Se Chakhayenge"',
-    mottoHi: '"स्वाद अदब से चखायेंगे"',
-    subMottoEn: "That's why we proudly say",
-    subMottoHi: "इसलिए हम गर्व से कहते हैं",
-    establishedYear: 2015,
-    stats: [
-      { labelEn: "Since", labelHi: "स्थापना वर्ष", value: "2015" },
-      { labelEn: "Events Done", labelHi: "सफल कार्यक्रम", value: "500+" },
-      { labelEn: "Guest Capacity", labelHi: "मेहमान क्षमता", value: "10,000+" },
-      { labelEn: "% Happy Clients", labelHi: "% संतुष्ट ग्राहक", value: "98%" },
-    ],
-    expertise: [
-      { textEn: "Wedding & More", textHi: "वेडिंग एवं अन्य आयोजन" },
-      { textEn: "Home Parties", textHi: "होम पार्टीज़" },
-      { textEn: "Special Baina Boxes", textHi: "स्पेशल बयना बॉक्स" },
-      { textEn: "Lunch Box", textHi: "लंच बॉक्स" },
-      { textEn: "Breakfast Stall", textHi: "ब्रेकफास्ट स्टॉल" },
-      { textEn: "Lunch Stall", textHi: "लंच स्टॉल" },
-      { textEn: "Dinner Stall", textHi: "डिनर स्टॉल" },
-      { textEn: "Corporate Parties", textHi: "कॉर्पोरेट पार्टीज़" },
-      { textEn: "Single Food Stall", textHi: "सिंगल फूड स्टॉल" },
-      { textEn: "Bulk Food Boxes", textHi: "थोक भोजन डिब्बे" },
-    ],
-  },
 };
 
 // ---------------------------------------------------------------------------
-// File & Blob Paths
+// Shard Paths
 // ---------------------------------------------------------------------------
 
-const DATA_FILE = process.env.VERCEL
-  ? path.join("/tmp", "caterer", "content.json")
-  : path.join(process.cwd(), "data", "caterer", "content.json");
+const DATA_ROOT = process.env.VERCEL
+  ? path.join("/tmp", "caterer")
+  : path.join(process.cwd(), "data", "caterer");
 
-const BLOB_KEY = "system/caterer/content.json";
+const BLOB_ROOT = "system/caterer";
+
+// The pre-shard layout. Read once, only by a store that has no manifest, so an
+// existing deployment carries its content across the upgrade; the first write
+// after that lands as shards and this is never consulted again.
+const LEGACY_DATA_FILE = path.join(DATA_ROOT, "content.json");
+const LEGACY_BLOB_KEY = `${BLOB_ROOT}/content.json`;
+
+// Presence of this file means "this store has been written in shard form".
+// Without it an empty collection directory would be ambiguous — it reads the
+// same for a fresh install that must seed from INITIAL_DEFAULTS and for a
+// collection the owner deliberately emptied. The manifest settles it.
+const MANIFEST_PATH = "manifest.json";
+const SHARD_VERSION = 2;
+
+// Collections stored as one file per record, in a directory of that name.
+const SHARDED_COLLECTIONS = [
+  "packages",
+  "gallery",
+  "venues",
+  "cuisines",
+  "services",
+  "features",
+  "testimonials",
+  "leads",
+] as const;
+type ShardedCollection = (typeof SHARDED_COLLECTIONS)[number];
+
+// Single-record sections — one file each, no directory.
+const SINGLETON_FILES = {
+  about: "about.json",
+  settings: "settings.json",
+  site: "site.json",
+} as const;
+type SingletonSection = keyof typeof SINGLETON_FILES;
+
+// Hydration fans out over every shard, so it is the one place worth
+// parallelising; writes stay lower because a normal save touches one file and
+// only the initial flush is wide.
+const READ_CONCURRENCY = 16;
+const WRITE_CONCURRENCY = 8;
 
 function isBlobEnabled(): boolean {
   return !!process.env.BLOB_READ_WRITE_TOKEN;
+}
+
+// Record ids arrive in request bodies, so they cannot be trusted as file names:
+// an id of "../../settings" would otherwise escape its collection directory and
+// overwrite another section. Anything outside [A-Za-z0-9._-] is replaced and a
+// leading dot is stripped, so no shard can become a hidden or relative path.
+function shardFileName(id: string): string {
+  const safe = id.replace(/[^A-Za-z0-9._-]/g, "_").replace(/^\.+/, "_");
+  // Sanitising is lossy — two different ids can collapse onto one name, and the
+  // loser would silently vanish. A short digest of the original keeps them
+  // apart. Ids that were already safe keep their exact name, which is every id
+  // this store generates itself.
+  if (safe === id && safe.length > 0) return `${id}.json`;
+  const digest = crypto.createHash("sha1").update(id).digest("hex").slice(0, 8);
+  return `${safe || "id"}-${digest}.json`;
+}
+
+async function mapWithConcurrency<T, R>(
+  items: readonly T[],
+  limit: number,
+  fn: (item: T) => Promise<R>
+): Promise<R[]> {
+  const out = new Array<R>(items.length);
+  let next = 0;
+  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
+    for (let i = next++; i < items.length; i = next++) {
+      out[i] = await fn(items[i]);
+    }
+  });
+  await Promise.all(workers);
+  return out;
 }
 
 // ---------------------------------------------------------------------------
@@ -850,6 +451,11 @@ type StoreState = {
   data: CatererStoreData | null;
   hydration: Promise<void> | null;
   writeQueue: Promise<void>;
+  // Store-relative shard path → the exact JSON text last known to be on
+  // storage. writeToStorage diffs against this so a save only touches files
+  // whose contents actually changed. Empty until hydration fills it, which is
+  // what makes the first write after a legacy read flush every shard.
+  shards: Map<string, string>;
 };
 
 declare global {
@@ -863,8 +469,12 @@ function getState(): StoreState {
       data: null,
       hydration: null,
       writeQueue: Promise.resolve(),
+      shards: new Map(),
     };
   }
+  // A dev-server hot reload can carry a state object created before `shards`
+  // existed; without this the first save throws on an undefined Map.
+  globalThis.__catererStore__.shards ??= new Map();
   return globalThis.__catererStore__;
 }
 
@@ -872,28 +482,178 @@ function getState(): StoreState {
 // Low-level Read / Write Snapshot
 // ---------------------------------------------------------------------------
 
-async function readFromStorage(): Promise<CatererStoreData> {
-  let parsed: unknown;
-  if (isBlobEnabled()) {
-    try {
-      const meta = await head(BLOB_KEY);
-      if (!meta?.url) return INITIAL_DEFAULTS;
+// Read one shard by store-relative path. A missing shard is `null`, never a
+// throw — a half-written store degrades to its defaults rather than 500ing.
+async function readShard(rel: string): Promise<{ text: string; value: unknown } | null> {
+  try {
+    if (isBlobEnabled()) {
+      const meta = await head(`${BLOB_ROOT}/${rel}`);
+      if (!meta?.url) return null;
       const res = await fetch(meta.url, { cache: "no-store" });
-      if (!res.ok) return INITIAL_DEFAULTS;
-      parsed = await res.json();
-    } catch {
-      return INITIAL_DEFAULTS;
+      if (!res.ok) return null;
+      const text = await res.text();
+      return { text, value: JSON.parse(text) };
     }
-  } else {
+    const text = await fs.readFile(path.join(DATA_ROOT, rel), "utf-8");
+    return { text, value: JSON.parse(text) };
+  } catch {
+    return null;
+  }
+}
+
+// Every shard in one collection directory, paired with the path it came from so
+// writeToStorage can diff against the exact bytes that are on storage.
+async function readCollectionShards(
+  dir: string
+): Promise<{ rel: string; text: string; value: unknown }[]> {
+  if (isBlobEnabled()) {
+    const entries: { pathname: string; url: string }[] = [];
+    let cursor: string | undefined;
     try {
-      const buf = await fs.readFile(DATA_FILE, "utf-8");
-      parsed = JSON.parse(buf);
+      do {
+        const page = await list({ prefix: `${BLOB_ROOT}/${dir}/`, cursor });
+        entries.push(...page.blobs);
+        cursor = page.hasMore ? page.cursor : undefined;
+      } while (cursor);
     } catch {
-      return INITIAL_DEFAULTS;
+      return [];
     }
+    const read = await mapWithConcurrency(
+      entries.filter((b) => b.pathname.endsWith(".json")),
+      READ_CONCURRENCY,
+      async (b) => {
+        try {
+          const res = await fetch(b.url, { cache: "no-store" });
+          if (!res.ok) return null;
+          const text = await res.text();
+          return {
+            rel: b.pathname.slice(`${BLOB_ROOT}/`.length),
+            text,
+            value: JSON.parse(text) as unknown,
+          };
+        } catch {
+          return null;
+        }
+      }
+    );
+    return read.filter((r) => r !== null);
   }
 
-  const snap = parsed as Partial<CatererStoreData> | null;
+  let names: string[];
+  try {
+    names = await fs.readdir(path.join(DATA_ROOT, dir));
+  } catch {
+    return [];
+  }
+  const read = await mapWithConcurrency(
+    names.filter((n) => n.endsWith(".json")),
+    READ_CONCURRENCY,
+    async (name) => {
+      try {
+        const text = await fs.readFile(path.join(DATA_ROOT, dir, name), "utf-8");
+        return { rel: `${dir}/${name}`, text, value: JSON.parse(text) as unknown };
+      } catch {
+        return null;
+      }
+    }
+  );
+  return read.filter((r) => r !== null);
+}
+
+// The single-file store this layout replaced. Returns null when there is none.
+async function readLegacySnapshot(): Promise<Partial<CatererStoreData> | null> {
+  try {
+    if (isBlobEnabled()) {
+      const meta = await head(LEGACY_BLOB_KEY);
+      if (!meta?.url) return null;
+      const res = await fetch(meta.url, { cache: "no-store" });
+      if (!res.ok) return null;
+      return (await res.json()) as Partial<CatererStoreData>;
+    }
+    return JSON.parse(await fs.readFile(LEGACY_DATA_FILE, "utf-8")) as Partial<CatererStoreData>;
+  } catch {
+    return null;
+  }
+}
+
+type LoadedSnapshot = {
+  snap: Partial<CatererStoreData> | null;
+  baseline: Map<string, string>;
+};
+
+// Assemble a store-shaped snapshot out of the shard files, or fall back through
+// the legacy single file to nothing at all. `baseline` holds the exact text of
+// every shard read, and stays empty for the two fallbacks — which is precisely
+// what makes the next write flush the whole store into shard form.
+async function loadSnapshot(): Promise<LoadedSnapshot> {
+  const baseline = new Map<string, string>();
+  const manifest = await readShard(MANIFEST_PATH);
+
+  if (!manifest) {
+    return { snap: await readLegacySnapshot(), baseline };
+  }
+  baseline.set(MANIFEST_PATH, manifest.text);
+
+  const snap: Record<string, unknown> = {};
+
+  const collections = await mapWithConcurrency(
+    SHARDED_COLLECTIONS,
+    SHARDED_COLLECTIONS.length,
+    async (name) => ({ name, shards: await readCollectionShards(name) })
+  );
+  for (const { name, shards } of collections) {
+    for (const s of shards) baseline.set(s.rel, s.text);
+    const records = shards.map((s) => s.value as Record<string, unknown>);
+    // Directory listings come back in whatever order the filesystem or the Blob
+    // index feels like. Every read path re-sorts for display, but leads are also
+    // trimmed with slice(-MAX_LEADS), which silently drops the wrong ones unless
+    // the array is genuinely oldest-first. Sorting here makes hydration
+    // deterministic for both.
+    records.sort((a, b) =>
+      name === "leads"
+        ? String(a.createdAt ?? "").localeCompare(String(b.createdAt ?? ""))
+        : Number(a.sortOrder ?? 0) - Number(b.sortOrder ?? 0) ||
+          String(a.id ?? "").localeCompare(String(b.id ?? ""))
+    );
+    snap[name] = records;
+  }
+
+  const singletons = await mapWithConcurrency(
+    Object.entries(SINGLETON_FILES),
+    3,
+    async ([section, file]) => ({ section, file, shard: await readShard(file) })
+  );
+  for (const { section, file, shard } of singletons) {
+    if (!shard) continue;
+    baseline.set(file, shard.text);
+    snap[section] = shard.value;
+  }
+
+  return { snap: snap as Partial<CatererStoreData>, baseline };
+}
+
+async function readFromStorage(): Promise<{ data: CatererStoreData; baseline: Map<string, string> }> {
+  const { snap, baseline } = await loadSnapshot();
+  if (!snap) return { data: seededStore(), baseline };
+  return { data: normaliseSnapshot(snap), baseline };
+}
+
+// A private copy of the seed. Every fallback below goes through this, because
+// the value it returns is handed straight to the store and then mutated in
+// place by the first create or update — without the clone that edit would land
+// on INITIAL_DEFAULTS itself and leak into every later fallback.
+function seededStore(): CatererStoreData {
+  return structuredClone(INITIAL_DEFAULTS);
+}
+
+function seeded<K extends keyof CatererStoreData>(key: K): CatererStoreData[K] {
+  return structuredClone(INITIAL_DEFAULTS[key]);
+}
+
+// Everything below is shape-repair on a snapshot that may predate the fields the
+// current code reads. It is unchanged by sharding: a snapshot assembled from
+// shard files and one parsed out of the legacy single file arrive here alike.
+function normaliseSnapshot(snap: Partial<CatererStoreData> | null): CatererStoreData {
 
   // Snapshots written before venues/settings/priceMode existed are still valid
   // on disk and in Blob. Fill the gaps here so one old file cannot crash a read.
@@ -903,7 +663,7 @@ async function readFromStorage(): Promise<CatererStoreData> {
         priceMode: p.priceMode === "quote" ? "quote" : ("amount" as PriceMode),
         basisPax: typeof p.basisPax === "number" && p.basisPax >= 0 ? p.basisPax : 400,
       }))
-    : INITIAL_DEFAULTS.packages;
+    : seeded("packages");
 
   // Venues written before the photo field existed carry no imageUrl; normalise
   // it to "" so every read path can treat it as a plain string.
@@ -912,7 +672,7 @@ async function readFromStorage(): Promise<CatererStoreData> {
         ...v,
         imageUrl: typeof v.imageUrl === "string" ? v.imageUrl : "",
       }))
-    : INITIAL_DEFAULTS.venues;
+    : seeded("venues");
 
   // Cuisines, services, features and testimonials each arrived after the first
   // snapshots were written. An absent array means "this store predates the
@@ -921,23 +681,23 @@ async function readFromStorage(): Promise<CatererStoreData> {
   // can express.
   const cuisines = Array.isArray(snap?.cuisines)
     ? (snap!.cuisines as CatererCuisine[])
-    : INITIAL_DEFAULTS.cuisines;
+    : seeded("cuisines");
 
   const services = Array.isArray(snap?.services)
     ? (snap!.services as CatererService[])
-    : INITIAL_DEFAULTS.services;
+    : seeded("services");
 
   const features = Array.isArray(snap?.features)
     ? (snap!.features as CatererFeature[])
-    : INITIAL_DEFAULTS.features;
+    : seeded("features");
 
   const testimonials = Array.isArray(snap?.testimonials)
     ? (snap!.testimonials as CatererTestimonial[])
-    : INITIAL_DEFAULTS.testimonials;
+    : seeded("testimonials");
 
   return {
     packages,
-    gallery: Array.isArray(snap?.gallery) ? (snap!.gallery as CatererGalleryItem[]) : INITIAL_DEFAULTS.gallery,
+    gallery: Array.isArray(snap?.gallery) ? (snap!.gallery as CatererGalleryItem[]) : seeded("gallery"),
     venues,
     cuisines,
     services,
@@ -946,7 +706,7 @@ async function readFromStorage(): Promise<CatererStoreData> {
     // Leads are visitor-generated, so an absent array means "none captured
     // yet" — never the seed data other collections fall back to.
     leads: Array.isArray(snap?.leads) ? (snap!.leads as CatererLead[]) : [],
-    about: snap?.about && typeof snap.about === "object" ? (snap.about as CatererAbout) : INITIAL_DEFAULTS.about,
+    about: snap?.about && typeof snap.about === "object" ? (snap.about as CatererAbout) : seeded("about"),
     settings:
       snap?.settings && typeof snap.settings === "object"
         ? { ...DEFAULT_SETTINGS, ...(snap.settings as CatererSettings) }
@@ -958,9 +718,28 @@ async function readFromStorage(): Promise<CatererStoreData> {
   };
 }
 
-async function writeToStorage(data: CatererStoreData): Promise<void> {
+// The full store expressed as shard path → file contents. Diffing two of these
+// is what turns "save the store" into "write the one record that changed".
+function buildShardMap(data: CatererStoreData): Map<string, string> {
+  const shards = new Map<string, string>();
+  // Content-stable on purpose: a manifest carrying a timestamp or a record count
+  // would differ on every save and add a second write to each edit.
+  shards.set(MANIFEST_PATH, JSON.stringify({ version: SHARD_VERSION }, null, 2));
+
+  for (const name of SHARDED_COLLECTIONS) {
+    for (const record of data[name] as { id: string }[]) {
+      shards.set(`${name}/${shardFileName(record.id)}`, JSON.stringify(record, null, 2));
+    }
+  }
+  for (const [section, file] of Object.entries(SINGLETON_FILES)) {
+    shards.set(file, JSON.stringify(data[section as SingletonSection], null, 2));
+  }
+  return shards;
+}
+
+async function writeShard(rel: string, text: string): Promise<void> {
   if (isBlobEnabled()) {
-    await put(BLOB_KEY, JSON.stringify(data, null, 2), {
+    await put(`${BLOB_ROOT}/${rel}`, text, {
       access: "public",
       addRandomSuffix: false,
       allowOverwrite: true,
@@ -969,9 +748,38 @@ async function writeToStorage(data: CatererStoreData): Promise<void> {
     });
     return;
   }
+  const full = path.join(DATA_ROOT, rel);
+  await fs.mkdir(path.dirname(full), { recursive: true });
+  await fs.writeFile(full, text, "utf-8");
+}
 
-  await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
-  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
+async function deleteShards(rels: string[]): Promise<void> {
+  if (isBlobEnabled()) {
+    await del(rels.map((rel) => `${BLOB_ROOT}/${rel}`));
+    return;
+  }
+  await mapWithConcurrency(rels, WRITE_CONCURRENCY, async (rel) => {
+    // Already gone is the outcome we wanted; anything else is not worth failing
+    // the save the caller already applied in memory.
+    await fs.unlink(path.join(DATA_ROOT, rel)).catch(() => {});
+  });
+}
+
+async function writeToStorage(data: CatererStoreData): Promise<void> {
+  const state = getState();
+  const desired = buildShardMap(data);
+  const previous = state.shards;
+
+  const changed = [...desired].filter(([rel, text]) => previous.get(rel) !== text);
+  const removed = [...previous.keys()].filter((rel) => !desired.has(rel));
+  if (!changed.length && !removed.length) return;
+
+  await mapWithConcurrency(changed, WRITE_CONCURRENCY, ([rel, text]) => writeShard(rel, text));
+  if (removed.length) await deleteShards(removed);
+
+  // Only after every write landed. A throw above leaves the baseline stale, so
+  // the next save re-attempts the whole diff instead of assuming it succeeded.
+  state.shards = desired;
 }
 
 // The hydrated snapshot lives on globalThis, so it outlives a hot reload: a dev
@@ -997,7 +805,9 @@ function ensureHydrated(): Promise<void> {
   const s = getState();
   if (!s.hydration) {
     s.hydration = (async () => {
-      s.data = await readFromStorage();
+      const { data, baseline } = await readFromStorage();
+      s.data = data;
+      s.shards = baseline;
     })();
   }
   return s.hydration.then(() => {
