@@ -36,17 +36,29 @@ warning. Production returns 503 until you configure one.
 
 ## Persistence
 
-`src/lib/caterer/store.ts` is a dual-mode store, selected by
-`BLOB_READ_WRITE_TOKEN`:
+Everything lives on the app's own disk — there is no database and no object
+store at runtime:
 
-- **set** — Vercel Blob, at key `system/caterer/content.json`
-- **unset** — a local JSON file at `data/caterer/content.json`
+| Path | Contents |
+| --- | --- |
+| `data/caterer/content.json` | All CMS content, one JSON snapshot (`src/lib/caterer/store.ts`) |
+| `public/uploads/caterer/` | Uploaded images, named `<kind>_<timestamp>_<hash>.<ext>` |
 
-On Vercel without the token the file lands in `/tmp`, so every edit is lost on
-the next cold start. Set the token in any deployed environment.
+Both are gitignored, and both must survive a restart, so **deploy somewhere
+with a persistent filesystem** — a VPS, or a container with those two paths on
+a mounted volume. Serverless hosting does not work: on Vercel `process.cwd()`
+is a read-only `/var/task`, so image uploads fail outright, and the store falls
+back to `/tmp` where every edit is lost on the next cold start.
 
-Image uploads follow the same switch: Blob under `caterer/gallery/` when the
-token is set, otherwise `public/uploads/caterer/`.
+Back up by copying those two paths; restore by putting them back. If
+`content.json` is missing on boot the store serves the seed content in
+`INITIAL_DEFAULTS` and writes a fresh file on the first edit.
+
+Uploaded images are served by `src/app/uploads/caterer/[filename]/route.ts`,
+not by Next's static handling of `public/`. Next indexes `public/` when the app
+is **built**, so under `next start` a file written after that point 404s — the
+console would report a successful upload and the photo would never appear until
+the next rebuild. The route reads the directory per request, so it doesn't.
 
 ## The Prisma models are inert
 
@@ -57,9 +69,9 @@ TypeScript types, not Prisma models. Only `scripts/seed-caterer.mjs` opens a
 database connection, and it seeds tables the app never reads.
 
 They came across from the source fork, where a Postgres layer was added and
-then superseded by the blob store. Two ways forward:
+then superseded by the file store. Two ways forward:
 
-- **Blob store is final** — delete `prisma/`, `prisma.config.ts`,
+- **The JSON file is final** — delete `prisma/`, `prisma.config.ts`,
   `scripts/seed-caterer.mjs`, `scripts/migrate-if-configured.mjs`, and the
   `prisma`, `@prisma/client`, `@prisma/adapter-pg`, `pg`, `@types/pg`
   dependencies. Nothing else changes.
