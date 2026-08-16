@@ -57,7 +57,7 @@ function LoginForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-4 rounded-2xl border border-zinc-700 bg-zinc-900/80 p-8 shadow-2xl backdrop-blur"
+      className="space-y-4 rounded-2xl border border-zinc-700 bg-zinc-900/80 p-6 shadow-2xl backdrop-blur sm:p-8"
     >
       <div>
         <label htmlFor="admin-password" className="block text-sm font-medium text-zinc-200">
@@ -94,13 +94,13 @@ function LoginForm() {
 
 function LoginFormFallback() {
   return (
-    <div className="h-[15rem] rounded-2xl border border-zinc-700 bg-zinc-900/80 p-8 shadow-2xl backdrop-blur" />
+    <div className="h-[15rem] rounded-2xl border border-zinc-700 bg-zinc-900/80 p-6 shadow-2xl backdrop-blur sm:p-8" />
   );
 }
 
 export default function AdminLoginPage() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 px-6">
+    <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-zinc-900 via-zinc-800 to-zinc-900 px-4 py-10 sm:px-6">
       <div className="w-full max-w-md">
         <div className="mb-8 flex flex-col items-center text-center">
           <Brand size="lg" />

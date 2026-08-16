@@ -1982,9 +1982,11 @@ export default function CatererAdminDashboard() {
     <div className="min-h-screen bg-[#FAF8F5] text-[#3D2518] antialiased selection:bg-orange-100 selection:text-orange-900">
       {/* ------------------------------------------------------------------ */}
       {/* Toast Notification Banner */}
+      {/* Pinned to both edges on a phone so a long message can't grow past the */}
+      {/* screen; from `sm` it hugs the right corner as before.                 */}
       {/* ------------------------------------------------------------------ */}
       {toast && (
-        <div className="fixed top-5 right-5 z-50 max-w-md animate-bounce-short">
+        <div className="fixed top-4 left-4 right-4 z-50 sm:left-auto sm:top-5 sm:right-5 sm:max-w-md animate-bounce-short">
           <div
             className={`flex items-center gap-3 rounded-xl px-4 py-3.5 shadow-xl border text-sm font-medium ${
               toast.type === "success"
@@ -4490,7 +4492,7 @@ export default function CatererAdminDashboard() {
       {/* ==================================================================== */}
       {galleryModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-stone-900/60 p-4 backdrop-blur-sm">
-          <div className="relative w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl space-y-6">
+          <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl space-y-6">
             <div className="flex items-center justify-between border-b border-stone-100 pb-4">
               <h3 className="text-lg font-bold text-[#3D2518]">
                 {editingGalleryId ? "Edit Gallery Item" : "Add New Gallery Image"}
@@ -4668,7 +4670,7 @@ export default function CatererAdminDashboard() {
       {/* ==================================================================== */}
       {deletingPackage && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-4">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-rose-600">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -4963,7 +4965,7 @@ export default function CatererAdminDashboard() {
       {/* ==================================================================== */}
       {deletingVenue && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md space-y-4 rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="max-h-[90vh] w-full max-w-md space-y-4 overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
             <div className="flex items-center gap-3 text-rose-600">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -5004,7 +5006,7 @@ export default function CatererAdminDashboard() {
       {/* ==================================================================== */}
       {deletingLead && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md space-y-4 rounded-2xl bg-white p-6 shadow-2xl">
+          <div className="max-h-[90vh] w-full max-w-md space-y-4 overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl">
             <div className="flex items-center gap-3 text-rose-600">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -5047,7 +5049,7 @@ export default function CatererAdminDashboard() {
       {/* ==================================================================== */}
       {deletingGalleryItem && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-4">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-rose-600">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -5464,7 +5466,7 @@ export default function CatererAdminDashboard() {
       {/* ==================================================================== */}
       {deletingCuisine && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-4">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-rose-600">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -5505,7 +5507,7 @@ export default function CatererAdminDashboard() {
       {/* ==================================================================== */}
       {deletingTestimonial && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-stone-900/60 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl space-y-4">
+          <div className="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl space-y-4">
             <div className="flex items-center gap-3 text-rose-600">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100">
                 <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

@@ -170,6 +170,56 @@
         img { opacity: 1; transition: opacity 0.4s ease; }
         img.img-fade { opacity: 0; }
         img.img-fade.loaded { opacity: 1; }
+
+        /* ---------------------------------------------------------------- */
+        /* Mobile behaviour                                                  */
+        /* ---------------------------------------------------------------- */
+
+        /* Nothing may widen the page sideways. `clip` rather than `hidden`
+           because hidden on the root would kill position:sticky inside the
+           menu modal; clip contains the same overflow and leaves sticky alone. */
+        html { overflow-x: clip; }
+
+        /* Anchor links land under the fixed navbar otherwise — the heading you
+           jumped to sits behind it. The bar is tallest on phones relative to
+           the screen, so the offset is largest there. */
+        html { scroll-padding-top: 5.5rem; }
+        @media (min-width: 640px) { html { scroll-padding-top: 6rem; } }
+
+        /* The horizontal reveals shift 35px sideways until they activate, and
+           on a phone that pushed the document ~19px wider than the viewport —
+           every centred row sat visibly off-centre. Below `sm` they rise
+           instead, which reads the same and stays inside the viewport. */
+        @media (max-width: 639px) {
+            .reveal-left, .reveal-right { transform: translateY(30px); }
+            .reveal-left.active, .reveal-right.active { transform: translateY(0); }
+        }
+
+        /* 100vh on a phone includes the browser's collapsing address bar, so
+           the hero's lower content is cut off on first paint. svh is the
+           stable height; the @supports keeps the vh fallback for old browsers. */
+        @supports (height: 100svh) {
+            #home { min-height: 100svh; }
+        }
+
+        /* Clear the home-bar / notch inset so the sticky bar isn't half under it. */
+        .mobile-sticky-cta { padding-bottom: calc(12px + env(safe-area-inset-bottom, 0px)); }
+
+        /* The floating WhatsApp button and the sticky booking bar both live in
+           the bottom-right corner and overlapped once the bar slid up. The bar
+           sets .cta-visible on <body>, which lifts the button clear of it. */
+        #whatsapp-float { transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1), background-color 0.3s ease; }
+        @media (max-width: 639px) {
+            body.cta-visible #whatsapp-float { transform: translateY(calc(-4.5rem - env(safe-area-inset-bottom, 0px))); }
+            /* Last strip of the footer would sit permanently under the bar. */
+            body.cta-visible footer { padding-bottom: calc(6rem + env(safe-area-inset-bottom, 0px)); }
+        }
+
+        /* Touch targets: the language pills and nav rows are read as buttons,
+           so give them a comfortable minimum on touch devices. */
+        @media (hover: none) {
+            .lang-pill { min-height: 2.25rem; display: inline-flex; align-items: center; }
+        }
     </style>
 </head>
 <body class="bg-cream-50 text-brown-900 overflow-x-hidden">
@@ -183,7 +233,7 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between">
                 <a href="#home" class="flex items-center group" aria-label="Banarasia Buffet Art - Home">
-                    <img data-brand-logo src="/sample-caterer/tl.png?v=3" alt="Banarasia Buffet Art" class="h-14 sm:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
+                    <img data-brand-logo src="/sample-caterer/tl.png?v=3" alt="Banarasia Buffet Art" class="h-11 sm:h-14 md:h-16 w-auto object-contain transition-transform duration-300 group-hover:scale-105" />
                 </a>
                 <div class="hidden lg:flex items-center space-x-7">
                     <a href="#home" data-i18n="nav_home" class="nav-link text-sm font-semibold text-cream-100 hover:text-amber-300 transition-colors duration-300" data-section="home">Home</a>
@@ -197,9 +247,9 @@
                 </div>
                 <div class="flex items-center space-x-3 sm:space-x-4">
                     <div onclick="toggleLanguage()" class="flex items-center p-1 bg-brown-950/80 backdrop-blur-md rounded-full border border-brandOrange-500/40 shadow-md cursor-pointer select-none hover:border-brandOrange-500/70 transition-all" role="button" aria-label="Toggle Language EN / Hindi">
-                        <span id="lang-en-desktop" class="px-3 py-1 rounded-full bg-gradient-to-r from-brandOrange-500 to-amber-500 text-white font-bold text-xs shadow-md shadow-orange-500/30 transition-all duration-300">EN</span>
+                        <span id="lang-en-desktop" class="lang-pill px-3 py-1.5 rounded-full bg-gradient-to-r from-brandOrange-500 to-amber-500 text-white font-bold text-xs shadow-md shadow-orange-500/30 transition-all duration-300">EN</span>
                         <span class="text-amber-400/40 px-1 text-xs font-light select-none">|</span>
-                        <span id="lang-hi-desktop" class="px-3 py-1 rounded-full text-cream-200/80 hover:text-white font-medium text-xs transition-all duration-300">हिंदी</span>
+                        <span id="lang-hi-desktop" class="lang-pill px-3 py-1.5 rounded-full text-cream-200/80 hover:text-white font-medium text-xs transition-all duration-300">हिंदी</span>
                     </div>
                     <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="booking" data-i18n="btn_book_catering" class="hidden sm:inline-flex px-6 py-2.5 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 hover:from-amber-500 hover:to-brandOrange-600 text-white font-semibold text-sm rounded-full shadow-md shadow-brandOrange-600/30 hover:shadow-lg hover:shadow-amber-500/40 transition-all duration-300 transform hover:scale-[1.03]">Book Catering</a>
                     <button id="mobile-menu-btn" class="lg:hidden text-brown-800 p-2.5 rounded-xl hover:bg-amber-100/50 transition-colors" aria-label="Toggle menu" aria-expanded="false">
@@ -254,7 +304,7 @@
                 <p id="caterer-hero-motto" data-i18n="hero_motto" class="font-script text-3xl sm:text-4xl text-amber-300 mb-6">"Jab har mehman khas ho.."</p>
                 <p id="caterer-hero-desc" data-i18n="hero_desc" class="text-cream-200 text-lg sm:text-xl max-w-2xl mx-auto mb-10 leading-relaxed" style="text-shadow: 0 1px 8px rgba(0,0,0,0.2);">Premium catering experiences crafted with authentic taste, elegant presentation, and heartfelt hospitality.</p>
 
-                <div class="flex flex-wrap justify-center gap-3 sm:gap-4 mb-16">
+                <div class="flex flex-wrap justify-center gap-3 sm:gap-4 mb-10 sm:mb-16">
                     <a href="https://wa.me/919918629017" target="_blank" rel="noopener" data-wa-cta="booking" data-i18n="btn_book_now" class="px-8 py-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 hover:from-amber-500 hover:to-brandOrange-600 text-white font-semibold rounded-full shadow-lg shadow-brandOrange-600/35 hover:shadow-xl hover:shadow-amber-500/40 transition-all duration-300 transform hover:scale-[1.04] text-base sm:text-lg">Book Now</a>
                     <a href="#packages" data-i18n="btn_view_packages" class="px-8 py-4 border-2 border-amber-400/60 text-amber-300 font-semibold rounded-full hover:bg-amber-400/20 hover:border-amber-400 transition-all duration-300 text-base sm:text-lg">View Packages</a>
                     <a href="https://youtube.com/@banarasiabuffetart?si=toOrkdaRR2pTff9F" target="_blank" rel="noopener" class="px-8 py-4 border-2 border-cream-300/25 text-cream-200 font-semibold rounded-full hover:bg-brandOrange-500/20 hover:border-amber-400/50 transition-all duration-300 text-base sm:text-lg flex items-center gap-2">
@@ -296,14 +346,14 @@
     <div class="section-divider"></div>
 
     <!-- About Section -->
-    <section id="about" class="py-24 bg-gradient-to-b from-cream-50 to-cream-100 relative">
+    <section id="about" class="py-16 sm:py-24 bg-gradient-to-b from-cream-50 to-cream-100 relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid lg:grid-cols-2 gap-16 items-center">
+            <div class="grid lg:grid-cols-2 gap-10 lg:gap-16 items-center">
                 <div class="reveal-left">
                     <div class="relative">
-                        <img data-site-image="aboutImageUrl" src="https://images.unsplash.com/photo-1567521464027-f127ff144326?w=800&q=80" alt="Premium Catering Setup with elegant table arrangement and golden accents" loading="lazy" class="rounded-3xl shadow-2xl w-full object-cover h-[500px]">
-                        <div class="absolute -bottom-6 -right-6 bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 rounded-2xl p-6 shadow-xl shadow-orange-500/30">
-                            <p id="caterer-about-year" class="text-white font-display text-4xl font-bold">2015</p>
+                        <img data-site-image="aboutImageUrl" src="https://images.unsplash.com/photo-1567521464027-f127ff144326?w=800&q=80" alt="Premium Catering Setup with elegant table arrangement and golden accents" loading="lazy" class="rounded-3xl shadow-2xl w-full object-cover h-72 sm:h-96 lg:h-[500px]">
+                        <div class="absolute -bottom-4 -right-2 sm:-bottom-6 sm:-right-6 bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 rounded-2xl p-4 sm:p-6 shadow-xl shadow-orange-500/30">
+                            <p id="caterer-about-year" class="text-white font-display text-3xl sm:text-4xl font-bold">2015</p>
                             <p data-i18n="about_est_label" class="text-amber-100 text-sm font-medium">Established</p>
                         </div>
                     </div>
@@ -342,9 +392,9 @@
     <div class="section-divider"></div>
 
     <!-- Cuisine Specialization Section -->
-    <section class="py-24 bg-gradient-to-b from-cream-100 to-cream-50 relative">
+    <section class="py-16 sm:py-24 bg-gradient-to-b from-cream-100 to-cream-50 relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16 reveal">
+            <div class="text-center mb-10 sm:mb-16 reveal">
                 <p data-i18n="cuisine_script" class="font-script text-brandOrange-600 text-3xl mb-2">Hamari Specialties</p>
                 <h2 data-i18n="cuisine_h2" class="font-display text-4xl sm:text-5xl font-bold text-brown-900 mb-4">Cuisine <span class="gradient-text">Specialization</span></h2>
                 <p data-i18n="cuisine_p" class="text-brown-600 max-w-2xl mx-auto text-lg">From rich Mughlai gravies to delicate South Indian dosas, we master every cuisine with perfection.</p>
@@ -435,12 +485,12 @@
     <div class="section-divider"></div>
 
     <!-- Services Section -->
-    <section id="services" class="py-24 bg-gradient-to-b from-brown-900 via-brown-950 to-brown-950 relative overflow-hidden">
+    <section id="services" class="py-16 sm:py-24 bg-gradient-to-b from-brown-900 via-brown-950 to-brown-950 relative overflow-hidden">
         <div class="absolute inset-0 opacity-10">
             <img data-site-image="servicesBgUrl" src="https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=1920&q=60" alt="Wedding celebration ambiance" loading="lazy" class="w-full h-full object-cover">
         </div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center mb-16 reveal">
+            <div class="text-center mb-10 sm:mb-16 reveal">
                 <p data-i18n="srv_eyebrow" class="font-script text-amber-400 text-3xl mb-2">Humari Seva</p>
                 <h2 data-i18n="srv_title" class="font-display text-4xl sm:text-5xl font-bold text-white mb-4">Our <span class="gradient-text">Services</span></h2>
                 <p data-i18n="srv_desc" class="text-cream-200 max-w-2xl mx-auto text-lg">Har khushi ke mauke ke liye, professional catering services.</p>
@@ -534,9 +584,9 @@
     <div class="section-divider"></div>
 
     <!-- Packages Section -->
-    <section id="packages" class="py-24 bg-gradient-to-b from-cream-50 to-cream-100 relative">
+    <section id="packages" class="py-16 sm:py-24 bg-gradient-to-b from-cream-50 to-cream-100 relative">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16 reveal">
+            <div class="text-center mb-10 sm:mb-16 reveal">
                 <p data-i18n="pkg_eyebrow" class="font-script text-brandOrange-600 text-3xl mb-2">Humare Packages</p>
                 <h2 data-i18n="pkg_title" class="font-display text-4xl sm:text-5xl font-bold text-brown-900 mb-4">Catering <span class="gradient-text">Packages</span></h2>
                 <p data-i18n="pkg_desc" class="text-brown-600 max-w-2xl mx-auto text-lg">Har budget mein premium quality. Choose the perfect package for your celebration.</p>
@@ -544,7 +594,7 @@
 
             <div id="caterer-packages-container" class="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto items-stretch">
                 <!-- Silver Package -->
-                <div class="bg-white rounded-3xl p-8 shadow-xl card-hover reveal relative overflow-hidden border border-amber-200 hover:border-brandOrange-400 transition-all flex flex-col justify-between h-full">
+                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl card-hover reveal relative overflow-hidden border border-amber-200 hover:border-brandOrange-400 transition-all flex flex-col justify-between h-full">
                     <div data-i18n="pkg_popular" class="absolute top-0 right-0 bg-amber-100 text-brandOrange-700 px-4 py-1 rounded-bl-xl text-xs font-semibold">Popular</div>
                     <div class="flex-1 flex flex-col">
                         <div class="text-center mb-8">
@@ -569,7 +619,7 @@
                 </div>
 
                 <!-- Gold Package -->
-                <div class="bg-gradient-to-b from-amber-50/80 to-white rounded-3xl p-8 shadow-2xl card-hover reveal relative overflow-hidden border-2 border-brandOrange-500/60 shadow-orange-500/20 z-10 flex flex-col justify-between h-full">
+                <div class="bg-gradient-to-b from-amber-50/80 to-white rounded-3xl p-6 sm:p-8 shadow-2xl card-hover reveal relative overflow-hidden border-2 border-brandOrange-500/60 shadow-orange-500/20 z-10 flex flex-col justify-between h-full">
                     <div data-i18n="pkg_gold_badge" class="absolute top-0 right-0 bg-gradient-to-r from-brandOrange-500 via-brandOrange-600 to-amber-500 text-white px-4 py-1 rounded-bl-xl text-xs font-semibold">Best for Weddings</div>
                     <div class="flex-1 flex flex-col">
                         <div class="text-center mb-8">
@@ -595,7 +645,7 @@
                 </div>
 
                 <!-- Royal Package -->
-                <div class="bg-white rounded-3xl p-8 shadow-xl card-hover reveal relative overflow-hidden border border-amber-200 hover:border-brandOrange-400 transition-all flex flex-col justify-between h-full">
+                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl card-hover reveal relative overflow-hidden border border-amber-200 hover:border-brandOrange-400 transition-all flex flex-col justify-between h-full">
                     <div data-i18n="pkg_royal_badge" class="absolute top-0 right-0 bg-gradient-to-r from-brown-900 to-brown-950 text-amber-300 border-l border-b border-amber-400/30 px-4 py-1 rounded-bl-xl text-xs font-semibold">Premium Choice</div>
                     <div class="flex-1 flex flex-col">
                         <div class="text-center mb-8">
@@ -633,7 +683,7 @@
     </section>
 
     <!-- About Section -->
-    <section id="story" class="py-24 bg-gradient-to-b from-brown-950 via-brown-900 to-brown-950 relative overflow-hidden text-white">
+    <section id="story" class="py-16 sm:py-24 bg-gradient-to-b from-brown-950 via-brown-900 to-brown-950 relative overflow-hidden text-white">
         <!-- Decorative background elements -->
         <div class="absolute inset-0 pointer-events-none">
             <div class="absolute top-10 left-10 w-72 h-72 bg-golden-500/5 rounded-full blur-3xl"></div>
@@ -683,9 +733,9 @@
     <div class="section-divider"></div>
 
     <!-- Why Choose Us Section -->
-    <section class="py-24 bg-gradient-to-b from-cream-100 to-cream-50">
+    <section class="py-16 sm:py-24 bg-gradient-to-b from-cream-100 to-cream-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16 reveal">
+            <div class="text-center mb-10 sm:mb-16 reveal">
                 <p data-i18n="wcu_eyebrow" class="font-script text-brandOrange-600 text-3xl mb-2">Hum hi kyun?</p>
                 <h2 data-i18n="wcu_title" class="font-display text-4xl sm:text-5xl font-bold text-brown-900 mb-4">Why Choose <span class="gradient-text">Us</span></h2>
                 <p data-i18n="wcu_desc" class="text-brown-600 max-w-2xl mx-auto text-lg">What makes Banarasia Buffet Art the preferred choice for premium events.</p>
@@ -760,16 +810,16 @@
 
     <!-- Gallery Section -->
     <!-- Venues Section — hydrated from /api/caterer/content (CMS: Venues tab) -->
-    <section id="venues" class="py-24 bg-gradient-to-b from-cream-100 to-cream-50">
+    <section id="venues" class="py-16 sm:py-24 bg-gradient-to-b from-cream-100 to-cream-50">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16 reveal">
+            <div class="text-center mb-10 sm:mb-16 reveal">
                 <p data-i18n="ven_eyebrow" class="font-script text-brandOrange-600 text-3xl mb-2">Humare Venue</p>
                 <h2 data-i18n="ven_title" class="font-display text-4xl sm:text-5xl font-bold text-brown-900 mb-4">Our <span class="gradient-text">Venues</span></h2>
                 <p data-i18n="ven_desc" class="text-brown-600 max-w-2xl mx-auto text-lg">Where we serve — our own spaces, or bring the full setup to yours.</p>
             </div>
             <div id="caterer-venues-container" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Populated by renderCmsContent(); this fallback shows if the API is unreachable. -->
-                <div class="bg-white rounded-3xl p-8 shadow-xl border border-amber-200 reveal card-hover">
+                <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xl border border-amber-200 reveal card-hover">
                     <div class="w-14 h-14 mb-5 rounded-full bg-gradient-to-br from-brandOrange-500 to-amber-500 flex items-center justify-center shadow-md shadow-orange-500/20">
                         <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                     </div>
@@ -781,9 +831,9 @@
         </div>
     </section>
 
-    <section id="gallery" class="py-24 bg-gradient-to-b from-cream-50 to-cream-100">
+    <section id="gallery" class="py-16 sm:py-24 bg-gradient-to-b from-cream-50 to-cream-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16 reveal">
+            <div class="text-center mb-10 sm:mb-16 reveal">
                 <p data-i18n="gal_eyebrow" class="font-script text-brandOrange-600 text-3xl mb-2">Humari Jhalak</p>
                 <h2 data-i18n="gal_title" class="font-display text-4xl sm:text-5xl font-bold text-brown-900 mb-4">Our <span class="gradient-text">Gallery</span></h2>
                 <p data-i18n="gal_desc" class="text-brown-600 max-w-2xl mx-auto text-lg">A glimpse of our premium catering setups and events.</p>
@@ -832,12 +882,12 @@
     <div class="section-divider"></div>
 
     <!-- Testimonials Section -->
-    <section id="reviews" class="py-24 bg-gradient-to-b from-brown-900 via-brown-950 to-brown-950 overflow-hidden relative">
+    <section id="reviews" class="py-16 sm:py-24 bg-gradient-to-b from-brown-900 via-brown-950 to-brown-950 overflow-hidden relative">
         <!-- Ambient glow -->
         <div class="absolute top-1/2 left-0 w-72 h-72 bg-brandOrange-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="absolute top-1/3 right-0 w-64 h-64 bg-amber-500/10 rounded-full blur-3xl pointer-events-none"></div>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="text-center mb-16 reveal">
+            <div class="text-center mb-10 sm:mb-16 reveal">
                 <p data-i18n="rev_eyebrow" class="font-script text-amber-400 text-3xl mb-2">Kya kehte hain log</p>
                 <h2 data-i18n="rev_title" class="font-display text-4xl sm:text-5xl font-bold text-white mb-4">Client <span class="gradient-text">Reviews</span></h2>
             </div>
@@ -889,7 +939,7 @@
     <div class="section-divider"></div>
 
     <!-- Process Section -->
-    <section class="py-24 relative overflow-hidden bg-gradient-to-b from-cream-50 via-cream-100 to-cream-50">
+    <section class="py-16 sm:py-24 relative overflow-hidden bg-gradient-to-b from-cream-50 via-cream-100 to-cream-50">
         <!-- Background decorative elements -->
         <div class="absolute inset-0 pointer-events-none">
             <div class="absolute top-20 left-0 w-64 h-64 bg-amber-200/20 rounded-full blur-3xl"></div>
@@ -1074,19 +1124,21 @@
     <div class="section-divider"></div>
 
     <!-- Contact Section -->
-    <section id="contact" class="py-24 bg-gradient-to-b from-cream-50 to-cream-100">
+    <section id="contact" class="py-16 sm:py-24 bg-gradient-to-b from-cream-50 to-cream-100">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-16 reveal">
+            <div class="text-center mb-10 sm:mb-16 reveal">
                 <p data-i18n="cnt_eyebrow" class="font-script text-brandOrange-600 text-3xl mb-2">Sampark Karein</p>
                 <h2 data-i18n="cnt_title" class="font-display text-4xl sm:text-5xl font-bold text-brown-900 mb-4">Get In <span class="gradient-text">Touch</span></h2>
             </div>
             <div class="grid lg:grid-cols-2 gap-12">
                 <div class="reveal-left">
-                    <div class="bg-white rounded-3xl p-8 shadow-xl border border-amber-200/70 shadow-orange-500/10">
+                    <div class="bg-white rounded-3xl p-5 sm:p-8 shadow-xl border border-amber-200/70 shadow-orange-500/10">
                         <h3 data-i18n="form_title" class="font-display text-2xl font-bold text-brown-900 mb-6">Send Inquiry</h3>
                         <!-- Inquiry form — posts to /api/caterer/leads (admin: Leads tab) -->
                         <form id="inquiry-form" class="space-y-4" novalidate>
-                            <div class="grid grid-cols-2 gap-4">
+                            <!-- Side by side these two fields are ~110px wide on a phone and
+                                 truncate their placeholders, so they stack until `sm`. -->
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <input type="text" name="name" data-i18n-ph="ph_name" placeholder="Your Name" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm">
                                 <input type="tel" name="phone" data-i18n-ph="ph_phone" placeholder="Phone Number" class="w-full px-4 py-3 rounded-xl border border-amber-200/80 focus:border-brandOrange-500 focus:ring-2 focus:ring-amber-200 outline-none transition text-sm">
                             </div>
@@ -1154,15 +1206,15 @@
                         </div>
                     </div>
                     <div class="grid grid-cols-3 gap-3">
-                        <a href="https://wa.me/919918629017" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 py-3 px-4 bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white rounded-xl font-semibold text-sm shadow-md shadow-brandOrange-600/25 hover:from-amber-500 hover:to-brandOrange-600 hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-300">
+                        <a href="https://wa.me/919918629017" target="_blank" rel="noopener" class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 px-2 sm:px-4 text-xs sm:text-sm bg-gradient-to-r from-brandOrange-600 via-brandOrange-500 to-amber-500 text-white rounded-xl font-semibold shadow-md shadow-brandOrange-600/25 hover:from-amber-500 hover:to-brandOrange-600 hover:shadow-lg hover:shadow-amber-500/30 transition-all duration-300">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492l4.625-1.459A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75c-2.24 0-4.31-.725-5.994-1.953l-.43-.312-2.742.865.834-2.664-.343-.466A9.716 9.716 0 012.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75z"/></svg>
                             WhatsApp
                         </a>
-                        <a href="https://youtube.com/@banarasiabuffetart?si=toOrkdaRR2pTff9F" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 py-3 px-4 bg-brandOrange-50 text-brown-800 border border-brandOrange-300 rounded-xl font-semibold text-sm hover:bg-gradient-to-r hover:from-brandOrange-600 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300">
+                        <a href="https://youtube.com/@banarasiabuffetart?si=toOrkdaRR2pTff9F" target="_blank" rel="noopener" class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 px-2 sm:px-4 text-xs sm:text-sm bg-brandOrange-50 text-brown-800 border border-brandOrange-300 rounded-xl font-semibold hover:bg-gradient-to-r hover:from-brandOrange-600 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" clip-rule="evenodd" d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
                             YouTube
                         </a>
-                        <a href="https://share.google/A5emKWy8iuQEcngAX" target="_blank" rel="noopener" class="flex items-center justify-center gap-2 py-3 px-4 bg-brandOrange-50 text-brown-800 border border-brandOrange-300 rounded-xl font-semibold text-sm hover:bg-gradient-to-r hover:from-brandOrange-600 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300">
+                        <a href="https://share.google/A5emKWy8iuQEcngAX" target="_blank" rel="noopener" class="flex flex-col sm:flex-row items-center justify-center gap-1 sm:gap-2 py-3 px-2 sm:px-4 text-xs sm:text-sm bg-brandOrange-50 text-brown-800 border border-brandOrange-300 rounded-xl font-semibold hover:bg-gradient-to-r hover:from-brandOrange-600 hover:to-amber-500 hover:text-white hover:border-transparent transition-all duration-300">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
                             Maps
                         </a>
@@ -1274,7 +1326,7 @@
     </footer>
 
     <!-- Floating WhatsApp Button -->
-    <a href="https://wa.me/919918629017" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" class="fixed bottom-6 right-6 z-50 w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-600/30 hover:bg-green-600 transition-all duration-300 transform hover:scale-105 pulse-golden">
+    <a id="whatsapp-float" href="https://wa.me/919918629017" target="_blank" rel="noopener" aria-label="Chat on WhatsApp" class="fixed bottom-5 right-4 sm:bottom-6 sm:right-6 z-50 w-14 h-14 bg-green-500 rounded-2xl flex items-center justify-center shadow-lg shadow-green-600/30 hover:bg-green-600 transform hover:scale-105 pulse-golden">
         <svg class="w-7 h-7 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12c0 2.625.846 5.059 2.284 7.034L.789 23.492l4.625-1.459A11.932 11.932 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75c-2.24 0-4.31-.725-5.994-1.953l-.43-.312-2.742.865.834-2.664-.343-.466A9.716 9.716 0 012.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75z"/></svg>
     </a>
 
@@ -2106,11 +2158,12 @@
             }
 
             if (mobileStickyCta) {
-                if (scrollY > window.innerHeight * 0.8) {
-                    mobileStickyCta.classList.add('visible');
-                } else {
-                    mobileStickyCta.classList.remove('visible');
-                }
+                const ctaVisible = scrollY > window.innerHeight * 0.8;
+                mobileStickyCta.classList.toggle('visible', ctaVisible);
+                // Mirrored onto <body> so the floating WhatsApp button and the
+                // footer can move clear of the bar — neither is a sibling the
+                // bar could reach with a CSS combinator.
+                document.body.classList.toggle('cta-visible', ctaVisible);
             }
 
             ticking = false;
@@ -2405,7 +2458,7 @@
                         const isGold = (badge && (badge.toLowerCase().includes('gold') || badge.toLowerCase().includes('wedding') || badge.includes('बेस्ट'))) || idx === 1;
                         const isRoyal = (badge && (badge.toLowerCase().includes('royal') || badge.toLowerCase().includes('premium') || badge.includes('शाही'))) || idx >= 2;
 
-                        let cardClasses = "bg-white rounded-3xl p-8 shadow-xl card-hover reveal relative overflow-hidden border border-amber-200 hover:border-brandOrange-400 transition-all flex flex-col justify-between h-full";
+                        let cardClasses = "bg-white rounded-3xl p-6 sm:p-8 shadow-xl card-hover reveal relative overflow-hidden border border-amber-200 hover:border-brandOrange-400 transition-all flex flex-col justify-between h-full";
                         let badgeClasses = "bg-amber-100 text-brandOrange-700 px-4 py-1 rounded-bl-xl text-xs font-semibold";
                         let iconClasses = "w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-brandOrange-400 to-amber-500 flex items-center justify-center shadow-md shadow-orange-500/20";
                         let priceClasses = "text-4xl font-bold text-brown-900 font-display";
@@ -2413,7 +2466,7 @@
                         let btnText = isHi ? "कोटेशन प्राप्त करें" : "Get Price Quote";
 
                         if (isGold) {
-                            cardClasses = "bg-gradient-to-b from-amber-50/80 to-white rounded-3xl p-8 shadow-2xl card-hover reveal relative overflow-hidden border-2 border-brandOrange-500/60 shadow-orange-500/20 z-10 flex flex-col justify-between h-full";
+                            cardClasses = "bg-gradient-to-b from-amber-50/80 to-white rounded-3xl p-6 sm:p-8 shadow-2xl card-hover reveal relative overflow-hidden border-2 border-brandOrange-500/60 shadow-orange-500/20 z-10 flex flex-col justify-between h-full";
                             badgeClasses = "bg-gradient-to-r from-brandOrange-500 via-brandOrange-600 to-amber-500 text-white px-4 py-1 rounded-bl-xl text-xs font-semibold";
                             iconClasses = "w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-br from-brandOrange-500 via-brandOrange-600 to-amber-500 flex items-center justify-center shadow-md shadow-orange-500/30";
                             priceClasses = "text-4xl font-bold gradient-text font-display";
