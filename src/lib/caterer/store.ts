@@ -1,8 +1,11 @@
-// Caterer CMS persistence — Dual-mode JSON/Vercel-Blob backend.
+// Caterer CMS persistence — a single JSON file on disk.
 //
-// Switches automatically based on BLOB_READ_WRITE_TOKEN:
-//   - Token set:   Vercel Blob at key `system/caterer/content.json`
-//   - Token unset: Local JSON file at `data/caterer/content.json` (/tmp on Vercel)
+// The whole store is one snapshot at `data/caterer/content.json`, read once per
+// process and written back through a serialising queue. It needs a persistent
+// filesystem: a VPS, a container with a mounted volume, anything that keeps the
+// directory between restarts. A read-only or ephemeral filesystem (Vercel and
+// other serverless platforms) cannot host this store — writes either fail or
+// vanish on the next cold start.
 //
 // Initial defaults (3 packages, 6 gallery items, 1 About record) are loaded
 // from Banarasia website content if no store file exists yet.
@@ -10,7 +13,6 @@
 import "server-only";
 import fs from "node:fs/promises";
 import path from "node:path";
-import { head, put } from "@vercel/blob";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -829,18 +831,16 @@ const INITIAL_DEFAULTS: CatererStoreData = {
 };
 
 // ---------------------------------------------------------------------------
-// File & Blob Paths
+// File Path
 // ---------------------------------------------------------------------------
 
+// The store lives beside the app. On Vercel `process.cwd()` is the read-only
+// /var/task, so writes there throw EROFS — /tmp keeps the app serving instead
+// of 500ing, but it is scratch space: every edit is lost on the next cold
+// start. Deploy this app where `data/` persists.
 const DATA_FILE = process.env.VERCEL
   ? path.join("/tmp", "caterer", "content.json")
   : path.join(process.cwd(), "data", "caterer", "content.json");
-
-const BLOB_KEY = "system/caterer/content.json";
-
-function isBlobEnabled(): boolean {
-  return !!process.env.BLOB_READ_WRITE_TOKEN;
-}
 
 // ---------------------------------------------------------------------------
 // Singleton State
@@ -874,29 +874,19 @@ function getState(): StoreState {
 
 async function readFromStorage(): Promise<CatererStoreData> {
   let parsed: unknown;
-  if (isBlobEnabled()) {
-    try {
-      const meta = await head(BLOB_KEY);
-      if (!meta?.url) return INITIAL_DEFAULTS;
-      const res = await fetch(meta.url, { cache: "no-store" });
-      if (!res.ok) return INITIAL_DEFAULTS;
-      parsed = await res.json();
-    } catch {
-      return INITIAL_DEFAULTS;
-    }
-  } else {
-    try {
-      const buf = await fs.readFile(DATA_FILE, "utf-8");
-      parsed = JSON.parse(buf);
-    } catch {
-      return INITIAL_DEFAULTS;
-    }
+  try {
+    const buf = await fs.readFile(DATA_FILE, "utf-8");
+    parsed = JSON.parse(buf);
+  } catch {
+    // No file yet (first boot) or unreadable/corrupt JSON — serve the seed
+    // content rather than failing the request. A later write recreates the file.
+    return INITIAL_DEFAULTS;
   }
 
   const snap = parsed as Partial<CatererStoreData> | null;
 
   // Snapshots written before venues/settings/priceMode existed are still valid
-  // on disk and in Blob. Fill the gaps here so one old file cannot crash a read.
+  // on disk. Fill the gaps here so one old file cannot crash a read.
   const packages = Array.isArray(snap?.packages)
     ? (snap!.packages as CatererPackage[]).map((p) => ({
         ...p,
@@ -959,17 +949,6 @@ async function readFromStorage(): Promise<CatererStoreData> {
 }
 
 async function writeToStorage(data: CatererStoreData): Promise<void> {
-  if (isBlobEnabled()) {
-    await put(BLOB_KEY, JSON.stringify(data, null, 2), {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-      cacheControlMaxAge: 0,
-    });
-    return;
-  }
-
   await fs.mkdir(path.dirname(DATA_FILE), { recursive: true });
   await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8");
 }
