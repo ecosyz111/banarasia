@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "seed": "node scripts/seed-caterer.mjs",
+    "seed:shards": "node scripts/seed-shards.mjs",
     "postinstall": "prisma generate"
   },
   "dependencies": {
