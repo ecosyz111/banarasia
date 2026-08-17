@@ -13,8 +13,8 @@ export const runtime = "nodejs";
 const HEX = /^#[0-9a-fA-F]{6}$/;
 
 // Same reasoning for every image: each becomes an <img src> (or a <link href>
-// for the favicon). Allow only same-origin paths and the Blob/HTTPS URLs the
-// upload endpoint hands back — never `javascript:` or a `data:` payload.
+// for the favicon). Allow only the same-origin paths the upload endpoint hands
+// back and pasted HTTPS URLs — never `javascript:` or a `data:` payload.
 function isSafeImageUrl(url: string): boolean {
   return url.startsWith("/") || url.startsWith("https://");
 }

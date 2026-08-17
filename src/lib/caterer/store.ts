@@ -1,17 +1,18 @@
-// Caterer CMS persistence — Dual-mode sharded JSON/Vercel-Blob backend.
+// Caterer CMS persistence — sharded JSON files on disk.
 //
 // Every record is its own JSON file. A package edit rewrites that one package's
 // file and nothing else, so the cost of a save no longer grows with the size of
 // the catalogue, and two admins editing different sections cannot clobber each
 // other by each re-serialising the whole store.
 //
-//   data/caterer/packages/pkg-silver.json      system/caterer/packages/…
-//   data/caterer/gallery/gal-001.json          system/caterer/gallery/…
-//   data/caterer/settings.json                 system/caterer/settings.json
+//   data/caterer/packages/pkg-silver.json
+//   data/caterer/gallery/gal-001.json
+//   data/caterer/settings.json
 //
-// Switches automatically based on BLOB_READ_WRITE_TOKEN:
-//   - Token set:   Vercel Blob under `system/caterer/`
-//   - Token unset: Local files under `data/caterer/` (/tmp on Vercel)
+// This needs a persistent filesystem: a VPS, a container with a mounted volume,
+// anything that keeps the directory between restarts. A read-only or ephemeral
+// filesystem (Vercel and other serverless platforms) cannot host this store —
+// writes either fail or vanish on the next cold start.
 //
 // Initial defaults are loaded from ./seed-data.json if no store exists yet, and
 // a store still in the old single-file layout is read once and re-sharded on
@@ -21,7 +22,6 @@ import "server-only";
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
-import { del, head, list, put } from "@vercel/blob";
 import SEED from "./seed-data.json";
 
 // ---------------------------------------------------------------------------
@@ -362,17 +362,18 @@ const INITIAL_DEFAULTS: CatererStoreData = {
 // Shard Paths
 // ---------------------------------------------------------------------------
 
+// The store lives beside the app. On Vercel `process.cwd()` is the read-only
+// /var/task, so writes there throw EROFS — /tmp keeps the app serving instead
+// of 500ing, but it is scratch space: every edit is lost on the next cold
+// start. Deploy this app where `data/` persists.
 const DATA_ROOT = process.env.VERCEL
   ? path.join("/tmp", "caterer")
   : path.join(process.cwd(), "data", "caterer");
-
-const BLOB_ROOT = "system/caterer";
 
 // The pre-shard layout. Read once, only by a store that has no manifest, so an
 // existing deployment carries its content across the upgrade; the first write
 // after that lands as shards and this is never consulted again.
 const LEGACY_DATA_FILE = path.join(DATA_ROOT, "content.json");
-const LEGACY_BLOB_KEY = `${BLOB_ROOT}/content.json`;
 
 // Presence of this file means "this store has been written in shard form".
 // Without it an empty collection directory would be ambiguous — it reads the
@@ -406,10 +407,6 @@ type SingletonSection = keyof typeof SINGLETON_FILES;
 // only the initial flush is wide.
 const READ_CONCURRENCY = 16;
 const WRITE_CONCURRENCY = 8;
-
-function isBlobEnabled(): boolean {
-  return !!process.env.BLOB_READ_WRITE_TOKEN;
-}
 
 // Record ids arrive in request bodies, so they cannot be trusted as file names:
 // an id of "../../settings" would otherwise escape its collection directory and
@@ -485,14 +482,6 @@ function getState(): StoreState {
 // throw — a half-written store degrades to its defaults rather than 500ing.
 async function readShard(rel: string): Promise<{ text: string; value: unknown } | null> {
   try {
-    if (isBlobEnabled()) {
-      const meta = await head(`${BLOB_ROOT}/${rel}`);
-      if (!meta?.url) return null;
-      const res = await fetch(meta.url, { cache: "no-store" });
-      if (!res.ok) return null;
-      const text = await res.text();
-      return { text, value: JSON.parse(text) };
-    }
     const text = await fs.readFile(path.join(DATA_ROOT, rel), "utf-8");
     return { text, value: JSON.parse(text) };
   } catch {
@@ -505,39 +494,6 @@ async function readShard(rel: string): Promise<{ text: string; value: unknown } 
 async function readCollectionShards(
   dir: string
 ): Promise<{ rel: string; text: string; value: unknown }[]> {
-  if (isBlobEnabled()) {
-    const entries: { pathname: string; url: string }[] = [];
-    let cursor: string | undefined;
-    try {
-      do {
-        const page = await list({ prefix: `${BLOB_ROOT}/${dir}/`, cursor });
-        entries.push(...page.blobs);
-        cursor = page.hasMore ? page.cursor : undefined;
-      } while (cursor);
-    } catch {
-      return [];
-    }
-    const read = await mapWithConcurrency(
-      entries.filter((b) => b.pathname.endsWith(".json")),
-      READ_CONCURRENCY,
-      async (b) => {
-        try {
-          const res = await fetch(b.url, { cache: "no-store" });
-          if (!res.ok) return null;
-          const text = await res.text();
-          return {
-            rel: b.pathname.slice(`${BLOB_ROOT}/`.length),
-            text,
-            value: JSON.parse(text) as unknown,
-          };
-        } catch {
-          return null;
-        }
-      }
-    );
-    return read.filter((r) => r !== null);
-  }
-
   let names: string[];
   try {
     names = await fs.readdir(path.join(DATA_ROOT, dir));
@@ -562,13 +518,6 @@ async function readCollectionShards(
 // The single-file store this layout replaced. Returns null when there is none.
 async function readLegacySnapshot(): Promise<Partial<CatererStoreData> | null> {
   try {
-    if (isBlobEnabled()) {
-      const meta = await head(LEGACY_BLOB_KEY);
-      if (!meta?.url) return null;
-      const res = await fetch(meta.url, { cache: "no-store" });
-      if (!res.ok) return null;
-      return (await res.json()) as Partial<CatererStoreData>;
-    }
     return JSON.parse(await fs.readFile(LEGACY_DATA_FILE, "utf-8")) as Partial<CatererStoreData>;
   } catch {
     return null;
@@ -603,8 +552,8 @@ async function loadSnapshot(): Promise<LoadedSnapshot> {
   for (const { name, shards } of collections) {
     for (const s of shards) baseline.set(s.rel, s.text);
     const records = shards.map((s) => s.value as Record<string, unknown>);
-    // Directory listings come back in whatever order the filesystem or the Blob
-    // index feels like. Every read path re-sorts for display, but leads are also
+    // Directory listings come back in whatever order the filesystem feels
+    // like. Every read path re-sorts for display, but leads are also
     // trimmed with slice(-MAX_LEADS), which silently drops the wrong ones unless
     // the array is genuinely oldest-first. Sorting here makes hydration
     // deterministic for both.
@@ -655,7 +604,7 @@ function seeded<K extends keyof CatererStoreData>(key: K): CatererStoreData[K] {
 function normaliseSnapshot(snap: Partial<CatererStoreData> | null): CatererStoreData {
 
   // Snapshots written before venues/settings/priceMode existed are still valid
-  // on disk and in Blob. Fill the gaps here so one old file cannot crash a read.
+  // on disk. Fill the gaps here so one old file cannot crash a read.
   const packages = Array.isArray(snap?.packages)
     ? (snap!.packages as CatererPackage[]).map((p) => ({
         ...p,
@@ -737,26 +686,12 @@ function buildShardMap(data: CatererStoreData): Map<string, string> {
 }
 
 async function writeShard(rel: string, text: string): Promise<void> {
-  if (isBlobEnabled()) {
-    await put(`${BLOB_ROOT}/${rel}`, text, {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-      cacheControlMaxAge: 0,
-    });
-    return;
-  }
   const full = path.join(DATA_ROOT, rel);
   await fs.mkdir(path.dirname(full), { recursive: true });
   await fs.writeFile(full, text, "utf-8");
 }
 
 async function deleteShards(rels: string[]): Promise<void> {
-  if (isBlobEnabled()) {
-    await del(rels.map((rel) => `${BLOB_ROOT}/${rel}`));
-    return;
-  }
   await mapWithConcurrency(rels, WRITE_CONCURRENCY, async (rel) => {
     // Already gone is the outcome we wanted; anything else is not worth failing
     // the save the caller already applied in memory.
