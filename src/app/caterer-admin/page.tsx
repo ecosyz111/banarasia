@@ -185,7 +185,7 @@ type CatererSite = {
   mapEmbedUrl: string;
   mapLinkUrl: string;
   youtubeUrl: string;
-  // Optional: blank leaves the icon off the public site altogether.
+  // Blank leaves the footer icon on its placeholder link.
   facebookUrl: string;
   instagramUrl: string;
   footerDescEn: string;
@@ -3841,9 +3841,9 @@ export default function CatererAdminDashboard() {
                       placeholder="https://instagram.com/yourhandle"
                     />
                     <p className="mt-1 text-[11px] leading-tight text-stone-500">
-                      Facebook and Instagram icons appear in the site footer only once a
-                      link is saved here. Clear a box to take that icon off the site.
-                      Must start with https://
+                      Both icons are already in the site footer, pointing at facebook.com
+                      and instagram.com as placeholders. Paste your page links here to
+                      point them at your own profiles. Must start with https://
                     </p>
                   </div>
                   <div>
