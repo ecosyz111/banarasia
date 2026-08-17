@@ -603,7 +603,7 @@
                             </div>
                             <h3 data-i18n="pkg_silver" class="font-display text-2xl font-bold text-brown-900">Silver Package</h3>
                             <div class="mt-4">
-                                <span class="text-4xl font-bold text-brown-900 font-display">&#8377;900</span>
+                                <span class="text-4xl font-bold text-brown-900 font-display line-through decoration-2 decoration-brown-500">&#8377;900</span>
                                 <span data-i18n="pkg_plate" class="text-brown-500 text-sm">/ Plate</span>
                             </div>
                         </div>
@@ -628,7 +628,7 @@
                             </div>
                             <h3 data-i18n="pkg_gold" class="font-display text-2xl font-bold text-brown-900">Gold Package</h3>
                             <div class="mt-4">
-                                <span class="text-4xl font-bold gradient-text font-display">&#8377;1200</span>
+                                <span class="text-4xl font-bold gradient-text font-display line-through decoration-2 decoration-brown-500">&#8377;1200</span>
                                 <span data-i18n="pkg_plate" class="text-brown-500 text-sm">/ Plate</span>
                             </div>
                         </div>
@@ -654,7 +654,7 @@
                             </div>
                             <h3 data-i18n="pkg_royal" class="font-display text-2xl font-bold text-brown-900">Royal Package</h3>
                             <div class="mt-4">
-                                <span class="text-4xl font-bold text-brown-900 font-display">&#8377;1500</span>
+                                <span class="text-4xl font-bold text-brown-900 font-display line-through decoration-2 decoration-brown-500">&#8377;1500</span>
                                 <span data-i18n="pkg_plate" class="text-brown-500 text-sm">/ Plate</span>
                             </div>
                         </div>
@@ -2479,10 +2479,13 @@
 
                         // priceMode 'quote' hides the figure entirely and shows a
                         // quote line instead. Anything else (including packages
-                        // saved before the field existed) renders the rupee price.
+                        // saved before the field existed) renders the rupee price
+                        // struck through: every package is customised per event,
+                        // so the figure is a starting point to talk from, not a
+                        // fixed rate. One price, cut — there is no second figure.
                         const priceHtml = pkg.priceMode === 'quote'
                             ? `<span class="${priceClasses}" style="font-size:1.75rem">${isHi ? 'कोटेशन प्राप्त करें' : 'Get Price Quote'}</span>`
-                            : `<span class="${priceClasses}">&#8377;${pkg.price}</span>
+                            : `<span class="${priceClasses} line-through decoration-2 decoration-brown-500">&#8377;${pkg.price}</span>
                                         <span class="text-brown-500 text-sm">${priceUnit}</span>`;
 
                         // The rate only means something alongside the gathering it

@@ -2381,7 +2381,12 @@ export default function CatererAdminDashboard() {
                           </div>
                         ) : (
                           <div className="flex items-baseline gap-1">
-                            <span className="text-2xl font-black text-orange-600">₹{pkg.price}</span>
+                            {/* Struck through on the public card too — every
+                                package is customised per event, so the figure
+                                reads as a starting point, not a fixed rate. */}
+                            <span className="text-2xl font-black text-orange-600 line-through decoration-2 decoration-orange-300">
+                              ₹{pkg.price}
+                            </span>
                             <span className="text-xs font-semibold text-stone-500">
                               {pkg.priceUnitEn} / {pkg.priceUnitHi}
                             </span>
@@ -4312,6 +4317,9 @@ export default function CatererAdminDashboard() {
                     onChange={(e) => setPackageForm({ ...packageForm, price: e.target.value })}
                     className="w-full rounded-xl border border-stone-300 px-3.5 py-2 text-sm text-stone-900 focus:border-orange-500 focus:ring-2 focus:ring-orange-500/20 disabled:bg-stone-100 disabled:text-stone-400"
                   />
+                  <p className="mt-1 text-[11px] leading-tight text-stone-500">
+                    Shown struck through on the site — signals a customisable rate.
+                  </p>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-stone-700 uppercase tracking-wider mb-1">
