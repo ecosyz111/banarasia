@@ -84,8 +84,19 @@ the next rebuild. The route reads the directory per request, so it doesn't.
 ### Seeding
 
 A store with no data of its own falls back to `src/lib/caterer/seed-data.json`
-(118 records) and writes it out on the first save. To materialise those files
-up front for local development:
+and writes it out on the first save. **Its seven collections are deliberately
+empty** — packages, gallery, venues, cuisines, services, why-us and reviews all
+start at zero, and the owner enters real content through the admin console. The
+file once shipped 118 sample records; they read as genuine content on the live
+site and came back on every fresh deploy, so they were removed. Only the
+structural singletons (`about`, plus the `settings`/`site` defaults in
+`store.ts`) still have values, because the page needs a heading and a brand
+colour before anything has been entered.
+
+Adding records to the collections here re-arms that behaviour for every fresh
+install, so keep sample content out of it.
+
+To materialise the seed files up front for local development:
 
 ```bash
 npm run seed:shards           # write any shard that is missing

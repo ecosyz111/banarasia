@@ -332,13 +332,20 @@ export const DEFAULT_SITE: CatererSite = {
 };
 
 // ---------------------------------------------------------------------------
-// Initial Defaults (Banarasia extracted data)
+// Initial Defaults
 // ---------------------------------------------------------------------------
 
-// The catalogue a store with no data of its own starts from: 118 records across
-// the seven collections, held in ./seed-data.json rather than inline here so
-// this module stays about persistence — and so scripts/seed-shards.mjs can
-// materialise the very same records without going through a TypeScript build.
+// What a store with no data of its own starts from, held in ./seed-data.json
+// rather than inline here so this module stays about persistence — and so
+// scripts/seed-shards.mjs can materialise the same records without going
+// through a TypeScript build.
+//
+// The seven collections ship EMPTY on purpose. They once carried 118 sample
+// records, which read as real content on the live site — invented reviews,
+// venues nobody had booked, stock-photo galleries — and reappeared on every
+// fresh deploy. The owner fills them from the admin console instead; only the
+// structural singletons (about, settings, site) have defaults, because the page
+// needs a brand colour and a heading before anything has been entered.
 //
 // Treated as read-only: hydration hands out structuredClone copies, because the
 // store mutates the object it hydrates and would otherwise edit the seed itself.
