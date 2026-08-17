@@ -84,17 +84,19 @@ the next rebuild. The route reads the directory per request, so it doesn't.
 ### Seeding
 
 A store with no data of its own falls back to `src/lib/caterer/seed-data.json`
-and writes it out on the first save. **Its seven collections are deliberately
-empty** — packages, gallery, venues, cuisines, services, why-us and reviews all
-start at zero, and the owner enters real content through the admin console. The
-file once shipped 118 sample records; they read as genuine content on the live
-site and came back on every fresh deploy, so they were removed. Only the
-structural singletons (`about`, plus the `settings`/`site` defaults in
-`store.ts`) still have values, because the page needs a heading and a brand
-colour before anything has been entered.
+and writes it out on the first save. It holds a **small starter set** — 3
+packages, 6 gallery photos, 3 venues, 8 cuisines, 8 services, 6 why-us cards, 4
+reviews — the content the public page is written around.
 
-Adding records to the collections here re-arms that behaviour for every fresh
-install, so keep sample content out of it.
+Keep it that small. The file once shipped 118 sample records, which read as
+genuine content on the live site (invented reviews, venues nobody had booked)
+and reappeared on every fresh deploy. Anything added here is published as if the
+owner had entered it.
+
+On a read-only host this file is not a fallback but the whole content layer: the
+store cannot persist admin edits there, so what is in here is what the deployed
+site serves. An empty seed on Vercel means an empty site and an admin console
+reading 0 in every tab.
 
 To materialise the seed files up front for local development:
 

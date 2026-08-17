@@ -351,12 +351,17 @@ export const DEFAULT_SITE: CatererSite = {
 // scripts/seed-shards.mjs can materialise the same records without going
 // through a TypeScript build.
 //
-// The seven collections ship EMPTY on purpose. They once carried 118 sample
-// records, which read as real content on the live site — invented reviews,
-// venues nobody had booked, stock-photo galleries — and reappeared on every
-// fresh deploy. The owner fills them from the admin console instead; only the
-// structural singletons (about, settings, site) have defaults, because the page
-// needs a brand colour and a heading before anything has been entered.
+// The seven collections carry a deliberately small starter set — 3 packages, 6
+// gallery photos, 3 venues, 8 cuisines, 8 services, 6 why-us cards, 4 reviews —
+// which is the content the public page is written around. They once carried 118
+// sample records instead: invented reviews, venues nobody had booked, whole
+// stock-photo galleries, all reading as real content on the live site.
+//
+// This is not decoration. On a read-only host (Vercel) the store cannot keep
+// anything the admin console writes, so these defaults ARE what the deployed
+// site serves — an empty seed there means an empty site and an admin console
+// showing 0 in every tab. Keep this set small and true; add sample records and
+// every fresh deploy publishes them as if the owner had entered them.
 //
 // Treated as read-only: hydration hands out structuredClone copies, because the
 // store mutates the object it hydrates and would otherwise edit the seed itself.
