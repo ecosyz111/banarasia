@@ -190,6 +190,11 @@ export type CatererSite = {
   mapEmbedUrl: string;
   mapLinkUrl: string;
   youtubeUrl: string;
+  // Social profiles, each optional. Empty means the owner has no page there (or
+  // has not pasted the link yet) and the public site leaves the icon out
+  // entirely — an icon linking nowhere is worse than no icon.
+  facebookUrl: string;
+  instagramUrl: string;
   footerDescEn: string;
   footerDescHi: string;
   copyrightEn: string;
@@ -321,6 +326,10 @@ export const DEFAULT_SITE: CatererSite = {
     "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3559.5!2d80.99!3d26.85!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjbCsDUxJzAwLjAiTiA4MMKwNTknMjQuMCJF!5e0!3m2!1sen!2sin!4v1",
   mapLinkUrl: "https://share.google/A5emKWy8iuQEcngAX",
   youtubeUrl: "https://youtube.com/@banarasiabuffetart?si=toOrkdaRR2pTff9F",
+  // Left blank on purpose: guessing a handle would ship a link to a page that
+  // may not be the owner's. The admin console fills these in.
+  facebookUrl: "",
+  instagramUrl: "",
   footerDescEn:
     "Premium catering services in Lucknow since 2015. Making every celebration a grand feast with authentic flavors and elegant presentation.",
   footerDescHi:

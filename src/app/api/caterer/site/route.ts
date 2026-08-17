@@ -34,9 +34,17 @@ const TEXT_FIELDS = [
   "footerTaglineHi",
 ] as const;
 
-// These three become an iframe src and two <a href>s. Same rule as the images:
-// https:// only, so a saved value can never be a `javascript:` payload.
-const URL_FIELDS = ["mapEmbedUrl", "mapLinkUrl", "youtubeUrl"] as const;
+// These become an iframe src and a set of <a href>s. Same rule as the images:
+// https:// only, so a saved value can never be a `javascript:` payload. An
+// empty string is allowed and means "no link" — the social icons ship hidden
+// and only appear once one is saved.
+const URL_FIELDS = [
+  "mapEmbedUrl",
+  "mapLinkUrl",
+  "youtubeUrl",
+  "facebookUrl",
+  "instagramUrl",
+] as const;
 
 function isSafeUrl(url: string): boolean {
   return url.startsWith("https://");

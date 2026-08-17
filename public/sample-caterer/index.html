@@ -1265,6 +1265,17 @@
                         <a href="https://share.google/A5emKWy8iuQEcngAX" target="_blank" rel="noopener" aria-label="Google Maps" class="w-11 h-11 rounded-xl bg-brown-800/80 border border-brandOrange-500/30 flex items-center justify-center text-amber-300 hover:bg-blue-600 hover:border-blue-600 hover:text-white transition-all duration-300 shadow-md">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
                         </a>
+                        <!-- Facebook and Instagram carry no address in the markup: they
+                             ship hidden and are revealed with their href on hydration,
+                             only if a link is saved in the CMS (Site Content tab). An
+                             unset handle therefore renders nothing at all, rather than
+                             an icon that goes nowhere. -->
+                        <a data-social-link="facebook" target="_blank" rel="noopener" aria-label="Facebook" class="hidden w-11 h-11 rounded-xl bg-brown-800/80 border border-brandOrange-500/30 items-center justify-center text-amber-300 hover:bg-[#1877f2] hover:border-[#1877f2] hover:text-white transition-all duration-300 shadow-md">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.412c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.269h3.328l-.532 3.489h-2.796V24C19.612 23.094 24 18.1 24 12.073z"/></svg>
+                        </a>
+                        <a data-social-link="instagram" target="_blank" rel="noopener" aria-label="Instagram" class="hidden w-11 h-11 rounded-xl bg-brown-800/80 border border-brandOrange-500/30 items-center justify-center text-amber-300 hover:bg-gradient-to-br hover:from-[#833ab4] hover:via-[#e1306c] hover:to-[#fcaf45] hover:border-[#e1306c] hover:text-white transition-all duration-300 shadow-md">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 1.366.062 2.633.336 3.608 1.311.975.975 1.249 2.242 1.311 3.608.058 1.266.07 1.646.07 4.85s-.012 3.584-.07 4.85c-.062 1.366-.336 2.633-1.311 3.608-.975.975-2.242 1.249-3.608 1.311-1.266.058-1.646.07-4.85.07s-3.584-.012-4.85-.07c-1.366-.062-2.633-.336-3.608-1.311-.975-.975-1.249-2.242-1.311-3.608C2.175 15.784 2.163 15.404 2.163 12s.012-3.584.07-4.85c.062-1.366.336-2.633 1.311-3.608C4.519 2.567 5.786 2.293 7.152 2.231 8.418 2.175 8.798 2.163 12 2.163zm0 1.802c-3.15 0-3.494.012-4.723.068-1.05.048-1.79.22-2.32.75-.53.53-.702 1.27-.75 2.32-.056 1.229-.068 1.573-.068 4.723s.012 3.494.068 4.723c.048 1.05.22 1.79.75 2.32.53.53 1.27.702 2.32.75 1.229.056 1.573.068 4.723.068s3.494-.012 4.723-.068c1.05-.048 1.79-.22 2.32-.75.53-.53.702-1.27.75-2.32.056-1.229.068-1.573.068-4.723s-.012-3.494-.068-4.723c-.048-1.05-.22-1.79-.75-2.32-.53-.53-1.27-.702-2.32-.75-1.229-.056-1.573-.068-4.723-.068zm0 3.064A4.971 4.971 0 1 1 7.029 12 4.971 4.971 0 0 1 12 7.029zm0 8.2A3.229 3.229 0 1 0 8.771 12 3.229 3.229 0 0 0 12 15.229zm6.328-8.4a1.161 1.161 0 1 1-1.161-1.161 1.161 1.161 0 0 1 1.161 1.161z"/></svg>
+                        </a>
                     </div>
                 </div>
                 <!-- Quick Links -->
@@ -2821,6 +2832,25 @@
                         a.setAttribute('href', site.mapLinkUrl);
                     });
                 }
+
+                // Facebook and Instagram have no address in the markup to match
+                // on, so they are keyed by attribute. Setting the link reveals
+                // the icon; clearing it in the CMS takes the icon back off the
+                // page, which is why the empty case re-hides rather than being
+                // skipped — the page may already be showing a stale one.
+                [['facebook', site.facebookUrl], ['instagram', site.instagramUrl]].forEach(([network, url]) => {
+                    document.querySelectorAll(`a[data-social-link="${network}"]`).forEach(a => {
+                        if (url) {
+                            a.setAttribute('href', url);
+                            a.classList.remove('hidden');
+                            a.classList.add('flex');
+                        } else {
+                            a.removeAttribute('href');
+                            a.classList.remove('flex');
+                            a.classList.add('hidden');
+                        }
+                    });
+                });
             }
 
             // Fade in the images this render just injected (venues, cuisines,

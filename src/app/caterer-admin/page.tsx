@@ -185,6 +185,9 @@ type CatererSite = {
   mapEmbedUrl: string;
   mapLinkUrl: string;
   youtubeUrl: string;
+  // Optional: blank leaves the icon off the public site altogether.
+  facebookUrl: string;
+  instagramUrl: string;
   footerDescEn: string;
   footerDescHi: string;
   copyrightEn: string;
@@ -393,6 +396,8 @@ const DEFAULT_SITE_FORM: CatererSite = {
   mapEmbedUrl: "",
   mapLinkUrl: "",
   youtubeUrl: "",
+  facebookUrl: "",
+  instagramUrl: "",
   footerDescEn: "",
   footerDescHi: "",
   copyrightEn: "",
@@ -3811,6 +3816,35 @@ export default function CatererAdminDashboard() {
                       className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
                       placeholder="https://youtube.com/@yourchannel"
                     />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Facebook page
+                    </label>
+                    <input
+                      type="url"
+                      value={siteForm.facebookUrl}
+                      onChange={(e) => setSiteField("facebookUrl", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="https://facebook.com/yourpage"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
+                      Instagram profile
+                    </label>
+                    <input
+                      type="url"
+                      value={siteForm.instagramUrl}
+                      onChange={(e) => setSiteField("instagramUrl", e.target.value)}
+                      className="w-full rounded-xl border border-stone-200 px-3 py-2 text-sm focus:border-orange-500 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                      placeholder="https://instagram.com/yourhandle"
+                    />
+                    <p className="mt-1 text-[11px] leading-tight text-stone-500">
+                      Facebook and Instagram icons appear in the site footer only once a
+                      link is saved here. Clear a box to take that icon off the site.
+                      Must start with https://
+                    </p>
                   </div>
                   <div>
                     <label className="mb-1 block text-xs font-bold uppercase tracking-wider text-stone-500">
