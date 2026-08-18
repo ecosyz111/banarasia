@@ -345,7 +345,7 @@ const DEFAULT_SETTINGS_FORM: CatererSettings = {
   logoUrl: "/sample-caterer/tl.png",
   primaryColor: "#ea580c",
   accentColor: "#eab308",
-  whatsappNumber: "919918629017",
+  whatsappNumber: "919918359017",
   heroImageUrl: "",
   aboutImageUrl: "",
   servicesBgUrl: "",

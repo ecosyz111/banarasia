@@ -286,7 +286,7 @@ export const DEFAULT_SETTINGS: CatererSettings = {
   logoUrl: "/sample-caterer/tl.png",
   primaryColor: "#ea580c",
   accentColor: "#eab308",
-  whatsappNumber: "919918629017",
+  whatsappNumber: "919918359017",
   heroImageUrl:
     "https://images.unsplash.com/photo-1555244162-803834f70033?w=1920&q=80",
   aboutImageUrl:
