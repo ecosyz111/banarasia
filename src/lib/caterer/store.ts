@@ -1,18 +1,22 @@
-// Caterer CMS persistence — sharded JSON files on disk.
+// Caterer CMS persistence — sharded JSON files.
 //
 // Every record is its own JSON file. A package edit rewrites that one package's
 // file and nothing else, so the cost of a save no longer grows with the size of
 // the catalogue, and two admins editing different sections cannot clobber each
 // other by each re-serialising the whole store.
 //
-//   data/caterer/packages/pkg-silver.json
-//   data/caterer/gallery/gal-001.json
-//   data/caterer/settings.json
+//   packages/pkg-silver.json
+//   gallery/gal-001.json
+//   settings.json
 //
-// This needs a persistent filesystem: a VPS, a container with a mounted volume,
-// anything that keeps the directory between restarts. A read-only or ephemeral
-// filesystem (Vercel and other serverless platforms) cannot host this store —
-// writes either fail or vanish on the next cold start.
+// Those shards live in one of two places, picked by whether a Vercel Blob store
+// is attached to the deployment — see ./blob and storage():
+//
+//   blob   Vercel Blob, under the `caterer/` prefix. This is what makes the
+//          store work on serverless hosting, where the only writable directory
+//          is a per-instance /tmp that is wiped on the next cold start.
+//   fs     `data/caterer/` on local disk. The default for local development
+//          and for hosts with a persistent volume.
 //
 // Initial defaults are loaded from ./seed-data.json if no store exists yet, and
 // a store still in the old single-file layout is read once and re-sharded on
@@ -22,6 +26,8 @@ import "server-only";
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
+import { BlobNotFoundError, del, get, list, put } from "@vercel/blob";
+import { isBlobConfigured } from "./blob";
 import SEED from "./seed-data.json";
 
 // ---------------------------------------------------------------------------
@@ -385,18 +391,19 @@ const INITIAL_DEFAULTS: CatererStoreData = {
 // Shard Paths
 // ---------------------------------------------------------------------------
 
-// The store lives beside the app. On Vercel `process.cwd()` is the read-only
-// /var/task, so writes there throw EROFS — /tmp keeps the app serving instead
-// of 500ing, but it is scratch space: every edit is lost on the next cold
-// start. Deploy this app where `data/` persists.
-const DATA_ROOT = process.env.VERCEL
-  ? path.join("/tmp", "caterer")
-  : path.join(process.cwd(), "data", "caterer");
+// Where the fs backend keeps its shards. Beside the app, so a mounted volume on
+// `data/` is all a container needs to persist the store.
+const DATA_ROOT = path.join(process.cwd(), "data", "caterer");
+
+// Blob pathnames are one flat namespace shared with anything else the project
+// stores, so every shard is filed under a prefix of its own. Uploaded images
+// live beside it under `caterer/uploads/` — see the upload route.
+const BLOB_PREFIX = "caterer/";
 
 // The pre-shard layout. Read once, only by a store that has no manifest, so an
 // existing deployment carries its content across the upgrade; the first write
 // after that lands as shards and this is never consulted again.
-const LEGACY_DATA_FILE = path.join(DATA_ROOT, "content.json");
+const LEGACY_DATA_FILE = "content.json";
 
 // Presence of this file means "this store has been written in shard form".
 // Without it an empty collection directory would be ambiguous — it reads the
@@ -463,6 +470,131 @@ async function mapWithConcurrency<T, R>(
 }
 
 // ---------------------------------------------------------------------------
+// Storage Backend
+// ---------------------------------------------------------------------------
+
+// Four primitives are all the shard layer needs. Everything above this line
+// works in store-relative paths ("packages/pkg-silver.json") and never learns
+// which backend is carrying them.
+//
+// `read` returns null for a shard that is genuinely not there and throws for
+// anything else. That distinction matters more than it looks: a store that
+// reads as absent falls back to the seed, and the next admin save would then
+// flush the seed over the real content. A network blip must not be able to
+// masquerade as an empty store.
+type StorageBackend = {
+  readonly kind: "fs" | "blob";
+  read(rel: string): Promise<string | null>;
+  listNames(dir: string): Promise<string[]>;
+  write(rel: string, text: string): Promise<void>;
+  remove(rel: string): Promise<void>;
+};
+
+const fsBackend: StorageBackend = {
+  kind: "fs",
+
+  async read(rel) {
+    try {
+      return await fs.readFile(path.join(DATA_ROOT, rel), "utf-8");
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException)?.code === "ENOENT") return null;
+      throw err;
+    }
+  },
+
+  async listNames(dir) {
+    try {
+      return await fs.readdir(path.join(DATA_ROOT, dir));
+    } catch (err) {
+      if ((err as NodeJS.ErrnoException)?.code === "ENOENT") return [];
+      throw err;
+    }
+  },
+
+  async write(rel, text) {
+    const full = path.join(DATA_ROOT, rel);
+    await fs.mkdir(path.dirname(full), { recursive: true });
+    await fs.writeFile(full, text, "utf-8");
+  },
+
+  async remove(rel) {
+    // Already gone is the outcome we wanted.
+    await fs.unlink(path.join(DATA_ROOT, rel)).catch(() => {});
+  },
+};
+
+const blobBackend: StorageBackend = {
+  kind: "blob",
+
+  async read(rel) {
+    try {
+      // `useCache: false` reads origin storage rather than the CDN. Blob's edge
+      // cache cannot be set below a minute, and a store that serves content up
+      // to a minute stale right after a save is the bug this backend exists to
+      // fix — so the shard layer opts out of the cache entirely.
+      const res = await get(BLOB_PREFIX + rel, { access: "private", useCache: false });
+      // null is how `get` reports a blob that is not there; a 304 needs an
+      // ifNoneMatch we never send, so it only shows up as a type possibility.
+      if (!res || res.statusCode !== 200) return null;
+      return await new Response(res.stream).text();
+    } catch (err) {
+      if (err instanceof BlobNotFoundError) return null;
+      throw err;
+    }
+  },
+
+  async listNames(dir) {
+    const prefix = `${BLOB_PREFIX}${dir}/`;
+    const names: string[] = [];
+    let cursor: string | undefined;
+    // A collection is far short of the 1000-per-page default, but paginating is
+    // three lines and a silently truncated listing would read as deleted
+    // records.
+    do {
+      const page = await list({ prefix, cursor });
+      for (const blob of page.blobs) names.push(blob.pathname.slice(prefix.length));
+      cursor = page.hasMore ? page.cursor : undefined;
+    } while (cursor);
+    return names;
+  },
+
+  async write(rel, text) {
+    // Private, and the store itself must be created that way: a Blob store's
+    // access mode is fixed at creation and applies to everything in it. It has
+    // to be private here because the shards include captured leads — visitor
+    // names and phone numbers — and a public blob is readable by anyone who can
+    // derive its URL, which with addRandomSuffix off is every one of these.
+    // Uploaded images share the store and are therefore private too; they are
+    // delivered through src/app/uploads/caterer/[filename] rather than by URL.
+    await put(BLOB_PREFIX + rel, text, {
+      access: "private",
+      addRandomSuffix: false,
+      allowOverwrite: true,
+      contentType: "application/json",
+    });
+  },
+
+  async remove(rel) {
+    await del(BLOB_PREFIX + rel).catch(() => {});
+  },
+};
+
+// Blob is chosen by whether a store is attached rather than by VERCEL, so a
+// production deploy and a local `vercel env pull` behave the same way, and a
+// container with a mounted volume keeps the fs backend by simply not attaching
+// one.
+//
+// Resolved on first use and then memoised, not at module load: the admin gate
+// reads its env per request for the same reason, and a module evaluated before
+// the platform has injected the environment would otherwise pin the wrong
+// backend for the life of the instance.
+let backend: StorageBackend | null = null;
+
+function storage(): StorageBackend {
+  return (backend ??= isBlobConfigured() ? blobBackend : fsBackend);
+}
+
+// ---------------------------------------------------------------------------
 // Singleton State
 // ---------------------------------------------------------------------------
 
@@ -475,6 +607,14 @@ type StoreState = {
   // whose contents actually changed. Empty until hydration fills it, which is
   // what makes the first write after a legacy read flush every shard.
   shards: Map<string, string>;
+  // The manifest revision this snapshot was built from, and when storage was
+  // last consulted about it. Together they bound how stale a read can be — see
+  // revalidate().
+  rev: string | null;
+  checkedAt: number;
+  // Saves in flight. Revalidation may not swap `data` out from under a mutator
+  // that is midway through editing it.
+  writesInFlight: number;
 };
 
 declare global {
@@ -489,23 +629,32 @@ function getState(): StoreState {
       hydration: null,
       writeQueue: Promise.resolve(),
       shards: new Map(),
+      rev: null,
+      checkedAt: 0,
+      writesInFlight: 0,
     };
   }
   // A dev-server hot reload can carry a state object created before `shards`
   // existed; without this the first save throws on an undefined Map.
-  globalThis.__catererStore__.shards ??= new Map();
-  return globalThis.__catererStore__;
+  const state = globalThis.__catererStore__;
+  state.shards ??= new Map();
+  state.rev ??= null;
+  state.checkedAt ??= 0;
+  state.writesInFlight ??= 0;
+  return state;
 }
 
 // ---------------------------------------------------------------------------
 // Low-level Read / Write Snapshot
 // ---------------------------------------------------------------------------
 
-// Read one shard by store-relative path. A missing shard is `null`, never a
-// throw — a half-written store degrades to its defaults rather than 500ing.
+// Read one shard by store-relative path. A shard that is absent, or present but
+// unparseable, is `null` — a half-written store degrades to its defaults rather
+// than 500ing. A storage error is not caught here: see StorageBackend.read.
 async function readShard(rel: string): Promise<{ text: string; value: unknown } | null> {
+  const text = await storage().read(rel);
+  if (text === null) return null;
   try {
-    const text = await fs.readFile(path.join(DATA_ROOT, rel), "utf-8");
     return { text, value: JSON.parse(text) };
   } catch {
     return null;
@@ -517,22 +666,13 @@ async function readShard(rel: string): Promise<{ text: string; value: unknown } 
 async function readCollectionShards(
   dir: string
 ): Promise<{ rel: string; text: string; value: unknown }[]> {
-  let names: string[];
-  try {
-    names = await fs.readdir(path.join(DATA_ROOT, dir));
-  } catch {
-    return [];
-  }
+  const names = await storage().listNames(dir);
   const read = await mapWithConcurrency(
     names.filter((n) => n.endsWith(".json")),
     READ_CONCURRENCY,
     async (name) => {
-      try {
-        const text = await fs.readFile(path.join(DATA_ROOT, dir, name), "utf-8");
-        return { rel: `${dir}/${name}`, text, value: JSON.parse(text) as unknown };
-      } catch {
-        return null;
-      }
+      const shard = await readShard(`${dir}/${name}`);
+      return shard && { rel: `${dir}/${name}`, text: shard.text, value: shard.value };
     }
   );
   return read.filter((r) => r !== null);
@@ -540,11 +680,8 @@ async function readCollectionShards(
 
 // The single-file store this layout replaced. Returns null when there is none.
 async function readLegacySnapshot(): Promise<Partial<CatererStoreData> | null> {
-  try {
-    return JSON.parse(await fs.readFile(LEGACY_DATA_FILE, "utf-8")) as Partial<CatererStoreData>;
-  } catch {
-    return null;
-  }
+  const shard = await readShard(LEGACY_DATA_FILE);
+  return (shard?.value as Partial<CatererStoreData> | undefined) ?? null;
 }
 
 type LoadedSnapshot = {
@@ -693,9 +830,6 @@ function normaliseSnapshot(snap: Partial<CatererStoreData> | null): CatererStore
 // is what turns "save the store" into "write the one record that changed".
 function buildShardMap(data: CatererStoreData): Map<string, string> {
   const shards = new Map<string, string>();
-  // Content-stable on purpose: a manifest carrying a timestamp or a record count
-  // would differ on every save and add a second write to each edit.
-  shards.set(MANIFEST_PATH, JSON.stringify({ version: SHARD_VERSION }, null, 2));
 
   for (const name of SHARDED_COLLECTIONS) {
     for (const record of data[name] as { id: string }[]) {
@@ -705,21 +839,34 @@ function buildShardMap(data: CatererStoreData): Map<string, string> {
   for (const [section, file] of Object.entries(SINGLETON_FILES)) {
     shards.set(file, JSON.stringify(data[section as SingletonSection], null, 2));
   }
+
+  // The manifest carries a digest of every other shard, so one small read tells
+  // an instance whether the copy it hydrated is still current — see
+  // revalidate(). It is a content hash rather than a timestamp so that a save
+  // which changes nothing also changes no shard, and the diff in writeToStorage
+  // still collapses to zero writes.
+  shards.set(MANIFEST_PATH, JSON.stringify({ version: SHARD_VERSION, rev: revisionOf(shards) }, null, 2));
   return shards;
 }
 
-async function writeShard(rel: string, text: string): Promise<void> {
-  const full = path.join(DATA_ROOT, rel);
-  await fs.mkdir(path.dirname(full), { recursive: true });
-  await fs.writeFile(full, text, "utf-8");
+function revisionOf(shards: Map<string, string>): string {
+  const hash = crypto.createHash("sha1");
+  for (const rel of [...shards.keys()].sort()) {
+    hash.update(rel).update("\0").update(shards.get(rel)!).update("\0");
+  }
+  return hash.digest("hex").slice(0, 16);
+}
+
+function revisionIn(manifest: unknown): string | null {
+  const rev = (manifest as { rev?: unknown } | null)?.rev;
+  return typeof rev === "string" ? rev : null;
 }
 
 async function deleteShards(rels: string[]): Promise<void> {
-  await mapWithConcurrency(rels, WRITE_CONCURRENCY, async (rel) => {
-    // Already gone is the outcome we wanted; anything else is not worth failing
-    // the save the caller already applied in memory.
-    await fs.unlink(path.join(DATA_ROOT, rel)).catch(() => {});
-  });
+  // Already gone is the outcome we wanted; anything else is not worth failing
+  // the save the caller already applied in memory — StorageBackend.remove
+  // swallows both.
+  await mapWithConcurrency(rels, WRITE_CONCURRENCY, (rel) => storage().remove(rel));
 }
 
 async function writeToStorage(data: CatererStoreData): Promise<void> {
@@ -731,12 +878,23 @@ async function writeToStorage(data: CatererStoreData): Promise<void> {
   const removed = [...previous.keys()].filter((rel) => !desired.has(rel));
   if (!changed.length && !removed.length) return;
 
-  await mapWithConcurrency(changed, WRITE_CONCURRENCY, ([rel, text]) => writeShard(rel, text));
+  // The manifest goes last, on its own. It is what another instance reads to
+  // decide whether to re-hydrate, so publishing the new revision before the
+  // records behind it have landed would invite exactly the stale-then-correct
+  // flicker this is here to remove.
+  const records = changed.filter(([rel]) => rel !== MANIFEST_PATH);
+  await mapWithConcurrency(records, WRITE_CONCURRENCY, ([rel, text]) => storage().write(rel, text));
   if (removed.length) await deleteShards(removed);
+  const manifest = desired.get(MANIFEST_PATH)!;
+  if (previous.get(MANIFEST_PATH) !== manifest) await storage().write(MANIFEST_PATH, manifest);
 
   // Only after every write landed. A throw above leaves the baseline stale, so
   // the next save re-attempts the whole diff instead of assuming it succeeded.
   state.shards = desired;
+  // This instance is by definition current with what it just wrote, so its
+  // freshness window restarts here rather than at the last hydration.
+  state.rev = revisionIn(JSON.parse(manifest));
+  state.checkedAt = Date.now();
 }
 
 // The hydrated snapshot lives on globalThis, so it outlives a hot reload: a dev
@@ -758,29 +916,117 @@ function backfillSections(data: CatererStoreData): CatererStoreData {
   return data;
 }
 
-function ensureHydrated(): Promise<void> {
+// How long a hydrated snapshot is trusted before storage is asked whether it has
+// moved on. The check reads the manifest and nothing else, so it costs one small
+// request; what it buys is that a save made on one serverless instance reaches
+// every other within this window, instead of surviving there until its next cold
+// start. That staleness is what made saved packages look like they vanished:
+// the instance that took the edit had it, the instance that answered the next
+// page load did not.
+const REVALIDATE_MS = 10_000;
+
+// Stands in for "this snapshot cannot be trusted". It is not a valid revision —
+// those are hex — so revalidate() always finds it different from what storage
+// reports and rebuilds.
+const STALE_REV = " stale";
+
+function revFromBaseline(baseline: Map<string, string>): string | null {
+  const text = baseline.get(MANIFEST_PATH);
+  if (!text) return null;
+  try {
+    return revisionIn(JSON.parse(text));
+  } catch {
+    return null;
+  }
+}
+
+function hydrate(): Promise<void> {
   const s = getState();
   if (!s.hydration) {
     s.hydration = (async () => {
       const { data, baseline } = await readFromStorage();
       s.data = data;
       s.shards = baseline;
-    })();
+      s.rev = revFromBaseline(baseline);
+      s.checkedAt = Date.now();
+    })().catch((err) => {
+      // A rejected hydration must not stay cached, or one failed storage call
+      // would poison this instance for every request that follows it.
+      s.hydration = null;
+      throw err;
+    });
   }
-  return s.hydration.then(() => {
-    if (s.data) backfillSections(s.data);
-  });
+  return s.hydration;
+}
+
+// Refresh the snapshot if storage has moved on since it was taken. Errors are
+// swallowed: an instance holding a slightly stale copy should keep serving it
+// rather than 500 because one manifest read failed. `checkedAt` is left alone in
+// that case, so the next request tries again.
+async function revalidate(): Promise<void> {
+  const s = getState();
+  if (s.writesInFlight > 0) return;
+  if (Date.now() - s.checkedAt < REVALIDATE_MS) return;
+
+  try {
+    const manifest = await readShard(MANIFEST_PATH);
+    const rev = revisionIn(manifest?.value);
+    if (s.writesInFlight > 0) return;
+    s.checkedAt = Date.now();
+    if (rev === s.rev) return;
+
+    // Read fully, then swap in one go. Clearing `s.hydration` and re-running it
+    // instead would let a request still awaiting the previous hydration land its
+    // older snapshot on top of this one.
+    const { data, baseline } = await readFromStorage();
+    if (s.writesInFlight > 0) return;
+    s.data = data;
+    s.shards = baseline;
+    s.rev = revFromBaseline(baseline);
+    s.checkedAt = Date.now();
+  } catch {
+    return;
+  }
+}
+
+async function ensureHydrated(): Promise<void> {
+  const s = getState();
+  await hydrate();
+  await revalidate();
+  if (s.data) backfillSections(s.data);
 }
 
 function mutateStore<T>(mutator: (data: CatererStoreData) => T | Promise<T>): Promise<T> {
   const s = getState();
-  let result: T;
-  s.writeQueue = s.writeQueue.then(async () => {
+  const run = s.writeQueue.then(async () => {
+    // Before the flag goes up, so a save that follows another instance's edit
+    // starts from that edit rather than overwriting the store's view of it.
     await ensureHydrated();
-    result = await mutator(s.data!);
-    await writeToStorage(s.data!);
+    s.writesInFlight++;
+    try {
+      const result = await mutator(s.data!);
+      await writeToStorage(s.data!);
+      return result;
+    } catch (err) {
+      // The mutator has already applied its change in memory. If the write did
+      // not land, that change is a phantom the admin would be shown as saved —
+      // so mark the snapshot stale and let the next read rebuild it from
+      // storage. A sentinel rather than null, because null is also the honest
+      // revision of a store that has never been written.
+      s.rev = STALE_REV;
+      s.checkedAt = 0;
+      throw err;
+    } finally {
+      s.writesInFlight--;
+    }
   });
-  return s.writeQueue.then(() => result);
+  // The queue must stay chainable whichever way this settles: one failed save
+  // rejecting it would block every save after it for the life of the instance.
+  s.writeQueue = run.then(
+    () => undefined,
+    () => undefined
+  );
+  return run;
 }
 
 // ---------------------------------------------------------------------------

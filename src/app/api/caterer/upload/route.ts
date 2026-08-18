@@ -1,8 +1,15 @@
-// Image upload — writes to `public/uploads/caterer/` and returns the path the
-// image is served from. Needs a writable, persistent filesystem, same as the
-// JSON store in src/lib/caterer/store.ts.
+// Image upload — stores the file and returns the URL it is served from.
+//
+// Where it lands follows the JSON store in src/lib/caterer/store.ts: Vercel Blob
+// when a Blob store is attached, `public/uploads/caterer/` on disk when none
+// is. Either way the URL handed back is the same site-relative
+// `/uploads/caterer/<filename>`, served by src/app/uploads/caterer/[filename].
+// Records therefore hold no backend-specific URL, and moving a site between
+// disk and Blob does not rewrite a single stored image path.
 import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/auth";
+import { put } from "@vercel/blob";
+import { isBlobConfigured } from "@/lib/caterer/blob";
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -68,6 +75,24 @@ export async function POST(req: Request) {
     const ext = extMatch ? extMatch[0].toLowerCase() : ".jpg";
     const randomHash = crypto.randomBytes(6).toString("hex");
     const filename = `${kind}_${Date.now()}_${randomHash}${ext}`;
+
+    if (isBlobConfigured()) {
+      // Private, because a Blob store's access mode is fixed at creation and
+      // covers everything in it — and the same store holds the content shards,
+      // which include captured leads. Private blobs are delivered through our
+      // own route rather than by URL, which is what serves them.
+      //
+      // The filename already carries a timestamp and six random bytes, so
+      // addRandomSuffix would only make it longer. allowOverwrite covers the
+      // retry of a request whose response was lost.
+      await put(`caterer/uploads/${filename}`, buffer, {
+        access: "private",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType: mimeType,
+      });
+      return NextResponse.json({ url: `/uploads/caterer/${filename}` });
+    }
 
     // The URL returned here is served by src/app/uploads/caterer/[filename] —
     // Next indexes public/ at build time and 404s anything added later, so a

@@ -36,50 +36,78 @@ warning. Production returns 503 until you configure one.
 
 ## Persistence
 
-Everything lives on the app's own disk — there is no database and no object
-store at runtime:
+There is no database. Content is JSON files, one per record, kept either in
+Vercel Blob or on the app's own disk — whether a Blob store is attached decides
+which, and nothing above the storage layer knows the difference:
 
-| Path | Contents |
-| --- | --- |
-| `data/caterer/` | All CMS content, one JSON file per record (`src/lib/caterer/store.ts`) |
-| `public/uploads/caterer/` | Uploaded images, named `<kind>_<timestamp>_<hash>.<ext>` |
+| | Blob store attached | none |
+| --- | --- | --- |
+| CMS content (`src/lib/caterer/store.ts`) | `caterer/…` in Blob | `data/caterer/` |
+| Uploaded images | `caterer/uploads/` in Blob | `public/uploads/caterer/` |
+
+Attach one on serverless hosting; leave it off locally, or on a host with a
+persistent volume. Connecting a store in the Vercel dashboard is the whole
+configuration — it sets `BLOB_STORE_ID` (with a rotating `VERCEL_OIDC_TOKEN`) or
+a long-lived `BLOB_READ_WRITE_TOKEN`, and `src/lib/caterer/blob.ts` treats
+either as the switch. `VERCEL_OIDC_TOKEN` alone is not it: Vercel sets that on
+every project, Blob store or not.
+
+**The Blob store must be created with private access.** A store's access mode is
+fixed at creation and applies to everything in it, and these shards include
+captured leads — visitor names and phone numbers — which a public store would
+expose to anyone who can derive a blob URL. Uploaded images share the store and
+are therefore private too, so they are delivered through
+`src/app/uploads/caterer/[filename]/route.ts` instead of by blob URL. That route
+already existed for the disk backend, and it answers for both.
+
+Either way an upload returns the same site-relative `/uploads/caterer/<file>`,
+so records hold no backend-specific URL and moving between disk and Blob
+rewrites no stored image path.
 
 Content is **sharded**: one JSON file per record, so a save rewrites only the
 record that changed rather than the whole catalogue.
 
 ```
-data/caterer/
-├── manifest.json              marks the store as initialised
-├── packages/pkg-silver.json   one file per package
-├── gallery/gal-1.json         …per gallery item, venue, cuisine,
-├── venues/ven-1.json             service, feature, testimonial, lead
-├── about.json                 single-record sections
-├── settings.json
-└── site.json
+manifest.json              marks the store as initialised, and carries `rev`
+packages/pkg-silver.json   one file per package
+gallery/gal-1.json         …per gallery item, venue, cuisine,
+venues/ven-1.json             service, feature, testimonial, lead
+about.json                 single-record sections
+settings.json
+site.json
 ```
 
-`manifest.json` is what tells an empty `cuisines/` directory apart from a store
+`manifest.json` is what tells an empty `cuisines/` collection apart from a store
 that has never been written — without it the first read cannot know whether to
 seed from defaults or respect a collection the owner deliberately emptied.
+
+It also carries `rev`, a digest of every other shard. A running instance holds
+its snapshot in memory, and re-reads only the manifest — once every 10s at most
+— to find out whether storage has moved on. That is what keeps several
+serverless instances in step: without it, the instance that took an edit has it
+and the instance answering the next page load serves its own older copy, which
+is exactly what a saved package vanishing on refresh looks like. The manifest is
+written last in a save, so a new `rev` never becomes visible before the records
+behind it.
 
 A store still in the old single-file `content.json` layout is read once and
 re-sharded on its next write, so no manual migration is needed.
 
-Both paths are gitignored, and both must survive a restart, so **deploy
-somewhere with a persistent filesystem** — a VPS, or a container with those two
-paths on a mounted volume. Serverless hosting does not work: on Vercel
-`process.cwd()` is a read-only `/var/task`, so image uploads fail outright, and
-the store falls back to `/tmp` where every edit is lost on the next cold start.
+Back up by copying the store (`vercel blob` CLI, or the `data/caterer/`
+directory); restore by putting it back. If the store is missing on boot the app
+serves the seed content in `INITIAL_DEFAULTS` and writes fresh shards on the
+first edit.
 
-Back up by copying those two paths; restore by putting them back. If
-`data/caterer/` is missing on boot the store serves the seed content in
-`INITIAL_DEFAULTS` and writes fresh shards on the first edit.
+`src/app/uploads/caterer/[filename]/route.ts` serves uploads on both backends,
+for a different reason each time. On Blob, a private blob has no public URL, so
+delivery through a function is the only way. On disk, Next indexes `public/`
+when the app is **built**, so under `next start` a file written after that point
+404s — the console would report a successful upload and the photo would never
+appear until the next rebuild. The route reads per request, so it doesn't.
 
-Uploaded images are served by `src/app/uploads/caterer/[filename]/route.ts`,
-not by Next's static handling of `public/`. Next indexes `public/` when the app
-is **built**, so under `next start` a file written after that point 404s — the
-console would report a successful upload and the photo would never appear until
-the next rebuild. The route reads the directory per request, so it doesn't.
+Filenames carry a timestamp and a random hash and are never reused, so the route
+answers with `immutable` and a one-year max-age. On Blob that is also what keeps
+a page of photos from costing one function invocation per image per visit.
 
 ### Seeding
 
@@ -93,10 +121,11 @@ genuine content on the live site (invented reviews, venues nobody had booked)
 and reappeared on every fresh deploy. Anything added here is published as if the
 owner had entered it.
 
-On a read-only host this file is not a fallback but the whole content layer: the
-store cannot persist admin edits there, so what is in here is what the deployed
-site serves. An empty seed on Vercel means an empty site and an admin console
-reading 0 in every tab.
+On a host where the store cannot persist — serverless with no Blob store
+attached — this file stops being a fallback and becomes the whole
+content layer, because every admin edit is discarded on the next cold start.
+What is in here is then what the deployed site serves, and an empty seed means an
+empty site with an admin console reading 0 in every tab.
 
 To materialise the seed files up front for local development:
 
