@@ -16,26 +16,71 @@
 // pool to size, nothing to wake up, no cold-start penalty on the first query.
 import "server-only";
 
-// Upstash's own variable names, and the ones Vercel's marketplace integration
-// injects for the same store. Either pair is the switch.
-function restUrl(): string | undefined {
-  return (
-    process.env.UPSTASH_REDIS_REST_URL?.trim() ||
-    process.env.KV_REST_API_URL?.trim() ||
-    undefined
-  );
+// FINDING THE CREDENTIALS.
+//
+// Upstash's own names are UPSTASH_REDIS_REST_URL / _TOKEN, and Vercel's KV
+// integration used KV_REST_API_URL / _TOKEN. But connecting the store through
+// Vercel's marketplace offers a "custom prefix" that renames everything it
+// injects, so the pair can arrive called anything at all — and a deployment
+// whose variables are spelled unexpectedly would silently fall through to
+// another backend and serve the seed.
+//
+// So: the known names first, then whatever pair the environment actually holds,
+// recognised by the URL pointing at upstash.io and a token sitting under the
+// same prefix. Two candidate pairs is refused rather than guessed — picking the
+// wrong store would write this site's content into another one.
+type RedisCredentials = { url: string; token: string };
+
+const KNOWN_PAIRS: [string, string][] = [
+  ["UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN"],
+  ["KV_REST_API_URL", "KV_REST_API_TOKEN"],
+];
+
+// The token that belongs with a URL variable, tried in the order the
+// integrations name them: <PREFIX>_REST_API_TOKEN beside a _REST_API_URL,
+// <PREFIX>_TOKEN beside a plain _URL.
+const TOKEN_SUFFIXES = ["_REST_API_TOKEN", "_REST_TOKEN", "_TOKEN"];
+
+function isUpstashUrl(value: string | undefined): boolean {
+  return Boolean(value && /^https:\/\/[^\s]+\.upstash\.io\/?$/.test(value.trim()));
 }
 
-function restToken(): string | undefined {
-  return (
-    process.env.UPSTASH_REDIS_REST_TOKEN?.trim() ||
-    process.env.KV_REST_API_TOKEN?.trim() ||
-    undefined
-  );
+function discoverPairs(): RedisCredentials[] {
+  const found: RedisCredentials[] = [];
+  for (const [key, value] of Object.entries(process.env)) {
+    if (!key.endsWith("_URL") || !isUpstashUrl(value)) continue;
+    const prefix = key.replace(/_REST_API_URL$|_REST_URL$|_URL$/, "");
+    for (const suffix of TOKEN_SUFFIXES) {
+      const token = process.env[`${prefix}${suffix}`]?.trim();
+      if (token) {
+        found.push({ url: value!.trim(), token });
+        break;
+      }
+    }
+  }
+  return found;
+}
+
+export function redisCredentials(): RedisCredentials | null {
+  for (const [urlKey, tokenKey] of KNOWN_PAIRS) {
+    const url = process.env[urlKey]?.trim();
+    const token = process.env[tokenKey]?.trim();
+    if (url && token) return { url, token };
+  }
+
+  const discovered = discoverPairs();
+  if (discovered.length === 1) return discovered[0];
+  if (discovered.length > 1) {
+    throw new Error(
+      "More than one Upstash Redis credential pair is present in the environment. " +
+        "Set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN explicitly to say which store this site uses."
+    );
+  }
+  return null;
 }
 
 export function isRedisConfigured(): boolean {
-  return Boolean(restUrl() && restToken());
+  return redisCredentials() !== null;
 }
 
 // Every key this app owns starts with this, so one Upstash database can hold
@@ -72,13 +117,13 @@ type RedisReply = { result?: unknown; error?: string };
 // One command, one round trip. Upstash answers 200 with {"error": …} for a
 // command Redis rejected, so a non-ok status is not the only failure to check.
 export async function redisCommand<T = unknown>(args: (string | number)[]): Promise<T> {
-  const url = restUrl();
-  const token = restToken();
-  if (!url || !token) {
+  const credentials = redisCredentials();
+  if (!credentials) {
     throw new Error(
       "Upstash Redis is not configured: set UPSTASH_REDIS_REST_URL and UPSTASH_REDIS_REST_TOKEN."
     );
   }
+  const { url, token } = credentials;
 
   const res = await fetch(url, {
     method: "POST",
