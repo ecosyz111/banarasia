@@ -28,7 +28,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { BlobNotFoundError, del, get, list, put } from "@vercel/blob";
 import { isBlobConfigured } from "./blob";
-import { isPostgresConfigured, pgQuery } from "./pg";
+import { isPostgresConfigured, pgQuery, shardTable } from "./pg";
 import SEED from "./seed-data.json";
 
 // ---------------------------------------------------------------------------
@@ -711,7 +711,7 @@ const pgBackend: StorageBackend = {
 
   async read(rel) {
     const rows = await pgQuery<{ content: string }>(
-      "SELECT content FROM caterer_shard WHERE path = $1",
+      `SELECT content FROM ${shardTable()} WHERE path = $1`,
       [rel]
     );
     return rows[0]?.content ?? null;
@@ -723,7 +723,7 @@ const pgBackend: StorageBackend = {
     // user-supplied — it is one of the collection names — but it is passed as a
     // parameter rather than interpolated all the same.
     const rows = await pgQuery<{ path: string }>(
-      "SELECT path FROM caterer_shard WHERE path LIKE $1 ORDER BY path",
+      `SELECT path FROM ${shardTable()} WHERE path LIKE $1 ORDER BY path`,
       [`${dir}/%`]
     );
     return rows.map((row) => row.path.slice(dir.length + 1));
@@ -731,7 +731,7 @@ const pgBackend: StorageBackend = {
 
   async write(rel, text) {
     await pgQuery(
-      `INSERT INTO caterer_shard (path, content, updated_at)
+      `INSERT INTO ${shardTable()} (path, content, updated_at)
        VALUES ($1, $2, now())
        ON CONFLICT (path) DO UPDATE
          SET content = EXCLUDED.content, updated_at = now()`,
@@ -740,7 +740,7 @@ const pgBackend: StorageBackend = {
   },
 
   async remove(rel) {
-    await pgQuery("DELETE FROM caterer_shard WHERE path = $1", [rel]);
+    await pgQuery(`DELETE FROM ${shardTable()} WHERE path = $1`, [rel]);
   },
 };
 

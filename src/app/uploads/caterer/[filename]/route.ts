@@ -22,7 +22,7 @@
 import { NextResponse } from "next/server";
 import { get } from "@vercel/blob";
 import { isBlobConfigured } from "@/lib/caterer/blob";
-import { isPostgresConfigured, pgQuery } from "@/lib/caterer/pg";
+import { isPostgresConfigured, pgQuery, uploadTable } from "@/lib/caterer/pg";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -65,7 +65,7 @@ export async function GET(
   if (isPostgresConfigured()) {
     try {
       const rows = await pgQuery<{ content_type: string; bytes: Buffer }>(
-        "SELECT content_type, bytes FROM caterer_upload WHERE name = $1",
+        `SELECT content_type, bytes FROM ${uploadTable()} WHERE name = $1`,
         [filename]
       );
       const row = rows[0];

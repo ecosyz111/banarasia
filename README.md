@@ -55,6 +55,12 @@ it injects `DATABASE_URL`, and `src/lib/caterer/pg.ts` creates the two tables on
 first use. There is no migration step, and the inert Prisma models play no part
 (the build only runs `prisma migrate deploy` when `PRISMA_MIGRATE=1`).
 
+The tables live in the `caterer_cms` schema, and `CATERER_PG_SCHEMA` moves them.
+Set it when one database is shared with another site — two deployments of this
+codebase would otherwise both want `caterer_shard` in the same schema and would
+serve each other's content. Changing it later does not move records; it hides
+them behind an empty store that then seeds itself.
+
 Blob works, but costs more than it looks on a Hobby plan, which meters it by
 operation: one object per record, read uncached so a save is visible at once, is
 an operation-hungry shape. It ran a Hobby account's monthly allowance out in a

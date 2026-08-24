@@ -11,7 +11,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/auth";
 import { put } from "@vercel/blob";
 import { isBlobConfigured } from "@/lib/caterer/blob";
-import { isPostgresConfigured, pgQuery } from "@/lib/caterer/pg";
+import { isPostgresConfigured, pgQuery, uploadTable } from "@/lib/caterer/pg";
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -85,7 +85,7 @@ export async function POST(req: Request) {
     // site will ever hold.
     if (isPostgresConfigured()) {
       await pgQuery(
-        `INSERT INTO caterer_upload (name, content_type, bytes)
+        `INSERT INTO ${uploadTable()} (name, content_type, bytes)
          VALUES ($1, $2, $3)
          ON CONFLICT (name) DO UPDATE
            SET content_type = EXCLUDED.content_type, bytes = EXCLUDED.bytes`,

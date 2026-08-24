@@ -25,6 +25,43 @@ export function isPostgresConfigured(): boolean {
   return Boolean(postgresUrl());
 }
 
+// Which schema the two tables live in.
+//
+// One free Postgres instance is often shared by several sites — this one came
+// out of a database attached to a different project — and two deployments of
+// this same codebase would otherwise both want `caterer_shard` in `public` and
+// silently serve each other's content. A schema per site keeps them apart, and
+// costs nothing when a database is not shared.
+//
+// Change it only with data in mind: pointing a live deployment at a different
+// schema does not move its records, it hides them behind an empty store that
+// then seeds itself.
+const DEFAULT_SCHEMA = "caterer_cms";
+
+// Interpolated into DDL, so it is checked rather than trusted: lowercase ASCII
+// identifier, which is also the only form that survives Postgres folding an
+// unquoted name.
+const SAFE_IDENTIFIER = /^[a-z_][a-z0-9_]{0,62}$/;
+
+export function pgSchema(): string {
+  const configured = process.env.CATERER_PG_SCHEMA?.trim().toLowerCase();
+  if (!configured) return DEFAULT_SCHEMA;
+  if (!SAFE_IDENTIFIER.test(configured)) {
+    throw new Error(
+      `CATERER_PG_SCHEMA must be a lowercase identifier (letters, digits, underscore), got: ${configured}`
+    );
+  }
+  return configured;
+}
+
+export function shardTable(): string {
+  return `${pgSchema()}.caterer_shard`;
+}
+
+export function uploadTable(): string {
+  return `${pgSchema()}.caterer_upload`;
+}
+
 // One pool per instance, created on first use rather than at module load: the
 // backend picker has the same rule, and a module evaluated before the platform
 // has injected the environment would otherwise pin the wrong connection — or
@@ -71,13 +108,15 @@ let schemaReady: Promise<void> | null = null;
 export function ensureSchema(): Promise<void> {
   return (schemaReady ??= (async () => {
     try {
+      const schema = pgSchema();
       await getPool().query(`
-        CREATE TABLE IF NOT EXISTS caterer_shard (
+        CREATE SCHEMA IF NOT EXISTS ${schema};
+        CREATE TABLE IF NOT EXISTS ${schema}.caterer_shard (
           path       text PRIMARY KEY,
           content    text NOT NULL,
           updated_at timestamptz NOT NULL DEFAULT now()
         );
-        CREATE TABLE IF NOT EXISTS caterer_upload (
+        CREATE TABLE IF NOT EXISTS ${schema}.caterer_upload (
           name         text PRIMARY KEY,
           content_type text NOT NULL,
           bytes        bytea NOT NULL,
