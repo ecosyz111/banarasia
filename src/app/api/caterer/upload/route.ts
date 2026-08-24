@@ -12,6 +12,7 @@ import { requireAdmin } from "@/lib/admin/auth";
 import { put } from "@vercel/blob";
 import { isBlobConfigured } from "@/lib/caterer/blob";
 import { isPostgresConfigured, pgQuery, uploadTable } from "@/lib/caterer/pg";
+import { isRedisConfigured, redisCommand, uploadKey } from "@/lib/caterer/redis";
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -34,6 +35,11 @@ const ALLOWED_TYPES = new Set([
 //
 // SVG stays off the allow-list even for logos — it can carry script and is
 // served from our own origin.
+// Upstash's REST request limit on the free plan is 1 MB, and base64 inflates a
+// file by about a third; 700 KB of image stays inside that with room for the
+// envelope. Only the Redis backend is bound by it.
+const MAX_REDIS_UPLOAD_BYTES = 700 * 1024;
+
 const KINDS = ["gallery", "logo", "venue", "cuisine", "service", "feature", "site"] as const;
 
 type UploadKind = (typeof KINDS)[number];
@@ -77,6 +83,35 @@ export async function POST(req: Request) {
     const ext = extMatch ? extMatch[0].toLowerCase() : ".jpg";
     const randomHash = crypto.randomBytes(6).toString("hex");
     const filename = `${kind}_${Date.now()}_${randomHash}${ext}`;
+
+    // Same precedence as the content store, Redis first.
+    //
+    // Upstash caps the size of a single REST request, and base64 adds a third
+    // on top of the file, so an image that would be refused by the store is
+    // refused here with a size the person uploading can act on — rather than
+    // as an opaque failure from the far end.
+    if (isRedisConfigured()) {
+      if (buffer.byteLength > MAX_REDIS_UPLOAD_BYTES) {
+        return NextResponse.json(
+          {
+            error:
+              `Image is ${Math.round(buffer.byteLength / 1024)} KB. This deployment stores ` +
+              `images in Redis, which takes up to ${Math.round(MAX_REDIS_UPLOAD_BYTES / 1024)} KB — ` +
+              `please resize it, or link the image by URL instead.`,
+          },
+          { status: 413 }
+        );
+      }
+      // Redis over REST carries JSON, so the bytes travel as base64. The
+      // content type rides in the same value: one key, one round trip, and no
+      // way for the two to be written apart.
+      await redisCommand([
+        "SET",
+        uploadKey(filename),
+        JSON.stringify({ contentType: mimeType, base64: buffer.toString("base64") }),
+      ]);
+      return NextResponse.json({ url: `/uploads/caterer/${filename}` });
+    }
 
     // Same precedence as the content store: Postgres first, so a project moved
     // off Blob keeps its uploads working even with BLOB_STORE_ID still sitting

@@ -23,6 +23,7 @@ import { NextResponse } from "next/server";
 import { get } from "@vercel/blob";
 import { isBlobConfigured } from "@/lib/caterer/blob";
 import { isPostgresConfigured, pgQuery, uploadTable } from "@/lib/caterer/pg";
+import { isRedisConfigured, redisCommand, uploadKey } from "@/lib/caterer/redis";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -60,6 +61,31 @@ export async function GET(
   // over: it is what keeps a page of photos from costing a function invocation
   // per image on every visit.
   const cacheControl = "public, max-age=31536000, immutable";
+
+  // Redis first, matching the uploader and the content store.
+  if (isRedisConfigured()) {
+    try {
+      const stored = await redisCommand<string | null>(["GET", uploadKey(filename)]);
+      if (!stored) return new NextResponse("Not found", { status: 404 });
+      const { contentType: storedType, base64 } = JSON.parse(stored) as {
+        contentType?: string;
+        base64: string;
+      };
+      const bytes = Buffer.from(base64, "base64");
+      return new NextResponse(new Uint8Array(bytes), {
+        headers: {
+          "Content-Type": storedType || contentType,
+          "Cache-Control": cacheControl,
+          "Content-Length": String(bytes.byteLength),
+        },
+      });
+    } catch (err) {
+      // A store that will not answer is a real failure, and must not be dressed
+      // up as a 404 the browser will then cache for a year.
+      console.error("GET /uploads/caterer error:", err);
+      return new NextResponse("Upload store unavailable", { status: 503 });
+    }
+  }
 
   // Postgres first, matching the uploader and the content store.
   if (isPostgresConfigured()) {

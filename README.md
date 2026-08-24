@@ -40,15 +40,31 @@ Content is one record per shard, behind four primitives (`read`, `listNames`,
 `write`, `remove`) with three implementations. Nothing above the storage layer
 knows which one is carrying it:
 
-| | `DATABASE_URL` set | Blob store attached | neither |
-| --- | --- | --- | --- |
-| CMS content (`src/lib/caterer/store.ts`) | `caterer_shard` rows | `caterer/…` in Blob | `data/caterer/` |
-| Uploaded images | `caterer_upload` rows | `caterer/uploads/` in Blob | `public/uploads/caterer/` |
+| | Upstash Redis | `DATABASE_URL` set | Blob store attached | none of them |
+| --- | --- | --- | --- | --- |
+| CMS content (`src/lib/caterer/store.ts`) | `<prefix>:shard:<path>` keys | `caterer_shard` rows | `caterer/…` in Blob | `data/caterer/` |
+| Uploaded images | `<prefix>:upload:<name>` keys | `caterer_upload` rows | `caterer/uploads/` in Blob | `public/uploads/caterer/` |
 
-**Postgres is the one to use on serverless**, and it wins when more than one is
-configured — a project moved off Blob keeps `BLOB_STORE_ID` in its environment
-long after the store stopped serving, and leaving Blob ahead would strand the
-site on a backend it no longer has.
+**Upstash Redis is what production runs on**, with the JSON files on disk as the
+local-development fallback. It is REST over HTTP, which is the shape serverless
+wants: no connection pool to size, nothing to wake on a cold start, and the free
+tier is metered in commands the store barely spends — an instance re-reads only
+the manifest, at most once every 10s, and the records behind it only when that
+manifest's `rev` changes.
+
+Images are capped at 700 KB on Redis: Upstash limits a single REST request and
+base64 costs a third on top. Larger uploads are refused with that number in the
+message rather than failing opaquely.
+
+`CATERER_REDIS_PREFIX` namespaces the keys (`caterer` by default) — set it when
+one database is shared with another site, or two deployments of this codebase
+will write the same keys and serve each other's content.
+
+The order above is the precedence, running from most deliberate to least: a
+project moved off Blob keeps `BLOB_STORE_ID` in its environment long after the
+store stopped serving, and leaving Blob ahead would strand the site on a backend
+it no longer has. Postgres remains available as an alternative to Redis — it is
+the one to reach for if uploads outgrow the 700 KB cap.
 
 Connecting a Neon database in the Vercel dashboard is the whole configuration:
 it injects `DATABASE_URL`, and `src/lib/caterer/pg.ts` creates the two tables on

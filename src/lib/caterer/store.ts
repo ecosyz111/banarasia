@@ -29,6 +29,7 @@ import crypto from "node:crypto";
 import { BlobNotFoundError, del, get, list, put } from "@vercel/blob";
 import { isBlobConfigured } from "./blob";
 import { isPostgresConfigured, pgQuery, shardTable } from "./pg";
+import { isRedisConfigured, redisCommand, redisScan, shardKey } from "./redis";
 import SEED from "./seed-data.json";
 
 // ---------------------------------------------------------------------------
@@ -484,7 +485,7 @@ async function mapWithConcurrency<T, R>(
 // flush the seed over the real content. A network blip must not be able to
 // masquerade as an empty store.
 type StorageBackend = {
-  readonly kind: "fs" | "blob" | "pg";
+  readonly kind: "fs" | "blob" | "pg" | "redis";
   read(rel: string): Promise<string | null>;
   listNames(dir: string): Promise<string[]>;
   write(rel: string, text: string): Promise<void>;
@@ -698,6 +699,37 @@ const blobBackend: StorageBackend = {
   },
 };
 
+// One key per shard, under `<prefix>:shard:<path>`, addressed by the same
+// relative path every other backend uses.
+//
+// Failures do not degrade the way Blob's do, for the reason given on the
+// Postgres backend below: a store that will not answer right now is usually a
+// blip, and answering a blip with seed content would let the next save flush
+// the seed over real records.
+const redisBackend: StorageBackend = {
+  kind: "redis",
+
+  async read(rel) {
+    return await redisCommand<string | null>(["GET", shardKey(rel)]);
+  },
+
+  async listNames(dir) {
+    // The layout is one level deep (packages/pkg-silver.json), so matching the
+    // directory's own prefix returns exactly its entries.
+    const prefix = shardKey(`${dir}/`);
+    const keys = await redisScan(`${prefix}*`);
+    return keys.map((key) => key.slice(prefix.length)).sort();
+  },
+
+  async write(rel, text) {
+    await redisCommand(["SET", shardKey(rel), text]);
+  },
+
+  async remove(rel) {
+    await redisCommand(["DEL", shardKey(rel)]);
+  },
+};
+
 // Rows, one per shard, addressed by the same relative path the other two
 // backends use. The schema lives in ./pg and is created on demand.
 //
@@ -755,16 +787,20 @@ const pgBackend: StorageBackend = {
 // backend for the life of the instance.
 let backend: StorageBackend | null = null;
 
-// Postgres wins over Blob when both are configured. A project that has been
-// moved off Blob keeps BLOB_STORE_ID sitting in its environment long after the
-// store stopped serving — leaving Blob ahead would strand the site on a backend
-// it no longer has, for the sake of an env var nobody remembered to delete.
+// Ordered by how deliberate the choice is, not by preference: Redis and
+// Postgres are configured by hand for this app, Blob is often left attached
+// from an earlier arrangement, and disk is what is there when nothing else is.
+// A project moved off Blob keeps BLOB_STORE_ID in its environment long after
+// the store stopped serving; leaving Blob ahead would strand the site on a
+// backend it no longer has, for the sake of an env var nobody deleted.
 function storage(): StorageBackend {
-  return (backend ??= isPostgresConfigured()
-    ? pgBackend
-    : isBlobConfigured()
-      ? blobBackend
-      : fsBackend);
+  return (backend ??= isRedisConfigured()
+    ? redisBackend
+    : isPostgresConfigured()
+      ? pgBackend
+      : isBlobConfigured()
+        ? blobBackend
+        : fsBackend);
 }
 
 // ---------------------------------------------------------------------------
