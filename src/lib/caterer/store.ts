@@ -28,6 +28,7 @@ import path from "node:path";
 import crypto from "node:crypto";
 import { BlobNotFoundError, del, get, list, put } from "@vercel/blob";
 import { isBlobConfigured } from "./blob";
+import { isPostgresConfigured, pgQuery } from "./pg";
 import SEED from "./seed-data.json";
 
 // ---------------------------------------------------------------------------
@@ -483,7 +484,7 @@ async function mapWithConcurrency<T, R>(
 // flush the seed over the real content. A network blip must not be able to
 // masquerade as an empty store.
 type StorageBackend = {
-  readonly kind: "fs" | "blob";
+  readonly kind: "fs" | "blob" | "pg";
   read(rel: string): Promise<string | null>;
   listNames(dir: string): Promise<string[]>;
   write(rel: string, text: string): Promise<void>;
@@ -697,6 +698,52 @@ const blobBackend: StorageBackend = {
   },
 };
 
+// Rows, one per shard, addressed by the same relative path the other two
+// backends use. The schema lives in ./pg and is created on demand.
+//
+// Failures here deliberately do not degrade the way Blob's do. A refused Blob
+// store is a permanent configuration fault; a database that will not answer is
+// usually a blip — a suspended Neon instance waking up, a dropped socket — and
+// answering a blip with seed content would let the next save flush the seed
+// over real records. So these throw, and the request fails honestly.
+const pgBackend: StorageBackend = {
+  kind: "pg",
+
+  async read(rel) {
+    const rows = await pgQuery<{ content: string }>(
+      "SELECT content FROM caterer_shard WHERE path = $1",
+      [rel]
+    );
+    return rows[0]?.content ?? null;
+  },
+
+  async listNames(dir) {
+    // The layout is one level deep (packages/pkg-silver.json), so a prefix
+    // match returns exactly that directory's entries. `dir` is never
+    // user-supplied — it is one of the collection names — but it is passed as a
+    // parameter rather than interpolated all the same.
+    const rows = await pgQuery<{ path: string }>(
+      "SELECT path FROM caterer_shard WHERE path LIKE $1 ORDER BY path",
+      [`${dir}/%`]
+    );
+    return rows.map((row) => row.path.slice(dir.length + 1));
+  },
+
+  async write(rel, text) {
+    await pgQuery(
+      `INSERT INTO caterer_shard (path, content, updated_at)
+       VALUES ($1, $2, now())
+       ON CONFLICT (path) DO UPDATE
+         SET content = EXCLUDED.content, updated_at = now()`,
+      [rel, text]
+    );
+  },
+
+  async remove(rel) {
+    await pgQuery("DELETE FROM caterer_shard WHERE path = $1", [rel]);
+  },
+};
+
 // Blob is chosen by whether a store is attached rather than by VERCEL, so a
 // production deploy and a local `vercel env pull` behave the same way, and a
 // container with a mounted volume keeps the fs backend by simply not attaching
@@ -708,8 +755,16 @@ const blobBackend: StorageBackend = {
 // backend for the life of the instance.
 let backend: StorageBackend | null = null;
 
+// Postgres wins over Blob when both are configured. A project that has been
+// moved off Blob keeps BLOB_STORE_ID sitting in its environment long after the
+// store stopped serving — leaving Blob ahead would strand the site on a backend
+// it no longer has, for the sake of an env var nobody remembered to delete.
 function storage(): StorageBackend {
-  return (backend ??= isBlobConfigured() ? blobBackend : fsBackend);
+  return (backend ??= isPostgresConfigured()
+    ? pgBackend
+    : isBlobConfigured()
+      ? blobBackend
+      : fsBackend);
 }
 
 // ---------------------------------------------------------------------------

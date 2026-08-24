@@ -1,8 +1,9 @@
 // Image upload — stores the file and returns the URL it is served from.
 //
-// Where it lands follows the JSON store in src/lib/caterer/store.ts: Vercel Blob
-// when a Blob store is attached, `public/uploads/caterer/` on disk when none
-// is. Either way the URL handed back is the same site-relative
+// Where it lands follows the store in src/lib/caterer/store.ts and its
+// precedence exactly: Postgres when a database is configured, Vercel Blob when
+// a Blob store is attached, `public/uploads/caterer/` on disk when neither is.
+// Whichever takes it, the URL handed back is the same site-relative
 // `/uploads/caterer/<filename>`, served by src/app/uploads/caterer/[filename].
 // Records therefore hold no backend-specific URL, and moving a site between
 // disk and Blob does not rewrite a single stored image path.
@@ -10,6 +11,7 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/admin/auth";
 import { put } from "@vercel/blob";
 import { isBlobConfigured } from "@/lib/caterer/blob";
+import { isPostgresConfigured, pgQuery } from "@/lib/caterer/pg";
 import fs from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -75,6 +77,22 @@ export async function POST(req: Request) {
     const ext = extMatch ? extMatch[0].toLowerCase() : ".jpg";
     const randomHash = crypto.randomBytes(6).toString("hex");
     const filename = `${kind}_${Date.now()}_${randomHash}${ext}`;
+
+    // Same precedence as the content store: Postgres first, so a project moved
+    // off Blob keeps its uploads working even with BLOB_STORE_ID still sitting
+    // in its environment. An image is a row like any other record; they are
+    // small, and a free Postgres tier has room for far more of them than this
+    // site will ever hold.
+    if (isPostgresConfigured()) {
+      await pgQuery(
+        `INSERT INTO caterer_upload (name, content_type, bytes)
+         VALUES ($1, $2, $3)
+         ON CONFLICT (name) DO UPDATE
+           SET content_type = EXCLUDED.content_type, bytes = EXCLUDED.bytes`,
+        [filename, mimeType, buffer]
+      );
+      return NextResponse.json({ url: `/uploads/caterer/${filename}` });
+    }
 
     if (isBlobConfigured()) {
       // Private, because a Blob store's access mode is fixed at creation and

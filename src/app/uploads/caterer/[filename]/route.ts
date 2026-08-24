@@ -1,7 +1,11 @@
 // Serves the images POST /api/caterer/upload writes, from whichever backend
 // took them.
 //
-// WHY THIS EXISTS. Two reasons, one per backend.
+// WHY THIS EXISTS. A reason per backend, and all three need it.
+//
+// On Postgres: the bytes are a row. There is no URL to redirect to — reading
+// them out and writing them to the response is the only way they reach a
+// browser.
 //
 // On disk: the uploader saves into `public/uploads/caterer/`, and Next does
 // serve `public/` — but it indexes that directory when the app is BUILT. A file
@@ -18,6 +22,7 @@
 import { NextResponse } from "next/server";
 import { get } from "@vercel/blob";
 import { isBlobConfigured } from "@/lib/caterer/blob";
+import { isPostgresConfigured, pgQuery } from "@/lib/caterer/pg";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -55,6 +60,30 @@ export async function GET(
   // over: it is what keeps a page of photos from costing a function invocation
   // per image on every visit.
   const cacheControl = "public, max-age=31536000, immutable";
+
+  // Postgres first, matching the uploader and the content store.
+  if (isPostgresConfigured()) {
+    try {
+      const rows = await pgQuery<{ content_type: string; bytes: Buffer }>(
+        "SELECT content_type, bytes FROM caterer_upload WHERE name = $1",
+        [filename]
+      );
+      const row = rows[0];
+      if (!row) return new NextResponse("Not found", { status: 404 });
+      return new NextResponse(new Uint8Array(row.bytes), {
+        headers: {
+          "Content-Type": row.content_type || contentType,
+          "Cache-Control": cacheControl,
+          "Content-Length": String(row.bytes.byteLength),
+        },
+      });
+    } catch (err) {
+      // Unlike a missing row, a database that will not answer is a real
+      // failure and must not be dressed up as a 404 the browser will cache.
+      console.error("GET /uploads/caterer error:", err);
+      return new NextResponse("Upload store unavailable", { status: 503 });
+    }
+  }
 
   if (isBlobConfigured()) {
     try {

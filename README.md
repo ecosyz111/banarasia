@@ -36,21 +36,34 @@ warning. Production returns 503 until you configure one.
 
 ## Persistence
 
-There is no database. Content is JSON files, one per record, kept either in
-Vercel Blob or on the app's own disk — whether a Blob store is attached decides
-which, and nothing above the storage layer knows the difference:
+Content is one record per shard, behind four primitives (`read`, `listNames`,
+`write`, `remove`) with three implementations. Nothing above the storage layer
+knows which one is carrying it:
 
-| | Blob store attached | none |
-| --- | --- | --- |
-| CMS content (`src/lib/caterer/store.ts`) | `caterer/…` in Blob | `data/caterer/` |
-| Uploaded images | `caterer/uploads/` in Blob | `public/uploads/caterer/` |
+| | `DATABASE_URL` set | Blob store attached | neither |
+| --- | --- | --- | --- |
+| CMS content (`src/lib/caterer/store.ts`) | `caterer_shard` rows | `caterer/…` in Blob | `data/caterer/` |
+| Uploaded images | `caterer_upload` rows | `caterer/uploads/` in Blob | `public/uploads/caterer/` |
 
-Attach one on serverless hosting; leave it off locally, or on a host with a
-persistent volume. Connecting a store in the Vercel dashboard is the whole
-configuration — it sets `BLOB_STORE_ID` (with a rotating `VERCEL_OIDC_TOKEN`) or
-a long-lived `BLOB_READ_WRITE_TOKEN`, and `src/lib/caterer/blob.ts` treats
-either as the switch. `VERCEL_OIDC_TOKEN` alone is not it: Vercel sets that on
-every project, Blob store or not.
+**Postgres is the one to use on serverless**, and it wins when more than one is
+configured — a project moved off Blob keeps `BLOB_STORE_ID` in its environment
+long after the store stopped serving, and leaving Blob ahead would strand the
+site on a backend it no longer has.
+
+Connecting a Neon database in the Vercel dashboard is the whole configuration:
+it injects `DATABASE_URL`, and `src/lib/caterer/pg.ts` creates the two tables on
+first use. There is no migration step, and the inert Prisma models play no part
+(the build only runs `prisma migrate deploy` when `PRISMA_MIGRATE=1`).
+
+Blob works, but costs more than it looks on a Hobby plan, which meters it by
+operation: one object per record, read uncached so a save is visible at once, is
+an operation-hungry shape. It ran a Hobby account's monthly allowance out in a
+week — Vercel then suspends the store, every read 403s, and the site has no
+content to serve. The store degrades to read-only seed content rather than
+failing outright when that happens, but it is not a state to run in. As rows,
+the same catalogue is under a megabyte against a free half-gigabyte tier.
+
+Disk is for local development and for a host with a persistent volume.
 
 **The Blob store must be created with private access.** A store's access mode is
 fixed at creation and applies to everything in it, and these shards include
