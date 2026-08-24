@@ -523,6 +523,37 @@ const fsBackend: StorageBackend = {
   },
 };
 
+// A 403 from Blob is an answer about configuration, not a transient failure,
+// and the SDK reports it as a bare "403 Forbidden" that says nothing about
+// which one. Two facts narrow it down for whoever reads the log:
+//
+//   - a credential WAS resolved. An unresolved one throws before any request
+//     ("No blob credentials found"), so this is not a missing token.
+//   - the access mode is part of the URL the SDK builds — the request went to
+//     `<storeId>.private.blob.vercel-storage.com`, and a store's access mode is
+//     fixed when it is created.
+//
+// So either the attached store is public, or the credential is for a store in
+// another account. Both are fixed in the Vercel dashboard, not in this file,
+// which is exactly what the message needs to say.
+function explainBlobDenial(err: unknown): Error {
+  const detail = err instanceof Error ? err.message : String(err);
+  const credential = process.env.BLOB_READ_WRITE_TOKEN
+    ? "BLOB_READ_WRITE_TOKEN"
+    : "OIDC + BLOB_STORE_ID";
+  return new Error(
+    `${detail} — the Blob store refused a private request (credential: ${credential}). ` +
+      `Connect a store created PRIVATE: access mode is fixed at creation, and these ` +
+      `shards hold captured leads, so a public store is not an option. Check too that ` +
+      `the store belongs to the same Vercel account as this deployment. ` +
+      `Run \`npm run blob:doctor\` against the deployment's env for a definitive answer.`
+  );
+}
+
+function isBlobDenial(err: unknown): boolean {
+  return err instanceof Error && err.message.includes("403");
+}
+
 const blobBackend: StorageBackend = {
   kind: "blob",
 
@@ -539,7 +570,7 @@ const blobBackend: StorageBackend = {
       return await new Response(res.stream).text();
     } catch (err) {
       if (err instanceof BlobNotFoundError) return null;
-      throw err;
+      throw isBlobDenial(err) ? explainBlobDenial(err) : err;
     }
   },
 
@@ -550,11 +581,15 @@ const blobBackend: StorageBackend = {
     // A collection is far short of the 1000-per-page default, but paginating is
     // three lines and a silently truncated listing would read as deleted
     // records.
-    do {
-      const page = await list({ prefix, cursor });
-      for (const blob of page.blobs) names.push(blob.pathname.slice(prefix.length));
-      cursor = page.hasMore ? page.cursor : undefined;
-    } while (cursor);
+    try {
+      do {
+        const page = await list({ prefix, cursor });
+        for (const blob of page.blobs) names.push(blob.pathname.slice(prefix.length));
+        cursor = page.hasMore ? page.cursor : undefined;
+      } while (cursor);
+    } catch (err) {
+      throw isBlobDenial(err) ? explainBlobDenial(err) : err;
+    }
     return names;
   },
 
@@ -566,12 +601,16 @@ const blobBackend: StorageBackend = {
     // derive its URL, which with addRandomSuffix off is every one of these.
     // Uploaded images share the store and are therefore private too; they are
     // delivered through src/app/uploads/caterer/[filename] rather than by URL.
-    await put(BLOB_PREFIX + rel, text, {
-      access: "private",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: "application/json",
-    });
+    try {
+      await put(BLOB_PREFIX + rel, text, {
+        access: "private",
+        addRandomSuffix: false,
+        allowOverwrite: true,
+        contentType: "application/json",
+      });
+    } catch (err) {
+      throw isBlobDenial(err) ? explainBlobDenial(err) : err;
+    }
   },
 
   async remove(rel) {
@@ -928,7 +967,7 @@ const REVALIDATE_MS = 10_000;
 // Stands in for "this snapshot cannot be trusted". It is not a valid revision —
 // those are hex — so revalidate() always finds it different from what storage
 // reports and rebuilds.
-const STALE_REV = " stale";
+const STALE_REV = "\u0000stale";
 
 function revFromBaseline(baseline: Map<string, string>): string | null {
   const text = baseline.get(MANIFEST_PATH);

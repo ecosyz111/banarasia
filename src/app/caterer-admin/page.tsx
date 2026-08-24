@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import PhotoCardCollection, { type PhotoCard } from "@/components/PhotoCardCollection";
 
 // ---------------------------------------------------------------------------
@@ -2055,16 +2054,21 @@ export default function CatererAdminDashboard() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Link
+            {/* A plain anchor, not next/link: the public site is a static file
+                under public/, not an App Router route, so client-side routing
+                has nothing to resolve — Link only prefetched an RSC payload for
+                it and logged a 404 on every admin load. */}
+            <a
               href="/sample-caterer"
               target="_blank"
+              rel="noopener"
               className="hidden sm:flex items-center gap-1.5 rounded-lg border border-stone-200 bg-white px-3 py-1.5 text-xs font-semibold text-stone-700 transition hover:bg-stone-50"
             >
               <span>View Site</span>
               <svg className="h-3.5 w-3.5 text-stone-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
               </svg>
-            </Link>
+            </a>
 
             <button
               onClick={handleLogout}
