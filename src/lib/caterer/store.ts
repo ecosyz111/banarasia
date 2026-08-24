@@ -542,16 +542,78 @@ function explainBlobDenial(err: unknown): Error {
     ? "BLOB_READ_WRITE_TOKEN"
     : "OIDC + BLOB_STORE_ID";
   return new Error(
-    `${detail} — the Blob store refused a private request (credential: ${credential}). ` +
-      `Connect a store created PRIVATE: access mode is fixed at creation, and these ` +
-      `shards hold captured leads, so a public store is not an option. Check too that ` +
-      `the store belongs to the same Vercel account as this deployment. ` +
-      `Run \`npm run blob:doctor\` against the deployment's env for a definitive answer.`
+    `${detail} — the Blob store would not serve this deployment (credential: ${credential}). ` +
+      `Three things do this: the store id does not resolve, the credential is not ` +
+      `entitled to that store (a store in another account, or OIDC that Blob will not ` +
+      `accept), or the store was created public while this one reads and writes it as ` +
+      `private — access mode is fixed at creation, and these shards hold captured leads, ` +
+      `so public is not an option. Setting BLOB_READ_WRITE_TOKEN from the store's own ` +
+      `page settles the middle one. Run \`npm run blob:doctor\` against this deployment's ` +
+      `env to find out which.`
   );
 }
 
+// Matching on message text is unlovely, but the SDK reports these as plain
+// BlobError with no status or code to switch on, and it phrases the same fault
+// differently per call: `get` surfaces the raw "403 Forbidden" from the fetch,
+// while `list` says "Access denied". Missing-store is in here too — a store id
+// that does not resolve is the same kind of permanent configuration fault as
+// one that refuses us, and wants the same treatment. Anything else (a timeout,
+// a 5xx from Blob) is transient and must keep throwing.
+const BLOB_CONFIG_FAULTS = [
+  "403",
+  "access denied",
+  "forbidden",
+  "not authorized",
+  "unauthorized",
+  "does not exist",
+  "store not found",
+  // A store is attached but no credential resolves for it — OIDC not accepted,
+  // no token set. Reached whenever BLOB_STORE_ID is present without a usable
+  // credential beside it, which is a deployment misconfiguration like the rest.
+  "no blob credentials",
+  "no read-write token",
+];
+
 function isBlobDenial(err: unknown): boolean {
-  return err instanceof Error && err.message.includes("403");
+  if (!(err instanceof Error)) return false;
+  const message = err.message.toLowerCase();
+  return BLOB_CONFIG_FAULTS.some((fault) => message.includes(fault));
+}
+
+// A denial is a configuration fault, not a blip: the next call fails the same
+// way, and the one after that. Throwing each time took the whole site down —
+// every content route 500ing, the public page left with nothing to render and
+// the admin console reading 0 in every tab.
+//
+// So the backend latches instead. Reads answer "nothing stored", which is the
+// path a fresh install already takes, so the site serves seed-data.json and
+// stays up. Writes keep throwing, and that is what makes the degradation safe:
+// the store cannot mistake a denied read for an empty store and save the seed
+// over real content, because in this state it cannot save at all.
+//
+// The latch expires so a fixed configuration heals without a redeploy, and the
+// first denial is logged once rather than on every request.
+const BLOB_DENIAL_RETRY_MS = 60_000;
+let blobDeniedAt = 0;
+
+function blobIsDenied(): boolean {
+  if (!blobDeniedAt) return false;
+  if (Date.now() - blobDeniedAt < BLOB_DENIAL_RETRY_MS) return true;
+  blobDeniedAt = 0;
+  return false;
+}
+
+function noteBlobDenial(err: unknown): Error {
+  const explained = explainBlobDenial(err);
+  if (!blobDeniedAt) {
+    console.error(
+      "[caterer] Blob store denied. Serving seed content read-only; saves will " +
+        "fail until this is fixed. " + explained.message
+    );
+  }
+  blobDeniedAt = Date.now();
+  return explained;
 }
 
 const blobBackend: StorageBackend = {
@@ -563,6 +625,7 @@ const blobBackend: StorageBackend = {
       // cache cannot be set below a minute, and a store that serves content up
       // to a minute stale right after a save is the bug this backend exists to
       // fix — so the shard layer opts out of the cache entirely.
+      if (blobIsDenied()) return null;
       const res = await get(BLOB_PREFIX + rel, { access: "private", useCache: false });
       // null is how `get` reports a blob that is not there; a 304 needs an
       // ifNoneMatch we never send, so it only shows up as a type possibility.
@@ -570,7 +633,12 @@ const blobBackend: StorageBackend = {
       return await new Response(res.stream).text();
     } catch (err) {
       if (err instanceof BlobNotFoundError) return null;
-      throw isBlobDenial(err) ? explainBlobDenial(err) : err;
+      // Reads degrade to "nothing stored" so the site keeps serving the seed.
+      if (isBlobDenial(err)) {
+        noteBlobDenial(err);
+        return null;
+      }
+      throw err;
     }
   },
 
@@ -581,6 +649,7 @@ const blobBackend: StorageBackend = {
     // A collection is far short of the 1000-per-page default, but paginating is
     // three lines and a silently truncated listing would read as deleted
     // records.
+    if (blobIsDenied()) return [];
     try {
       do {
         const page = await list({ prefix, cursor });
@@ -588,7 +657,13 @@ const blobBackend: StorageBackend = {
         cursor = page.hasMore ? page.cursor : undefined;
       } while (cursor);
     } catch (err) {
-      throw isBlobDenial(err) ? explainBlobDenial(err) : err;
+      // Same degradation as read: an unlistable collection reads as absent, and
+      // an absent manifest is what sends the store to the seed.
+      if (isBlobDenial(err)) {
+        noteBlobDenial(err);
+        return [];
+      }
+      throw err;
     }
     return names;
   },
@@ -609,7 +684,11 @@ const blobBackend: StorageBackend = {
         contentType: "application/json",
       });
     } catch (err) {
-      throw isBlobDenial(err) ? explainBlobDenial(err) : err;
+      // Writes never degrade. A save that cannot reach storage has to fail
+      // loudly, or the admin console would report success for an edit that was
+      // never stored — and the seed the reads are serving could be written back
+      // over the real store the moment access returned.
+      throw isBlobDenial(err) ? noteBlobDenial(err) : err;
     }
   },
 
